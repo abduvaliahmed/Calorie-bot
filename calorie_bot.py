@@ -1,39 +1,3 @@
-#!/usr/bin/env python3
-"""
-Kaloriya Hisoblagich Bot
-========================
-Ikki tilli (O'zbekcha / Ruscha) Telegram bot
-Foydalanuvchi ma'lumotlarini SQLite bazasida saqlaydi
-Mifflin-St Jeor formulasi asosida hisoblaydi
-"""
-
-import logging
-import sqlite3
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-    CallbackQueryHandler,
-    ContextTypes,
-    filters,
-)
-
-# ══════════════════════════════════════════════
-#  SOZLAMALAR
-# ══════════════════════════════════════════════
-BOT_TOKEN = "8605598238:AAEQJWCNcQRnEIonNHugNfW_VNP60dkRTaY"
-DB_NAME = "calorie_bot.db"
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-# ══════════════════════════════════════════════
-#  CONVERSATION STATES
 # ══════════════════════════════════════════════
 (
     LANG, GENDER, AGE, WEIGHT, HEIGHT, STEPS, GOAL,
