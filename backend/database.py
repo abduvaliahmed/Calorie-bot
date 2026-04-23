@@ -150,3 +150,9 @@ def get_global_foods():
     cur.execute("SELECT * FROM food_global ORDER BY name")
     rows = cur.fetchall(); c.close()
     return [dict(r) for r in rows]
+
+def get_all_users():
+    c = conn(); cur = c.cursor()
+    cur.execute("SELECT user_id, lang, gender, age, weight, goal, kcal_target, fat_pct, created_at, updated_at FROM users ORDER BY created_at DESC")
+    rows = cur.fetchall(); c.close()
+    return [dict(r) for r in rows]

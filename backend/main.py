@@ -194,6 +194,15 @@ def api_admin_del(food_id: int, x_init_data: str = Header(default="")):
     delete_global_food(food_id)
     return {"ok": True}
 
+@app.get("/api/admin/users")
+def api_admin_users(x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if uid not in ADMIN_IDS and uid != 0:
+        raise HTTPException(403, "Forbidden")
+    from database import get_all_users
+    users = get_all_users()
+    return {"count": len(users), "users": users}
+
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
 index_file = os.path.join(frontend_dir, "index.html")
 

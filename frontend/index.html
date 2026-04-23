@@ -321,6 +321,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <button class="btn bp" onclick="adminAdd()">Saqlash</button>
           <button class="btn bg2" onclick="toggleAdminAdd()">Bekor</button>
         </div>
+        <div class="sec">Foydalanuvchilar</div>
+        <div id="admin-users"><div style="text-align:center;padding:16px;color:var(--t2)">Yuklanmoqda...</div></div>
         <div class="sec">Global mahsulotlar</div>
         <div id="admin-list"><div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div></div>
       </div>
@@ -858,7 +860,27 @@ function toggleAdminAdd() {
   p.style.display=p.style.display==="none"?"block":"none";
 }
 
+async function loadUsers() {
+  try{
+    var r=await req("/api/admin/users");
+    var users=r.users||[];
+    var el=document.getElementById("admin-users");
+    if(!users.length){el.innerHTML="<div style='padding:12px;color:var(--t2);text-align:center'>Foydalanuvchilar yoq</div>";return;}
+    var goalMap={lose:"Ozish",maintain:"Saqlash",muscle:"Massa"};
+    el.innerHTML='<div class="sc" style="margin-bottom:12px"><div class="sc-l">Jami</div><div class="sc-v">'+r.count+'<span class="sc-u"> ta</span></div></div>'+
+    '<div class="card">'+users.map(function(u){
+      var g=u.gender==="male"?"👨":"👩";
+      var goal=goalMap[u.goal]||u.goal||"-";
+      return '<div class="row"><div class="row-t"><div class="row-l">'+g+' '+u.user_id+'</div><div class="row-s">'+(u.age||"?")+'y · '+(u.weight||"?")+'kg · '+goal+'</div></div><div class="row-r" style="font-size:12px">'+(u.fat_pct||0)+'%</div></div>';
+    }).join('')+'</div>';
+  }catch(e){
+    var el=document.getElementById("admin-users");
+    if(el)el.innerHTML='<div style="padding:12px;color:var(--t2);text-align:center">Yuklab bolmadi</div>';
+  }
+}
+
 async function loadAdmin() {
+  loadUsers();
   try{
     var r=await req("/api/admin/foods");
     var foods=r.foods||[];
