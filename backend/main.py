@@ -100,7 +100,7 @@ def api_save_profile(data: ProfileIn, x_init_data: str = Header(default="")):
         macros = {"protein_g": protein_g, "fat_g": fat_g, "carb_g": carb_g}
     else:
         kcal_t = calc["kcal_target"]
-        macros = calc_macros(data.weight, kcal_t, data.goal)
+        macros = calc_macros(data.weight, kcal_t, data.goal, calc.get("lean_mass"))
 
     upsert_user(uid, {
         "lang": data.lang, "gender": data.gender, "age": data.age,

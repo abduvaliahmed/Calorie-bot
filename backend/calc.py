@@ -24,9 +24,10 @@ def fat_zone(gender, fp):
         if fp <= limit: return name, icon
     return "Semizlik", "🔴"
 
-def calc_macros(weight, kcal, goal):
-    p = round(weight * MP.get(goal,1.8), 1)
-    f = round(weight * MF.get(goal,0.9), 1)
+def calc_macros(weight, kcal, goal, lean_mass=None):
+    base = lean_mass if lean_mass and lean_mass > 0 else weight
+    p = round(base * MP.get(goal,1.8), 1)
+    f = round(base * MF.get(goal,0.9), 1)
     c = round(max(0,(kcal - p*4 - f*9)/4), 1)
     return {"protein_g":p,"fat_g":f,"carb_g":c}
 
