@@ -26,6 +26,7 @@ PROMO_CODES = {
     "NB-RZREBQDH": True,
     "NB-05FJXJNJ": True,
     "NB-JFOM8ICL": True,
+    "OTAM-UCHUN": True,
 }
 
 # Tasdiqlangan userlar
