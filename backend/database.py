@@ -21,6 +21,8 @@ def init_db():
         fat_zone TEXT, fat_icon TEXT, bmr REAL, activity REAL,
         tdee REAL, steps INTEGER, goal TEXT DEFAULT 'maintain',
         kcal_target REAL, protein_g REAL, fat_g REAL, carb_g REAL,
+        first_name TEXT DEFAULT '',
+        username TEXT DEFAULT '',
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW())""")
     cur.execute("""CREATE TABLE IF NOT EXISTS food_global (
@@ -44,6 +46,8 @@ def init_db():
         protein REAL DEFAULT 0, fat REAL DEFAULT 0,
         carb REAL DEFAULT 0, kcal REAL DEFAULT 0,
         created_at TIMESTAMP DEFAULT NOW())""")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT DEFAULT ''")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''")
     cur.execute("SELECT COUNT(*) as cnt FROM food_global")
     row = cur.fetchone()
     if row["cnt"] == 0:
@@ -181,3 +185,13 @@ def get_all_users():
     cur.execute("SELECT user_id,lang,gender,age,weight,goal,kcal_target,fat_pct,created_at,updated_at FROM users ORDER BY created_at DESC")
     rows = cur.fetchall(); c.close()
     return [dict(r) for r in rows]
+
+def save_bot_user(uid, first_name, username):
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        """INSERT INTO users (user_id, first_name, username)
+           VALUES (%s, %s, %s)
+           ON CONFLICT(user_id) DO UPDATE SET first_name=%s, username=%s""",
+        (uid, first_name, username, first_name, username)
+    )
+    c.commit(); c.close()

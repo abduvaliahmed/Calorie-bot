@@ -871,7 +871,8 @@ async function loadUsers() {
     '<div class="card">'+users.map(function(u){
       var g=u.gender==="male"?"👨":"👩";
       var goal=goalMap[u.goal]||u.goal||"-";
-      return '<div class="row"><div class="row-t"><div class="row-l">'+g+' '+u.user_id+'</div><div class="row-s">'+(u.age||"?")+'y · '+(u.weight||"?")+'kg · '+goal+'</div></div><div class="row-r" style="font-size:12px">'+(u.fat_pct||0)+'%</div></div>';
+      var nm=u.first_name||(u.username?'@'+u.username:'ID:'+u.user_id);
+      return '<div class="row"><div class="row-t"><div class="row-l">'+g+' '+nm+'</div><div class="row-s">'+(u.age||"?")+'y · '+(u.weight||"?")+'kg · '+goal+'</div></div><div class="row-r" style="font-size:12px">'+(u.fat_pct||0)+'%</div></div>';
     }).join('')+'</div>';
   }catch(e){
     var el=document.getElementById("admin-users");

@@ -9,7 +9,7 @@ from typing import Optional
 import hmac, hashlib, json
 from urllib.parse import unquote
 
-from database import init_db, get_user, upsert_user, add_food_log, delete_food_log
+from database import init_db, get_user, upsert_user, add_food_log, delete_food_log, save_bot_user
 from database import get_today_log, get_today_totals, search_food, add_personal_food
 from database import get_personal_foods, add_global_food, delete_global_food, get_global_foods
 from calc import full_calc, calc_macros
@@ -193,6 +193,14 @@ def api_admin_del(food_id: int, x_init_data: str = Header(default="")):
         raise HTTPException(403, "Forbidden")
     delete_global_food(food_id)
     return {"ok": True}
+
+@app.post("/api/bot/save-user")
+def api_save_bot_user(data: dict):
+    try:
+        save_bot_user(data.get("user_id",0), data.get("first_name",""), data.get("username",""))
+        return {"ok": True}
+    except:
+        return {"ok": False}
 
 @app.get("/api/admin/users")
 def api_admin_users(x_init_data: str = Header(default="")):
