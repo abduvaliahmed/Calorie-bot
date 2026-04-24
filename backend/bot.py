@@ -9,13 +9,26 @@ API_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
 
 WAIT_CODE = 1
 
-PROMO_CODES = [
-    "NB-Y49CFXF6", "NB-948OK6C4", "NB-IOB9PS83", "NB-3PIV2I02",
-    "NB-FV9ZDGK2", "NB-0WP5WGFR", "NB-3DAL5IQ5", "NB-OY0MLWF1",
-    "NB-L4VCFBOJ", "NB-H9B7RUSR", "NB-R8BPEZ3H", "NB-WKUM7BDM",
-    "NB-RZREBQDH", "NB-05FJXJNJ", "NB-JFOM8ICL"
-]
+# Promo kodlar — har biri 1 marta ishlatiladi
+PROMO_CODES = {
+    "NB-Y49CFXF6": True,
+    "NB-948OK6C4": True,
+    "NB-IOB9PS83": True,
+    "NB-3PIV2I02": True,
+    "NB-FV9ZDGK2": True,
+    "NB-0WP5WGFR": True,
+    "NB-3DAL5IQ5": True,
+    "NB-OY0MLWF1": True,
+    "NB-L4VCFBOJ": True,
+    "NB-H9B7RUSR": True,
+    "NB-R8BPEZ3H": True,
+    "NB-WKUM7BDM": True,
+    "NB-RZREBQDH": True,
+    "NB-05FJXJNJ": True,
+    "NB-JFOM8ICL": True,
+}
 
+# Tasdiqlangan userlar
 allowed_users = set()
 
 async def save_user_info(uid, first_name, username):
@@ -48,12 +61,21 @@ async def check_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     first_name = update.effective_user.first_name or ""
     username = update.effective_user.username or ""
     code = update.message.text.strip().upper()
-    if code in PROMO_CODES:
+
+    if code in PROMO_CODES and PROMO_CODES[code]:
+        # Kodni ishlatilgan deb belgilash
+        PROMO_CODES[code] = False
         allowed_users.add(uid)
         await save_user_info(uid, first_name, username)
-        await update.message.reply_text("Kod tasdiqlandi! NutriBot ga xush kelibsiz!", reply_markup=ReplyKeyboardRemove())
+        await update.message.reply_text(
+            "Kod tasdiqlandi! NutriBot ga xush kelibsiz!",
+            reply_markup=ReplyKeyboardRemove()
+        )
         await send_app(update)
         return ConversationHandler.END
+    elif code in PROMO_CODES and not PROMO_CODES[code]:
+        await update.message.reply_text("Bu kod allaqachon ishlatilgan. Boshqa kod kiriting:")
+        return WAIT_CODE
     else:
         await update.message.reply_text("Noto'g'ri kod. Qayta kiriting:")
         return WAIT_CODE
