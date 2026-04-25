@@ -937,16 +937,17 @@ async function loadToday() {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   try{
-    var r=await req("/api/user");
+    var results=await Promise.all([req("/api/user"),req("/api/today")]);
+    var r=results[0]; var td=results[1];
     if(r&&r.exists&&r.user){
       S.user=r.user;
+      S.today=td;
       if(r.user.lang)lang=r.user.lang;
       var lbl=lang==="uz"?"RU":"UZ";
       var b1=document.getElementById("lang-btn");
       var b2=document.getElementById("lang-btn2");
       if(b1)b1.textContent=lbl;
       if(b2)b2.textContent=lbl;
-      await loadToday();
       go("home");
     }else{
       startOB();
