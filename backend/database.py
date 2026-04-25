@@ -1,15 +1,26 @@
 import os, datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2 import pool
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
+_pool = None
+
+def get_pool():
+    global _pool
+    if _pool is None:
+        url = DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        _pool = pool.SimpleConnectionPool(1, 10, url, cursor_factory=RealDictCursor)
+    return _pool
+
 def conn():
-    url = DATABASE_URL
-    if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql://", 1)
-    c = psycopg2.connect(url, cursor_factory=RealDictCursor)
-    return c
+    return get_pool().getconn()
+
+def release(c):
+    get_pool().putconn(c)
 
 def init_db():
     c = conn(); cur = c.cursor()
@@ -78,14 +89,14 @@ def init_db():
                 "INSERT INTO food_global (name,name_ru,protein,fat,carb,kcal,per_grams) VALUES (%s,%s,%s,%s,%s,%s,%s)",
                 f
             )
-    c.commit(); c.close()
+    c.commit(); release(c)
     import logging
     logging.getLogger(__name__).info("DB initialized (PostgreSQL)")
 
 def get_user(uid):
     c = conn(); cur = c.cursor()
     cur.execute("SELECT * FROM users WHERE user_id=%s", (uid,))
-    r = cur.fetchone(); c.close()
+    r = cur.fetchone(); release(c)
     return dict(r) if r else None
 
 def upsert_user(uid, data):
@@ -99,7 +110,7 @@ def upsert_user(uid, data):
         f"INSERT INTO users (user_id,{cols}) VALUES (%s,{phs}) ON CONFLICT(user_id) DO UPDATE SET {upd},updated_at=NOW()",
         [uid]+vals+vals
     )
-    c.commit(); c.close()
+    c.commit(); release(c)
 
 def add_food_log(uid, data):
     c = conn(); cur = c.cursor()
@@ -108,18 +119,18 @@ def add_food_log(uid, data):
         "INSERT INTO food_log (user_id,log_date,food_name,grams,protein,fat,carb,kcal) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
         (uid,today,data["food_name"],data["grams"],data.get("protein",0),data.get("fat",0),data.get("carb",0),data.get("kcal",0))
     )
-    c.commit(); c.close()
+    c.commit(); release(c)
 
 def delete_food_log(log_id, uid):
     c = conn(); cur = c.cursor()
     cur.execute("DELETE FROM food_log WHERE id=%s AND user_id=%s", (log_id, uid))
-    c.commit(); c.close()
+    c.commit(); release(c)
 
 def get_today_log(uid):
     today = datetime.date.today()
     c = conn(); cur = c.cursor()
     cur.execute("SELECT * FROM food_log WHERE user_id=%s AND log_date=%s ORDER BY created_at ASC", (uid, today))
-    rows = cur.fetchall(); c.close()
+    rows = cur.fetchall(); release(c)
     return [dict(r) for r in rows]
 
 def get_today_totals(uid):
@@ -144,7 +155,7 @@ def search_food(uid, query):
         (like, like)
     )
     g = [dict(r) for r in cur.fetchall()]
-    c.close()
+    release(c)
     return p + g
 
 def add_personal_food(uid, data):
@@ -153,12 +164,12 @@ def add_personal_food(uid, data):
         "INSERT INTO food_personal (user_id,name,protein,fat,carb,kcal,per_grams) VALUES (%s,%s,%s,%s,%s,%s,%s)",
         (uid,data["name"],data.get("protein",0),data.get("fat",0),data.get("carb",0),data.get("kcal",0),data.get("per_grams",100))
     )
-    c.commit(); c.close()
+    c.commit(); release(c)
 
 def get_personal_foods(uid):
     c = conn(); cur = c.cursor()
     cur.execute("SELECT * FROM food_personal WHERE user_id=%s ORDER BY name", (uid,))
-    rows = cur.fetchall(); c.close()
+    rows = cur.fetchall(); release(c)
     return [dict(r) for r in rows]
 
 def add_global_food(data, added_by):
@@ -167,23 +178,23 @@ def add_global_food(data, added_by):
         "INSERT INTO food_global (name,name_ru,protein,fat,carb,kcal,per_grams,added_by) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
         (data["name"],data.get("name_ru",""),data.get("protein",0),data.get("fat",0),data.get("carb",0),data.get("kcal",0),data.get("per_grams",100),added_by)
     )
-    c.commit(); c.close()
+    c.commit(); release(c)
 
 def delete_global_food(food_id):
     c = conn(); cur = c.cursor()
     cur.execute("DELETE FROM food_global WHERE id=%s", (food_id,))
-    c.commit(); c.close()
+    c.commit(); release(c)
 
 def get_global_foods():
     c = conn(); cur = c.cursor()
     cur.execute("SELECT * FROM food_global ORDER BY name")
-    rows = cur.fetchall(); c.close()
+    rows = cur.fetchall(); release(c)
     return [dict(r) for r in rows]
 
 def get_all_users():
     c = conn(); cur = c.cursor()
     cur.execute("SELECT user_id,lang,gender,age,weight,goal,kcal_target,fat_pct,created_at,updated_at FROM users ORDER BY created_at DESC")
-    rows = cur.fetchall(); c.close()
+    rows = cur.fetchall(); release(c)
     return [dict(r) for r in rows]
 
 def save_bot_user(uid, first_name, username):
@@ -194,4 +205,4 @@ def save_bot_user(uid, first_name, username):
            ON CONFLICT(user_id) DO UPDATE SET first_name=%s, username=%s""",
         (uid, first_name, username, first_name, username)
     )
-    c.commit(); c.close()
+    c.commit(); release(c)
