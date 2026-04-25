@@ -429,14 +429,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     <div class="overlay-txt" id="overlay-txt">Yuklanmoqda...</div>
   </div>
 </div>
-<div id="le-panel" style="display:none;position:fixed;inset:0;z-index:997;background:rgba(0,0,0,0.4);display:none;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeLogEdit()">
+<div id="le-panel" style="display:none;position:fixed;inset:0;z-index:997;background:rgba(0,0,0,0.4);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeLogEdit()">
   <div style="background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-width:480px;padding-bottom:calc(20px + var(--sb))">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div style="font-size:17px;font-weight:600" id="le-name">Tahrirlash</div>
       <div onclick="closeLogEdit()" style="font-size:22px;color:var(--t2);cursor:pointer">×</div>
     </div>
     <div class="ig">
-      <div class="ir"><div class="ir-l">Gramm</div><input type="number" id="le-grams" oninput="onLeGrams()" min="1"/></div>
+      <div class="ir"><div class="ir-l">Gramm</div><input type="number" id="le-grams" oninput="onLeGrams()" min="1" style="font-weight:600"/></div>
       <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="le-kcal" step="0.1"/></div>
       <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="le-p" step="0.1"/></div>
       <div class="ir"><div class="ir-l">Yog (g)</div><input type="number" id="le-f" step="0.1"/></div>
@@ -1214,21 +1214,38 @@ async function saveAIToMyFoods(btn) {
 // ── LOG EDIT ──────────────────────────────────────────────────────────────────
 var editLogId = null;
 
+var _leOrigGrams = 0;
+var _leOrigKcal = 0;
+var _leOrigP = 0;
+var _leOrigF = 0;
+var _leOrigC = 0;
+
 function openLogEdit(id, name, grams, kcal, protein, fat, carb) {
   editLogId = id;
+  _leOrigGrams = grams;
+  _leOrigKcal = kcal;
+  _leOrigP = protein;
+  _leOrigF = fat;
+  _leOrigC = carb;
   document.getElementById("le-name").textContent = name;
   document.getElementById("le-grams").value = grams;
   document.getElementById("le-kcal").value = kcal;
   document.getElementById("le-p").value = protein;
   document.getElementById("le-f").value = fat;
   document.getElementById("le-c").value = carb;
-  document.getElementById("le-panel").style.display = "block";
-  document.getElementById("le-panel").scrollIntoView({behavior:"smooth"});
+  var lep = document.getElementById("le-panel");
+  lep.style.display = "flex";
+  lep.scrollIntoView({behavior:"smooth"});
 }
 
 function onLeGrams() {
-  // Auto-calc macros based on original per-100g values
-  // Just let user manually adjust - no original data stored
+  var g = parseFloat(document.getElementById("le-grams").value)||0;
+  if(!g || !_leOrigGrams) return;
+  var ratio = g / _leOrigGrams;
+  document.getElementById("le-kcal").value = Math.round(_leOrigKcal * ratio * 10) / 10;
+  document.getElementById("le-p").value = Math.round(_leOrigP * ratio * 10) / 10;
+  document.getElementById("le-f").value = Math.round(_leOrigF * ratio * 10) / 10;
+  document.getElementById("le-c").value = Math.round(_leOrigC * ratio * 10) / 10;
 }
 
 function closeLogEdit() {
