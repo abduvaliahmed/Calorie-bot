@@ -604,6 +604,7 @@ async function addLog() {
     toast(t("added"));
     document.getElementById("gram-panel").style.display="none";
     document.getElementById("food-q").value="";
+    if(btn){btn.disabled=false;btn.textContent=t("add_b");}
     loadFoods();
   }catch(e){
     toast(t("err"));
