@@ -141,15 +141,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* TOAST */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:998;display:none;align-items:center;justify-content:center}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .overlay.show{display:flex}
-.overlay-box{background:var(--card);border-radius:20px;padding:28px 32px;display:flex;flex-direction:column;align-items:center;gap:16px}
-.circ-prog{width:64px;height:64px}
-.circ-prog svg{transform:rotate(-90deg)}
-.circ-bg{fill:none;stroke:#E8F9F2;stroke-width:5}
-.circ-fill{fill:none;stroke:var(--teal);stroke-width:5;stroke-linecap:round;stroke-dasharray:163;stroke-dashoffset:163;animation:fillup 1.4s ease-in-out forwards infinite}
-@keyframes fillup{0%{stroke-dashoffset:163}100%{stroke-dashoffset:0}}
-.overlay-txt{font-size:14px;color:var(--t2);font-weight:500}
+.overlay-box{display:flex;flex-direction:column;align-items:center;gap:14px}
+.logo-anim{width:72px;height:72px}
+.logo-outer{stroke-dasharray:900;stroke-dashoffset:900;animation:drawleaf 1.4s cubic-bezier(0.4,0,0.2,1) infinite}
+.logo-inner{opacity:0;animation:fadein 1.4s cubic-bezier(0.4,0,0.2,1) infinite}
+@keyframes drawleaf{0%{stroke-dashoffset:900}70%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+@keyframes fadein{0%,50%{opacity:0}80%,100%{opacity:1}}
+.overlay-txt{font-size:14px;color:#fff;font-weight:500;letter-spacing:0.3px;opacity:0.9}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -355,10 +355,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 </div>
 <div class="overlay" id="overlay">
   <div class="overlay-box">
-    <div class="circ-prog">
-      <svg width="60" height="60" viewBox="0 0 60 60">
-        <circle class="circ-bg" cx="30" cy="30" r="26"/>
-        <circle class="circ-fill" cx="30" cy="30" r="26"/>
+    <div class="logo-anim">
+      <svg width="72" height="72" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="logo-outer"
+          d="M256 40 C150 140, 120 260, 256 472 C392 260, 362 140, 256 40 Z"
+          stroke="#1D9E75" stroke-width="28" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="logo-inner"
+          d="M250 300 C220 260, 240 210, 290 190 C270 230, 290 290, 240 360 Z"
+          fill="#1D9E75"/>
       </svg>
     </div>
     <div class="overlay-txt" id="overlay-txt">Yuklanmoqda...</div>
