@@ -198,8 +198,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#8E8E93" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#8E8E93" stroke-width="2" stroke-linecap="round"/></svg>
           <input id="food-q" placeholder="Mahsulot nomini qidiring..." oninput="onFoodQ(this.value)"/>
         </div>
-        <div id="food-list"></div>
-
         <!-- Personal food add panel -->
         <div id="pers-panel" style="display:none;margin-bottom:16px">
           <div class="sec">Yangi mahsulot</div>
@@ -224,6 +222,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         <div style="text-align:center;margin-bottom:16px">
           <button class="btn bg2" id="pers-btn" style="width:auto;padding:10px 20px;font-size:14px" onclick="togglePers()">+ O'z mahsulotimni qo'shish</button>
         </div>
+
+        <div id="food-list"></div>
+        <div id="food-sentinel" style="height:20px"></div>
 
         <!-- Gram panel -->
         <div id="gram-panel" style="display:none">
@@ -561,6 +562,9 @@ async function delLog(id) {
 
 // ── ADD FOOD ──────────────────────────────────────────────────────────────────
 var qTimer=null;
+var foodPage=0;
+var foodAllLoaded=false;
+var foodScrollObs=null;
 
 function initFood() {
   document.getElementById("food-q").value="";
@@ -573,12 +577,50 @@ function initFood() {
 }
 
 async function loadFoods() {
+  foodPage=0;
+  foodAllLoaded=false;
   try{
-    var r1=await req("/api/food/search?q=");
     var r2=await req("/api/food/personal");
     var pf=(r2.foods||[]).map(function(f){f.source="personal";return f;});
-    showFoods(pf.concat(r1.results||[]).slice(0,12));
+    var r1=await req("/api/food/search?q=&limit=20&offset=0");
+    var combined=pf.concat(r1.results||[]);
+    showFoods(combined);
+    if((r1.results||[]).length<20) foodAllLoaded=true;
+    setupInfiniteScroll();
   }catch(e){showFoods([]);}
+}
+
+async function loadMoreFoods() {
+  if(foodAllLoaded) return;
+  var q=document.getElementById("food-q").value||"";
+  if(q) return;
+  foodPage++;
+  try{
+    var r=await req("/api/food/search?q=&limit=20&offset="+(foodPage*20));
+    var foods=r.results||[];
+    if(!foods.length){foodAllLoaded=true;return;}
+    S.foods=S.foods.concat(foods);
+    var el=document.getElementById("food-list");
+    var div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=foods.map(function(f,i){
+      var idx=S.foods.length-foods.length+i;
+      var src=f.source==="personal"?"👤 ":"";
+      return '<div class="row" onclick="selFood('+idx+')" style="cursor:pointer"><div class="row-t"><div class="row-l">'+src+f.name+'</div><div class="row-s">'+Math.round(f.kcal)+' kkal</div></div><div class="row-r"><div class="chev"></div></div></div>';
+    }).join("");
+    el.appendChild(div);
+    if(foods.length<20) foodAllLoaded=true;
+  }catch(e){}
+}
+
+function setupInfiniteScroll() {
+  if(foodScrollObs) foodScrollObs.disconnect();
+  var sentinel=document.getElementById("food-sentinel");
+  if(!sentinel) return;
+  foodScrollObs=new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting) loadMoreFoods();
+  },{threshold:0.1});
+  foodScrollObs.observe(sentinel);
 }
 
 function onFoodQ(q) {

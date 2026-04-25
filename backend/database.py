@@ -142,7 +142,7 @@ def get_today_totals(uid):
         "carb": round(sum(r["carb"] for r in rows), 1),
     }
 
-def search_food(uid, query):
+def search_food(uid, query, limit=20, offset=0):
     c = conn(); cur = c.cursor()
     like = f"%{query}%"
     cur.execute(
@@ -151,8 +151,8 @@ def search_food(uid, query):
     )
     p = [dict(r) for r in cur.fetchall()]
     cur.execute(
-        "SELECT id,'global' as source,name,name_ru,protein,fat,carb,kcal,per_grams FROM food_global WHERE LOWER(name) LIKE LOWER(%s) OR LOWER(COALESCE(name_ru,'')) LIKE LOWER(%s) LIMIT 10",
-        (like, like)
+        "SELECT id,'global' as source,name,name_ru,protein,fat,carb,kcal,per_grams FROM food_global WHERE LOWER(name) LIKE LOWER(%s) OR LOWER(COALESCE(name_ru,'')) LIKE LOWER(%s) ORDER BY name LIMIT %s OFFSET %s",
+        (like, like, limit, offset)
     )
     g = [dict(r) for r in cur.fetchall()]
     release(c)

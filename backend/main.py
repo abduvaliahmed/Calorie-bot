@@ -159,9 +159,9 @@ def api_del_food(log_id: int, x_init_data: str = Header(default="")):
     return {"ok": True}
 
 @app.get("/api/food/search")
-def api_search(q: str = "", x_init_data: str = Header(default="")):
+def api_search(q: str = "", limit: int = 20, offset: int = 0, x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
-    return {"results": search_food(uid, q)}
+    return {"results": search_food(uid, q, limit, offset)}
 
 @app.post("/api/food/personal")
 def api_add_personal(data: dict, x_init_data: str = Header(default="")):
