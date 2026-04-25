@@ -595,6 +595,8 @@ async function addLog() {
   var f=S.sel; if(!f)return;
   var g=parseFloat(document.getElementById("gram-val").value)||0;
   if(g<=0){toast(t("eg"));return;}
+  var btn=document.querySelector("#gram-panel .btn.bp");
+  if(btn){btn.disabled=true;btn.textContent="Yuklanmoqda...";}
   var r=g/f.per_grams;
   try{
     await req("/api/food-log","POST",{food_name:f.name,grams:g,protein:fd(f.protein*r),fat:fd(f.fat*r),carb:fd(f.carb*r),kcal:fd(f.kcal*r)});
@@ -603,7 +605,10 @@ async function addLog() {
     document.getElementById("gram-panel").style.display="none";
     document.getElementById("food-q").value="";
     loadFoods();
-  }catch(e){toast(t("err"));}
+  }catch(e){
+    toast(t("err"));
+    if(btn){btn.disabled=false;btn.textContent=t("add_b");}
+  }
 }
 
 function togglePers() {
@@ -838,6 +843,8 @@ async function obSave() {
   if(!d.waist){toast(lang==="uz"?"Qorin kiriting":"Введите талию");return;}
   if(!d.neck){toast(lang==="uz"?"Boyinni kiriting":"Введите шею");return;}
   if(!d.steps){toast(lang==="uz"?"Qadamlarni kiriting":"Введите шаги");return;}
+  var saveBtn=document.getElementById("ob-next-btn");
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent=lang==="uz"?"Saqlanmoqda...":"Сохранение...";}
   try{
     var r=await req("/api/profile","POST",Object.assign({},d,{lang:lang}));
     if(r&&r.user){S.user=r.user;}
