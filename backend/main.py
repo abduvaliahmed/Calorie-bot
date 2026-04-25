@@ -11,7 +11,7 @@ import hmac, hashlib, json
 from urllib.parse import unquote
 
 from database import init_db, get_user, upsert_user, add_food_log, delete_food_log, save_bot_user
-from database import get_today_log, get_today_totals, search_food, add_personal_food
+from database import get_today_log, get_today_totals, search_food, add_personal_food, conn, release
 from database import get_personal_foods, add_global_food, delete_global_food, get_global_foods
 from calc import full_calc, calc_macros
 
@@ -151,6 +151,17 @@ def api_today(x_init_data: str = Header(default="")):
 def api_add_food(data: FoodLogIn, x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
     add_food_log(uid, data.dict())
+    return {"ok": True}
+
+@app.put("/api/food-log/{log_id}")
+def api_update_log(log_id: int, data: dict, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        "UPDATE food_log SET grams=%s,kcal=%s,protein=%s,fat=%s,carb=%s WHERE id=%s AND user_id=%s",
+        (data.get("grams",0),data.get("kcal",0),data.get("protein",0),data.get("fat",0),data.get("carb",0),log_id,uid)
+    )
+    c.commit(); release(c)
     return {"ok": True}
 
 @app.delete("/api/food-log/{log_id}")
