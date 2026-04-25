@@ -1187,7 +1187,7 @@ async function sendAI() {
   var systemPrompt = "Sen NutriBot AI yordamchisisiz. Foydalanuvchi ovqat ingredientlarini grammaj bilan yozadi. Sen ularning umumiy va 100g uchun BJU (oqsil, yog, uglevod, kaloriya) ni hisoblab berasan. Javobni faqat quyidagi JSON formatda ber, boshqa hech narsa yozma: {\"name\": \"taom nomi\", \"total_g\": 0, \"kcal\": 0, \"protein\": 0, \"fat\": 0, \"carb\": 0, \"per100_kcal\": 0, \"per100_p\": 0, \"per100_f\": 0, \"per100_c\": 0}";
   
   try {
-    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyA2Nz0YrVmxGTugB6xfXoRg7Q5kj9YMJPY', {
+    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyA2Nz0YrVmxGTugB6xfXoRg7Q5kj9YMJPY', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
