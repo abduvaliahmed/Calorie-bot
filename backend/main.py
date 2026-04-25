@@ -1,4 +1,5 @@
-import os, sys, logging
+import os, sys, logging, json
+import httpx
 sys.path.insert(0, os.path.dirname(__file__))
 
 from fastapi import FastAPI, HTTPException, Header
@@ -205,6 +206,42 @@ def api_admin_del(food_id: int, x_init_data: str = Header(default="")):
         raise HTTPException(403, "Forbidden")
     delete_global_food(food_id)
     return {"ok": True}
+
+@app.post("/api/ai/calc")
+async def api_ai_calc(data: dict, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if not uid:
+        raise HTTPException(401, "Unauthorized")
+    
+    GROQ_KEY = os.environ.get("GROQ_API_KEY", "")
+    user_msg = data.get("message", "")
+    
+    system_prompt = """Sen NutriBot AI yordamchisisiz. Foydalanuvchi ovqat ingredientlarini grammaj bilan yozadi.
+Sen ularning umumiy va 100g uchun BJU ni hisoblab berasan.
+FAQAT quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
+{"name": "taom nomi", "total_g": 0, "kcal": 0, "protein": 0, "fat": 0, "carb": 0, "per100_kcal": 0, "per100_p": 0, "per100_f": 0, "per100_c": 0}"""
+    
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_msg}
+                ],
+                "max_tokens": 300,
+                "temperature": 0.1
+            },
+            timeout=30.0
+        )
+        result = r.json()
+        text = result["choices"][0]["message"]["content"].strip()
+        text = text.replace("```json", "").replace("```", "").strip()
+        import json
+        parsed = json.loads(text)
+        return {"ok": True, "result": parsed}
 
 @app.post("/api/bot/save-user")
 def api_save_bot_user(data: dict):
