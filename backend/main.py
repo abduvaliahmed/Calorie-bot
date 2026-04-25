@@ -80,6 +80,9 @@ def api_get_user(x_init_data: str = Header(default="")):
     user = get_user(uid)
     if not user:
         return {"exists": False}
+    # Profil to'liq to'ldirilmagan bo'lsa yangi user deb hisoblaymiz
+    if not user.get("gender") or not user.get("weight") or not user.get("height"):
+        return {"exists": False}
     user["is_admin"] = uid in ADMIN_IDS
     return {"exists": True, "user": user}
 
