@@ -141,15 +141,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* TOAST */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:998;display:none;align-items:center;justify-content:center}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:998;display:none;align-items:center;justify-content:center}
 .overlay.show{display:flex}
-.overlay-box{background:var(--card);border-radius:20px;padding:28px 32px;display:flex;flex-direction:column;align-items:center;gap:16px}
-.circ-prog{width:64px;height:64px}
-.circ-prog svg{transform:rotate(-90deg)}
-.circ-bg{fill:none;stroke:#E8F9F2;stroke-width:5}
-.circ-fill{fill:none;stroke:var(--teal);stroke-width:5;stroke-linecap:round;stroke-dasharray:163;stroke-dashoffset:163;animation:fillup 1.4s ease-in-out forwards infinite}
-@keyframes fillup{0%{stroke-dashoffset:163}100%{stroke-dashoffset:0}}
-.overlay-txt{font-size:14px;color:var(--t2);font-weight:500}
+.overlay-box{text-align:center}
+.leaf-logo{width:90px;height:90px}
+.leaf-outline{fill:none;stroke:#1D9E75;stroke-width:28;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1000;stroke-dashoffset:1000;animation:leafLoop 2.4s ease-in-out infinite}
+.leaf-fill-inner{fill:#1D9E75;opacity:0;animation:leafFillLoop 2.4s ease-in-out infinite}
+.overlay-txt{margin-top:16px;font-size:14px;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:0.5px;animation:textFade 1.5s ease-in-out infinite}
+@keyframes leafLoop{0%{stroke-dashoffset:1000;opacity:1}60%{stroke-dashoffset:0;opacity:1}85%{stroke-dashoffset:0;opacity:0}100%{stroke-dashoffset:1000;opacity:0}}
+@keyframes leafFillLoop{0%,45%{opacity:0}70%{opacity:1}85%,100%{opacity:0}}
+@keyframes textFade{0%,100%{opacity:0.5}50%{opacity:1}}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -162,7 +163,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 
     <!-- LOADING -->
     <div class="screen act" id="s-loading">
-      <div class="ld"><div class="sp"></div><div style="color:var(--t2);font-size:14px">Yuklanmoqda...</div></div>
+      <div class="ld">
+        <svg style="width:90px;height:90px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:none;stroke:#1D9E75;stroke-width:28;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1000;stroke-dashoffset:1000;animation:leafLoop 2.4s ease-in-out infinite"
+            d="M256 40 C150 140, 120 260, 256 472 C392 260, 362 140, 256 40 Z"/>
+          <path style="fill:#1D9E75;opacity:0;animation:leafFillLoop 2.4s ease-in-out infinite"
+            d="M250 300 C220 260, 240 210, 290 190 C270 230, 290 290, 240 360 Z"/>
+        </svg>
+        <div style="color:var(--t2);font-size:14px;animation:textFade 1.5s ease-in-out infinite">Yuklanmoqda...</div>
+      </div>
     </div>
 
     <!-- HOME -->
@@ -355,12 +364,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 </div>
 <div class="overlay" id="overlay">
   <div class="overlay-box">
-    <div class="circ-prog">
-      <svg width="64" height="64" viewBox="0 0 64 64">
-        <circle class="circ-bg" cx="32" cy="32" r="26"/>
-        <circle class="circ-fill" cx="32" cy="32" r="26"/>
-      </svg>
-    </div>
+    <svg class="leaf-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <path class="leaf-outline" d="M256 40 C150 140, 120 260, 256 472 C392 260, 362 140, 256 40 Z"/>
+      <path class="leaf-fill-inner" d="M250 300 C220 260, 240 210, 290 190 C270 230, 290 290, 240 360 Z"/>
+    </svg>
     <div class="overlay-txt" id="overlay-txt">Yuklanmoqda...</div>
   </div>
 </div>
