@@ -329,6 +329,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         <div class="sec">Foydalanuvchilar</div>
         <div id="admin-users"><div style="text-align:center;padding:16px;color:var(--t2)">Yuklanmoqda...</div></div>
         <div class="sec">Global mahsulotlar</div>
+        <div id="admin-edit-panel" style="display:none;margin-bottom:16px">
+          <div class="sec" id="admin-edit-title">Tahrirlash</div>
+          <div class="ig">
+            <div class="ir"><div class="ir-l">Nom (uz)</div><input type="text" id="ae-name"/></div>
+            <div class="ir"><div class="ir-l">Nom (ru)</div><input type="text" id="ae-ru"/></div>
+            <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="ae-k"/></div>
+            <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="ae-p"/></div>
+            <div class="ir"><div class="ir-l">Yog' (g)</div><input type="number" id="ae-f"/></div>
+            <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="ae-c"/></div>
+          </div>
+          <button class="btn bp" onclick="adminSaveEdit()">Saqlash</button>
+          <button class="btn bg2" onclick="document.getElementById('admin-edit-panel').style.display='none'">Bekor</button>
+        </div>
         <div id="admin-list"><div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div></div>
       </div>
     </div>
@@ -927,6 +940,45 @@ async function loadUsers() {
   }
 }
 
+var adminFoods = [];
+
+function adminEdit(id) {
+  var f = adminFoods.find(function(x){return x.id===id;});
+  if(!f)return;
+  document.getElementById('ae-name').value = f.name||'';
+  document.getElementById('ae-ru').value = f.name_ru||'';
+  document.getElementById('ae-k').value = f.kcal||0;
+  document.getElementById('ae-p').value = f.protein||0;
+  document.getElementById('ae-f').value = f.fat||0;
+  document.getElementById('ae-c').value = f.carb||0;
+  document.getElementById('admin-edit-panel').setAttribute('data-id', id);
+  document.getElementById('admin-edit-panel').style.display = 'block';
+  document.getElementById('admin-edit-panel').scrollIntoView({behavior:'smooth'});
+}
+
+async function adminSaveEdit() {
+  var id = parseInt(document.getElementById('admin-edit-panel').getAttribute('data-id'));
+  var name = document.getElementById('ae-name').value.trim();
+  var nameRu = document.getElementById('ae-ru').value.trim();
+  var k = parseFloat(document.getElementById('ae-k').value)||0;
+  var p = parseFloat(document.getElementById('ae-p').value)||0;
+  var f = parseFloat(document.getElementById('ae-f').value)||0;
+  var c = parseFloat(document.getElementById('ae-c').value)||0;
+  if(!name){toast('Nom kiriting!');return;}
+  if(!k){toast('Kaloriya kiriting!');return;}
+  showLoading('Saqlanmoqda...');
+  try{
+    await req('/api/admin/foods/'+id,'PUT',{name:name,name_ru:nameRu,kcal:k,protein:p,fat:f,carb:c});
+    hideLoading();
+    toast('Saqlandi!');
+    document.getElementById('admin-edit-panel').style.display='none';
+    loadAdmin();
+  }catch(e){
+    hideLoading();
+    toast('Xato!');
+  }
+}
+
 async function loadAdmin() {
   loadUsers();
   try{
@@ -936,8 +988,10 @@ async function loadAdmin() {
       document.getElementById("admin-list").innerHTML='<div class="emp"><div class="emp-ic">📦</div><div class="emp-t">Mahsulotlar yo\'q</div></div>';
       return;
     }
+    adminFoods = foods;
     document.getElementById("admin-list").innerHTML='<div class="card">'+foods.map(function(f){
-      return '<div class="row"><div class="row-t"><div class="row-l">'+f.name+'</div><div class="row-s">'+Math.round(f.kcal)+' kkal</div></div><button onclick="adminDel('+f.id+')" style="background:#FEEBEB;border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:#C62828;cursor:pointer;flex-shrink:0">O\'chir</button></div>';
+      var fd=JSON.stringify(f).replace(/'/g,"&#39;");
+      return '<div class="row"><div class="row-t" style="cursor:pointer" onclick="adminEdit('+f.id+')"><div class="row-l">'+f.name+'</div><div class="row-s">'+Math.round(f.kcal)+' kkal · P:'+f.protein+'g Y:'+f.fat+'g U:'+f.carb+'g</div></div><div style="display:flex;gap:6px"><button onclick="event.stopPropagation();adminEdit('+f.id+')" style="background:#E8F9F2;border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:#0F6E56;cursor:pointer">✏️</button><button onclick="event.stopPropagation();adminDel('+f.id+')" style="background:#FEEBEB;border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:#C62828;cursor:pointer">🗑</button></div></div>';
     }).join("")+'</div>';
   }catch(e){
     document.getElementById("admin-list").innerHTML='<div class="emp"><div class="emp-ic">🔒</div><div class="emp-t">Ruxsat yo\'q</div></div>';

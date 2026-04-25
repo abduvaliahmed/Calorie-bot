@@ -189,6 +189,15 @@ def api_admin_add(data: dict, x_init_data: str = Header(default="")):
     add_global_food(data, uid)
     return {"ok": True}
 
+@app.put("/api/admin/foods/{food_id}")
+def api_admin_edit(food_id: int, data: dict, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if uid not in ADMIN_IDS and uid != 0:
+        raise HTTPException(403, "Forbidden")
+    from database import edit_global_food
+    edit_global_food(food_id, data)
+    return {"ok": True}
+
 @app.delete("/api/admin/foods/{food_id}")
 def api_admin_del(food_id: int, x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)

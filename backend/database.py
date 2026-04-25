@@ -206,3 +206,11 @@ def save_bot_user(uid, first_name, username):
         (uid, first_name, username, first_name, username)
     )
     c.commit(); release(c)
+
+def edit_global_food(food_id, data):
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        "UPDATE food_global SET name=%s, name_ru=%s, kcal=%s, protein=%s, fat=%s, carb=%s WHERE id=%s",
+        (data["name"], data.get("name_ru",""), data.get("kcal",0), data.get("protein",0), data.get("fat",0), data.get("carb",0), food_id)
+    )
+    c.commit(); release(c)
