@@ -15,7 +15,7 @@ FAT_K     = {"lose": 0.8, "maintain": 1.0, "muscle": 1.1}
 
 def get_activity(steps):
     for thr, coeff in STEPS:
-        if steps < thr:
+        if steps <= thr:
             return coeff
     return 1.70
 
