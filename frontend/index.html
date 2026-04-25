@@ -23,7 +23,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .hdr-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
 .hdr-t{font-size:22px;font-weight:700}
 .back{font-size:17px;color:var(--teal);cursor:pointer}
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;scroll-behavior:smooth}
 .tabs{background:var(--card);border-top:.5px solid var(--sep);display:flex;padding:8px 0;padding-bottom:calc(8px + var(--sb));flex-shrink:0}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
 .tab svg{width:24px;height:24px}
@@ -681,7 +681,18 @@ async function loadMoreFoods() {
     div.innerHTML=foods.map(function(f,i){
       var idx=S.foods.length-foods.length+i;
       var src=f.source==="personal"?"👤 ":"";
-      return '<div class="row" onclick="selFood('+idx+')" style="cursor:pointer"><div class="row-t"><div class="row-l">'+src+f.name+'</div><div class="row-s">'+Math.round(f.kcal)+' kkal</div></div><div class="row-r"><div class="chev"></div></div></div>';
+      return '<div class="row" onclick="selFood('+idx+')" style="cursor:pointer">'+
+        '<div class="row-t">'+
+          '<div class="row-l">'+src+f.name+'</div>'+
+          '<div class="row-s" style="display:flex;gap:8px;margin-top:3px">'+
+            '<span style="color:var(--teal);font-weight:600">'+Math.round(f.kcal)+' kkal</span>'+
+            '<span>P:<b>'+f.protein+'</b></span>'+
+            '<span>Y:<b>'+f.fat+'</b></span>'+
+            '<span>U:<b>'+f.carb+'</b></span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="row-r"><div class="chev"></div></div>'+
+      '</div>';
     }).join("");
     el.appendChild(div);
     if(foods.length<20) foodAllLoaded=true;
@@ -717,9 +728,27 @@ function showFoods(foods) {
     return;
   }
   S.foods=foods;
-  el.innerHTML='<div class="card">'+foods.map(function(f,i){
-    var src=f.source==="personal"?"👤 ":"";
-    return '<div class="row" onclick="selFood('+i+')" style="cursor:pointer"><div class="row-t"><div class="row-l">'+src+f.name+'</div><div class="row-s">'+Math.round(f.kcal)+' kkal/100g · P:'+f.protein+'g F:'+f.fat+'g C:'+f.carb+'g</div></div><div class="row-r"><div class="chev"></div></div></div>';
+  // Sort alphabetically, personal first
+  var pers = foods.filter(function(f){return f.source==="personal";});
+  var glob = foods.filter(function(f){return f.source!=="personal";});
+  glob.sort(function(a,b){return a.name.localeCompare(b.name,"uz");});
+  var sorted = pers.concat(glob);
+  S.foods = sorted;
+  
+  el.innerHTML='<div class="card">'+sorted.map(function(f,i){
+    var src=f.source==="personal"?'<span style="font-size:10px;background:var(--tl);color:var(--td);border-radius:4px;padding:1px 5px;margin-right:4px">Men</span>':"";
+    return '<div class="row" onclick="selFood('+i+')" style="cursor:pointer">'+
+      '<div class="row-t">'+
+        '<div class="row-l">'+src+f.name+'</div>'+
+        '<div class="row-s" style="display:flex;gap:8px;margin-top:3px">'+
+          '<span style="color:var(--teal);font-weight:600">'+Math.round(f.kcal)+' kkal</span>'+
+          '<span>P:<b>'+f.protein+'</b></span>'+
+          '<span>Y:<b>'+f.fat+'</b></span>'+
+          '<span>U:<b>'+f.carb+'</b></span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="row-r"><div class="chev"></div></div>'+
+    '</div>';
   }).join("")+'</div>';
 }
 
@@ -1225,8 +1254,9 @@ async function sendAI() {
   btn.disabled = false;
 }
 
-async function addAIToLog(btn) {
-  var r = window._aiLastResult;
+async function addAIToLog(btn, idx) {
+  window._aiResults = window._aiResults || {};
+  var r = idx !== undefined ? window._aiResults[idx] : window._aiLastResult;
   if(!r) return;
   if(btn) btn.disabled = true;
   showLoading(lang==="uz"?"Qo'shilmoqda...":"Добавление...");
@@ -1241,6 +1271,7 @@ async function addAIToLog(btn) {
     });
     await loadToday();
     hideLoading();
+    renderHome();
     toast(t('added'));
     if(btn) { btn.textContent = "✓ Qo'shildi"; btn.style.background = "#34C759"; }
   } catch(e) {
