@@ -49,7 +49,12 @@ def full_calc(data):
     fp      = calc_fat_pct(gender, waist, neck, height, hip)
     lean    = round(weight * (1 - fp / 100), 1)
     fat_m   = round(weight - lean, 1)
-    bmr     = round(370 + 21.6 * lean, 1)
+    # Mifflin-St Jeor formulasi
+    age     = int(data.get("age", 25))
+    if gender == "male":
+        bmr = round(10 * weight + 6.25 * height - 5 * age + 5, 1)
+    else:
+        bmr = round(10 * weight + 6.25 * height - 5 * age - 161, 1)
     act     = get_activity(steps)
     tdee    = round(bmr * act, 1)
 
