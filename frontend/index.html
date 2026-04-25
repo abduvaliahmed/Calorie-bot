@@ -141,6 +141,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* TOAST */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:998;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.overlay-box{background:var(--card);border-radius:20px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.overlay-sp{width:36px;height:36px;border:3px solid var(--tl);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite}
+.overlay-txt{font-size:14px;color:var(--t2)}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -330,6 +335,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 
   </div>
 </div>
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="overlay-sp"></div>
+    <div class="overlay-txt" id="overlay-txt">Yuklanmoqda...</div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -410,6 +421,17 @@ var TX = {
 function t(k) { return (TX[lang]||TX.uz)[k] !== undefined ? (TX[lang]||TX.uz)[k] : (TX.uz[k]||k); }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
+function showLoading(txt){
+  var el=document.getElementById('overlay');
+  var t=document.getElementById('overlay-txt');
+  if(t)t.textContent=txt||(lang==="uz"?"Yuklanmoqda...":"Загрузка...");
+  if(el)el.classList.add('show');
+}
+function hideLoading(){
+  var el=document.getElementById('overlay');
+  if(el)el.classList.remove('show');
+}
+
 function fmt(n) { return Math.round(n).toLocaleString("ru"); }
 function fd(n) { return Math.round(n*10)/10; }
 function pct(a,b) { return b>0 ? Math.min(100,Math.round(a/b*100)) : 0; }
@@ -511,8 +533,17 @@ function renderHome() {
 }
 
 async function delLog(id) {
-  try{await req("/api/food-log/"+id,"DELETE");await loadToday();renderHome();toast(t("deleted"));}
-  catch(e){toast(t("err"));}
+  showLoading(lang==="uz"?"O'chirilmoqda...":"Удаление...");
+  try{
+    await req("/api/food-log/"+id,"DELETE");
+    await loadToday();
+    hideLoading();
+    renderHome();
+    toast(t("deleted"));
+  }catch(e){
+    hideLoading();
+    toast(t("err"));
+  }
 }
 
 // ── ADD FOOD ──────────────────────────────────────────────────────────────────
@@ -596,17 +627,20 @@ async function addLog() {
   var g=parseFloat(document.getElementById("gram-val").value)||0;
   if(g<=0){toast(t("eg"));return;}
   var btn=document.querySelector("#gram-panel .btn.bp");
-  if(btn){btn.disabled=true;btn.textContent="Yuklanmoqda...";}
+  if(btn){btn.disabled=true;}
+  showLoading(lang==="uz"?"Qo'shilmoqda...":"Добавление...");
   var r=g/f.per_grams;
   try{
     await req("/api/food-log","POST",{food_name:f.name,grams:g,protein:fd(f.protein*r),fat:fd(f.fat*r),carb:fd(f.carb*r),kcal:fd(f.kcal*r)});
     await loadToday();
+    hideLoading();
     toast(t("added"));
     document.getElementById("gram-panel").style.display="none";
     document.getElementById("food-q").value="";
     if(btn){btn.disabled=false;btn.textContent=t("add_b");}
     loadFoods();
   }catch(e){
+    hideLoading();
     toast(t("err"));
     if(btn){btn.disabled=false;btn.textContent=t("add_b");}
   }
@@ -845,19 +879,24 @@ async function obSave() {
   if(!d.neck){toast(lang==="uz"?"Boyinni kiriting":"Введите шею");return;}
   if(!d.steps){toast(lang==="uz"?"Qadamlarni kiriting":"Введите шаги");return;}
   var saveBtn=document.getElementById("ob-next-btn");
-  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent=lang==="uz"?"Saqlanmoqda...":"Сохранение...";}
+  if(saveBtn){saveBtn.disabled=true;}
+  showLoading(lang==="uz"?"Saqlanmoqda...":"Сохранение...");
   try{
     var r=await req("/api/profile","POST",Object.assign({},d,{lang:lang}));
     if(r&&r.user){S.user=r.user;}
     var r2=await req("/api/user");
     if(r2&&r2.exists&&r2.user){S.user=r2.user;}
     await loadToday();
+    hideLoading();
+    if(saveBtn)saveBtn.disabled=false;
     toast(lang==="uz"?"Profil saqlandi!":"Профиль сохранён!");
     var prev=document.querySelector(".screen.act");
     if(prev)prev.classList.remove("act");
     document.getElementById("s-home").classList.add("act");
     renderHome();
   }catch(e){
+    hideLoading();
+    if(saveBtn)saveBtn.disabled=false;
     toast(lang==="uz"?"Xato yuz berdi":"Произошла ошибка");
   }
 }
