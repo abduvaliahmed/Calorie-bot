@@ -158,6 +158,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 .sec{font-size:13px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin:18px 0 8px 4px}
+.ai-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(29,158,117,0);animation:aiRing 2.5s cubic-bezier(0.4,0,0.2,1) infinite}
+.ai-r1{inset:0;animation-delay:0s}
+.ai-r2{inset:8px;animation-delay:0.2s}
+.ai-r3{inset:16px;animation-delay:0.4s}
+.ai-r4{inset:24px;animation-delay:0.6s}
+@keyframes aiRing{0%{border-color:rgba(29,158,117,0.8);transform:scale(0.85)}60%{border-color:rgba(29,158,117,0.1);transform:scale(1.05)}100%{border-color:rgba(29,158,117,0);transform:scale(1.15)}}
+@keyframes aiCenter{0%,100%{background:rgba(29,158,117,0.1)}50%{background:rgba(29,158,117,0.25)}}
+.ai-msg-user{background:var(--teal);color:#fff;border-radius:18px 18px 4px 18px;padding:12px 16px;margin:8px 0;margin-left:40px;font-size:15px;line-height:1.5}
+.ai-msg-bot{background:var(--card);border-radius:18px 18px 18px 4px;padding:12px 16px;margin:8px 0;margin-right:40px;font-size:15px;line-height:1.5;color:var(--t1)}
+.ai-log-btn{background:var(--teal);color:#fff;border:none;border-radius:12px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;width:100%}
 </style>
 </head>
 <body>
@@ -193,6 +203,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         <div class="tab on" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="var(--teal)" stroke-width="1.8"/></svg><span>Asosiy</span></div>
         <div class="tab" onclick="go('add-food')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8E8E93" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Ovqat</span></div>
         <div class="tab" onclick="go('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Statistika</span></div>
+        <div class="tab" onclick="go('ai')" style="position:relative">
+          <div style="width:42px;height:42px;border-radius:21px;background:var(--teal);display:flex;align-items:center;justify-content:center;margin-top:-14px;box-shadow:0 4px 12px rgba(29,158,117,0.4)">
+            <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white"/><path d="M9 8h2v8H9zm4 0h2v8h-2z" fill="none"/><circle cx="12" cy="12" r="3" fill="white" opacity="0.9"/><path d="M12 7v2M12 15v2M7 12h2M15 12h2" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <span style="color:var(--teal);font-size:10px">AI</span>
+        </div>
         <div class="tab" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#8E8E93" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Profil</span></div>
       </div>
     </div>
@@ -315,6 +331,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         <div class="pw"><div class="pf" id="ob-prog" style="width:20%"></div></div>
       </div>
       <div class="scroll" id="ob-body"></div>
+    </div>
+
+
+    <!-- AI -->
+    <div class="screen" id="s-ai">
+      <div class="hdr">
+        <div class="hdr-row">
+          <div class="back" onclick="go('home')">&#8249; Orqaga</div>
+          <div style="font-size:17px;font-weight:600">NutriBot AI</div>
+          <div style="width:60px"></div>
+        </div>
+      </div>
+      <div class="scroll" id="ai-scroll">
+        <!-- Face ID animation - shown when empty -->
+        <div id="ai-welcome" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:20px">
+          <div style="width:100px;height:100px;position:relative">
+            <div class="ai-ring ai-r1"></div>
+            <div class="ai-ring ai-r2"></div>
+            <div class="ai-ring ai-r3"></div>
+            <div class="ai-ring ai-r4"></div>
+            <div style="position:absolute;inset:36px;border-radius:50%;background:rgba(29,158,117,0.15);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(29,158,117,0.5);animation:aiCenter 2.5s ease-in-out infinite">
+              <span style="font-size:11px;color:var(--teal);font-weight:700">AI</span>
+            </div>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:var(--t1)">NutriBot AI</div>
+          <div style="font-size:14px;color:var(--t2);text-align:center;line-height:1.6">Ovqat pishirdingizmi? Ingredientlarni yozing — men BJU ni hisoblayman va logga qo'shaman</div>
+          <div class="card" style="width:100%;padding:16px">
+            <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px">MISOL</div>
+            <div style="font-size:14px;color:var(--t1);line-height:1.7">Osh pishirdim: guruch 200g, mol go'shti 150g, sabzi 100g, piyoz 80g, oy yog' 40g</div>
+          </div>
+        </div>
+        <!-- Chat messages -->
+        <div id="ai-messages" style="padding-bottom:16px"></div>
+      </div>
+      <!-- Input area -->
+      <div style="background:var(--card);border-top:.5px solid var(--sep);padding:12px 16px;padding-bottom:calc(12px + var(--sb));display:flex;gap:10px;align-items:flex-end">
+        <textarea id="ai-input" placeholder="Mahsulotlarni grammaj bilan yozing..." rows="1"
+          style="flex:1;border:none;background:rgba(118,118,128,.12);border-radius:12px;padding:10px 14px;font-size:15px;color:var(--t1);outline:none;resize:none;font-family:-apple-system,sans-serif;max-height:100px"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI()}"></textarea>
+        <button onclick="sendAI()" id="ai-send-btn"
+          style="width:40px;height:40px;border-radius:20px;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- ADMIN -->
@@ -520,6 +581,7 @@ function go(screen) {
   else if(screen==="stats")renderStats();
   else if(screen==="profile")renderProfile();
   else if(screen==="admin")loadAdmin();
+  else if(screen==="ai")initAI();
 }
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
@@ -1083,6 +1145,125 @@ async function loadToday() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+
+var aiMessages = [];
+
+function initAI() {
+  aiMessages = [];
+  document.getElementById('ai-messages').innerHTML = '';
+  document.getElementById('ai-welcome').style.display = 'flex';
+  document.getElementById('ai-input').value = '';
+}
+
+function addAIMsg(role, html) {
+  var el = document.getElementById('ai-messages');
+  var div = document.createElement('div');
+  div.className = role === 'user' ? 'ai-msg-user' : 'ai-msg-bot';
+  div.innerHTML = html;
+  el.appendChild(div);
+  document.getElementById('ai-scroll').scrollTop = 99999;
+}
+
+async function sendAI() {
+  var input = document.getElementById('ai-input').value.trim();
+  if(!input) return;
+  
+  document.getElementById('ai-welcome').style.display = 'none';
+  var btn = document.getElementById('ai-send-btn');
+  btn.disabled = true;
+  
+  addAIMsg('user', input);
+  document.getElementById('ai-input').value = '';
+  document.getElementById('ai-input').style.height = 'auto';
+  
+  var thinking = document.createElement('div');
+  thinking.className = 'ai-msg-bot';
+  thinking.id = 'ai-thinking';
+  thinking.innerHTML = '<span style="opacity:0.5;animation:textPulse 1s infinite">Hisoblanmoqda...</span>';
+  document.getElementById('ai-messages').appendChild(thinking);
+  document.getElementById('ai-scroll').scrollTop = 99999;
+  
+  var u = S.user || {};
+  var systemPrompt = "Sen NutriBot AI yordamchisisiz. Foydalanuvchi ovqat ingredientlarini grammaj bilan yozadi. Sen ularning umumiy va 100g uchun BJU (oqsil, yog, uglevod, kaloriya) ni hisoblab berasan. Javobni faqat quyidagi JSON formatda ber, boshqa hech narsa yozma: {\"name\": \"taom nomi\", \"total_g\": 0, \"kcal\": 0, \"protein\": 0, \"fat\": 0, \"carb\": 0, \"per100_kcal\": 0, \"per100_p\": 0, \"per100_f\": 0, \"per100_c\": 0}";
+  
+  try {
+    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyA2Nz0YrVmxGTugB6xfXoRg7Q5kj9YMJPY', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        contents: [{parts: [{text: systemPrompt + "\n\nFoydalanuvchi: " + input}]}],
+        generationConfig: {temperature: 0.1, maxOutputTokens: 500}
+      })
+    });
+    
+    var data = await res.json();
+    var text = data.candidates[0].content.parts[0].text.trim();
+    
+    // Remove markdown if present
+    text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+    var r = JSON.parse(text);
+    
+    var thinking = document.getElementById('ai-thinking');
+    if(thinking) thinking.remove();
+    
+    var html = '<div style="font-weight:600;margin-bottom:8px">' + r.name + '</div>' +
+      '<div style="background:rgba(29,158,117,0.08);border-radius:10px;padding:10px;margin-bottom:8px">' +
+      '<div style="font-size:12px;color:var(--t2);margin-bottom:4px">JAMI (' + r.total_g + 'g)</div>' +
+      '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
+      '<span><b>' + Math.round(r.kcal) + '</b> kkal</span>' +
+      '<span>P: <b>' + r.protein + '</b>g</span>' +
+      '<span>Y: <b>' + r.fat + '</b>g</span>' +
+      '<span>U: <b>' + r.carb + '</b>g</span>' +
+      '</div></div>' +
+      '<div style="background:rgba(0,0,0,0.04);border-radius:10px;padding:10px;margin-bottom:10px">' +
+      '<div style="font-size:12px;color:var(--t2);margin-bottom:4px">100g UCHUN</div>' +
+      '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
+      '<span><b>' + Math.round(r.per100_kcal) + '</b> kkal</span>' +
+      '<span>P: <b>' + r.per100_p + '</b>g</span>' +
+      '<span>Y: <b>' + r.per100_f + '</b>g</span>' +
+      '<span>U: <b>' + r.per100_c + '</b>g</span>' +
+      '</div></div>' +
+      '<button class="ai-log-btn" onclick="addAIToLog(this)">+ Logga qo\'shish</button>';
+    
+    // Store result for log button
+    window._aiLastResult = r;
+    
+    addAIMsg('bot', html);
+    
+  } catch(e) {
+    var thinking = document.getElementById('ai-thinking');
+    if(thinking) thinking.remove();
+    addAIMsg("bot", '<span style="color:#C62828">Xato yuz berdi. Qayta urinib ko&#39;ring.</span>');
+  }
+  
+  btn.disabled = false;
+}
+
+async function addAIToLog(btn) {
+  var r = window._aiLastResult;
+  if(!r) return;
+  if(btn) btn.disabled = true;
+  showLoading(lang==="uz"?"Qo'shilmoqda...":"Добавление...");
+  try {
+    await req('/api/food-log', 'POST', {
+      food_name: r.name,
+      grams: r.total_g,
+      kcal: Math.round(r.kcal*10)/10,
+      protein: Math.round(r.protein*10)/10,
+      fat: Math.round(r.fat*10)/10,
+      carb: Math.round(r.carb*10)/10
+    });
+    await loadToday();
+    hideLoading();
+    toast(t('added'));
+    if(btn) { btn.textContent = "✓ Qo'shildi"; btn.style.background = "#34C759"; }
+  } catch(e) {
+    hideLoading();
+    toast(t('err'));
+    if(btn) btn.disabled = false;
+  }
+}
+
 async function init() {
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today")]);
