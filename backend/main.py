@@ -97,8 +97,8 @@ def api_save_profile(data: ProfileIn, x_init_data: str = Header(default="")):
         raise HTTPException(400, f"Calculation error: {e}")
 
     if data.plan_type == "manual" and data.kcal_target and data.protein_ratio and data.fat_ratio:
-        protein_g = round(calc["lean_mass"] * data.protein_ratio, 1)
-        fat_g = round(calc["lean_mass"] * data.fat_ratio, 1)
+        protein_g = round(data.weight * data.protein_ratio, 1)
+        fat_g = round(data.weight * data.fat_ratio, 1)
         kcal_t = data.kcal_target
         carb_g = round(max(0, (kcal_t - protein_g * 4 - fat_g * 9) / 4), 1)
         macros = {"protein_g": protein_g, "fat_g": fat_g, "carb_g": carb_g}
@@ -279,10 +279,33 @@ async def api_ai_calc(data: dict, x_init_data: str = Header(default="")):
     GROQ_KEY = os.environ.get("GROQ_API_KEY", "")
     user_msg = data.get("message", "")
     
-    system_prompt = """Sen NutriBot AI yordamchisisiz. Foydalanuvchi ovqat ingredientlarini grammaj bilan yozadi.
-Sen ularning umumiy va 100g uchun BJU ni hisoblab berasan.
-FAQAT quyidagi JSON formatda javob ber, boshqa hech narsa yozma:
-{"name": "taom nomi", "total_g": 0, "kcal": 0, "protein": 0, "fat": 0, "carb": 0, "per100_kcal": 0, "per100_p": 0, "per100_f": 0, "per100_c": 0}"""
+    system_prompt = """You are a precise nutrition calculator. The user will provide food ingredients with weights in grams.
+
+YOUR TASK:
+1. For each ingredient, use USDA FoodData Central reference values (per 100g):
+   - Chicken breast cooked: 165kcal, P:31g, F:3.6g, C:0g
+   - Rice white cooked: 130kcal, P:2.7g, F:0.3g, C:28.2g
+   - Beef cooked lean: 179kcal, P:30.9g, F:5.5g, C:0g
+   - Egg whole boiled: 155kcal, P:13g, F:10.6g, C:1.1g
+   - Potato raw: 77kcal, P:2.1g, F:0.1g, C:17.5g
+   - Carrot raw: 41kcal, P:0.9g, F:0.2g, C:9.6g
+   - Onion raw: 40kcal, P:1.1g, F:0.1g, C:9.3g
+   - Sunflower oil: 884kcal, P:0g, F:100g, C:0g
+   - Butter: 717kcal, P:0.9g, F:81g, C:0.1g
+   - Bread white: 265kcal, P:8.9g, F:3.6g, C:49.2g
+   - Milk 2%: 50kcal, P:3.3g, F:2g, C:4.8g
+   - Tvorog 9%: 159kcal, P:16.7g, F:9g, C:2g
+   - Lamb cooked: 206kcal, P:28.3g, F:9.5g, C:0g
+   - Tomato: 18kcal, P:0.9g, F:0.2g, C:3.9g
+   - Cucumber: 15kcal, P:0.7g, F:0.1g, C:3.6g
+
+2. Calculate total nutrition by multiplying each ingredient's per-100g values by (weight/100)
+3. Sum all ingredients for totals
+4. Calculate per-100g values: divide totals by (total_g/100)
+5. Round all values to 1 decimal place
+
+RESPOND ONLY with this exact JSON, no other text:
+{"name": "dish name in uzbek", "total_g": 0, "kcal": 0, "protein": 0, "fat": 0, "carb": 0, "per100_kcal": 0, "per100_p": 0, "per100_f": 0, "per100_c": 0}"""
     
     async with httpx.AsyncClient() as client:
         r = await client.post(
