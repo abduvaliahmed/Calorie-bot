@@ -700,49 +700,31 @@ async function delLog(id) {
 // ── ADD FOOD ──────────────────────────────────────────────────────────────────
 var qTimer=null;
 
-var FOOD_CATS = {
-  'baliq': {icon:'🐟', keys:['losos','treska','tilyap','forel','ton','krevetka','karp','seld','kalmar']},
-  'gosht': {icon:'🥩', keys:['mol','qoy','tovuq','kurka','jigar','kabob','qozon']},
-  'sut': {icon:'🥛', keys:['sut','kefir','tvorog','yogurt','qatiq','ayran','smetana','pishloq','sariyog']},
-  'tuxum': {icon:'🥚', keys:['tuxum']},
-  'don': {icon:'🌾', keys:['guruch','grechka','yulaf','makaron','tariq','arpali','uni']},
-  'non': {icon:'🍞', keys:['non','lavash','kulcha']},
-  'sabzavot': {icon:'🥦', keys:['kartoshka','karam','sabzi','piyoz','sarimsoq','pomidor','bodring','qalampir','qovoq','baqlajon','ismaloq','lavlagi','brokkoli','gulsavzi','makkajox','noxat','rediska','qoziqorin','shalgam','asparagus']},
-  'meva': {icon:'🍎', keys:['olma','banan','apelsin','mandarin','limon','nok','shaftoli','orik','olcha','gilos','uzum','tarvuz','qovun','anor','kivi','ananas','mango','xurmo','anjir','avokado','qulupnay','malina','chernik','smorodina']},
-  'dukkak': {icon:'🫘', keys:['fasol','nohut','yasmiq','soya','mosh','edamame']},
-  'yongoq': {icon:'🥜', keys:['bodom','yerfistiq','keshyu','yongoq','pistash','urugi','kunjut','chia']},
-  'yog': {icon:'🫒', keys:['moyi','yog','maykanes','ketchup','sousi','zaytun']},
-  'uzbek': {icon:'🍲', keys:['osh','lagmon','mastava','shurva','dimlama','chuchvara','manti','somsa','norin','samsa']},
-  'shirin': {icon:'🍫', keys:['shokolad','asal','qand','halva','novvot','zefir']},
-  'ichimlik': {icon:'🥤', keys:['choy','kofe','sharbat','coca','pepsi','kapucho']},
-  'sport': {icon:'💪', keys:['protein','gainer','bcaa','kreatin']},
-  'fastfood': {icon:'🍟', keys:['burger','fri','pizza','hot-dog','shawarma']},
-};
 
-function getFoodIcon(name) {
-  var n = name.toLowerCase();
-  for(var cat in FOOD_CATS) {
-    var keys = FOOD_CATS[cat].keys;
-    var klen = keys.length;
-    for(var i=0;i!=klen;i++) {
-      if(n.indexOf(keys[i]) >= 0) return FOOD_CATS[cat].icon;
-    }
-  }
-  return '🍽';
-}
 
 function getFoodColor(name) {
   var n = name.toLowerCase();
-  if(n.match(/losos|treska|ton|forel|baliq|krevetka/)) return '#E3F2FD';
-  if(n.match(/tovuq|mol|qoy|kurka|kabob/)) return '#FCE4EC';
-  if(n.match(/sut|kefir|tvorog|yogurt|pishloq/)) return '#F3E5F5';
-  if(n.match(/tuxum/)) return '#FFF9C4';
-  if(n.match(/guruch|grechka|makaron|yulaf/)) return '#FFF3E0';
-  if(n.match(/olma|banan|meva|apelsin|kivi/)) return '#E8F5E9';
-  if(n.match(/kartoshka|sabzi|brokkoli|pomidor/)) return '#E8F5E9';
-  if(n.match(/shokolad|asal|halva/)) return '#EFEBE9';
-  if(n.match(/protein|bcaa|gainer/)) return '#E8EAF6';
-  return '#F5F5F5';
+  if(n.match(/losos|treska|ton|forel|baliq|krevetka|kalmar|seld|karp/)) return {bg:'#EBF4FB',c:'#2980B9'};
+  if(n.match(/tovuq|mol|qoy|kurka|kabob|jigar/)) return {bg:'#FCEAE8',c:'#C0392B'};
+  if(n.match(/sut|kefir|tvorog|yogurt|qatiq|ayran|smetana|pishloq|sariyog/)) return {bg:'#F5EEF8',c:'#8E44AD'};
+  if(n.match(/tuxum/)) return {bg:'#FEF9E7',c:'#B7950B'};
+  if(n.match(/guruch|grechka|makaron|yulaf|tariq|arpali|uni/)) return {bg:'#FEF5E7',c:'#CA6F1E'};
+  if(n.match(/non|lavash|kulcha/)) return {bg:'#FDF2E9',c:'#BA4A00'};
+  if(n.match(/olma|banan|apelsin|mandarin|nok|shaftoli|orik|olcha|gilos|uzum|tarvuz|qovun|anor|kivi|ananas|mango|xurmo|anjir|avokado|qulupnay|malina|chernik/)) return {bg:'#EAFAF1',c:'#1E8449'};
+  if(n.match(/kartoshka|karam|sabzi|piyoz|pomidor|bodring|qalampir|qovoq|baqlajon|ismaloq|lavlagi|brokkoli|gulsavzi|makkajox|noxat|rediska|qoziqorin|asparagus/)) return {bg:'#E9F7EF',c:'#196F3D'};
+  if(n.match(/fasol|nohut|yasmiq|soya|mosh|edamame/)) return {bg:'#FDFEFE',c:'#5D6D7E'};
+  if(n.match(/bodom|yerfistiq|keshyu|yongoq|pistash|urugi|kunjut|chia/)) return {bg:'#FEF9E7',c:'#9A7D0A'};
+  if(n.match(/moyi|yog|maykanes|ketchup|sousi|zaytun/)) return {bg:'#F9F3E3',c:'#9A7D0A'};
+  if(n.match(/osh|lagmon|mastava|shurva|dimlama|chuchvara|manti|somsa|norin|samsa/)) return {bg:'#FCEAE8',c:'#C0392B'};
+  if(n.match(/shokolad|asal|qand|halva|novvot|zefir/)) return {bg:'#F9EBEA',c:'#922B21'};
+  if(n.match(/choy|kofe|sharbat|coca|pepsi|kapucho/)) return {bg:'#EBF5FB',c:'#1A5276'};
+  if(n.match(/protein|bcaa|gainer|kreatin/)) return {bg:'#EAF2FF',c:'#1A5276'};
+  if(n.match(/burger|fri|pizza|hot-dog|shawarma/)) return {bg:'#FEF9E7',c:'#9A7D0A'};
+  return {bg:'#F2F3F4',c:'#5D6D7E'};
+}
+
+function getFoodInitial(name) {
+  return name.trim().charAt(0).toUpperCase();
 }
 var foodPage=0;
 var foodAllLoaded=false;
@@ -897,24 +879,24 @@ function showFoods(foods) {
   
   el.innerHTML='<div class="card">'+sorted.map(function(f,i){
     var isPers = f.source==="personal";
-    var icon = getFoodIcon(f.name);
-    var bg = isPers ? 'var(--tl)' : getFoodColor(f.name);
+    var clr = getFoodColor(f.name);
+    var initial = getFoodInitial(f.name);
     var src = isPers ? '<span style="font-size:9px;background:var(--teal);color:#fff;border-radius:4px;padding:1px 5px;margin-right:4px;vertical-align:middle">MEN</span>' : '';
     var editBtns = isPers ?
       '<div style="display:flex;gap:4px;flex-shrink:0">'+
-      '<button onclick="event.stopPropagation();openPersEdit(S.foods['+i+'])" style="width:28px;height:28px;border-radius:14px;background:rgba(29,158,117,0.12);border:none;cursor:pointer;font-size:12px">✏️</button>'+
-      '<button onclick="event.stopPropagation();delPersFood('+f.id+')" style="width:28px;height:28px;border-radius:14px;background:rgba(220,53,69,0.1);border:none;cursor:pointer;font-size:12px">🗑</button>'+
+      '<button onclick="event.stopPropagation();openPersEdit(S.foods['+i+'])" style="width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:13px;color:var(--t2)">✎</button>'+
+      '<button onclick="event.stopPropagation();delPersFood('+f.id+')" style="width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:13px;color:#C0392B">×</button>'+
       '</div>' :
-      '<div style="width:6px;height:6px;border-right:1.5px solid #c7c7cc;border-top:1.5px solid #c7c7cc;transform:rotate(45deg);flex-shrink:0"></div>';
-    return '<div onclick="selFood('+i+')" style="display:flex;align-items:center;padding:11px 14px;border-bottom:.5px solid var(--sep);cursor:pointer;transition:background .15s" onmousedown="this.style.background=\'rgba(0,0,0,0.04)\'" onmouseup="this.style.background=\'\'">'+
-      '<div style="width:38px;height:38px;border-radius:10px;background:'+bg+';display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;font-size:18px">'+icon+'</div>'+
+      '<div style="width:6px;height:6px;border-right:1.5px solid #c7c7cc;border-top:1.5px solid #c7c7cc;transform:rotate(45deg);flex-shrink:0;margin-left:4px"></div>';
+    return '<div onclick="selFood('+i+')" style="display:flex;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--sep);cursor:pointer;active:background:#f8f8f8">'+
+      '<div style="width:40px;height:40px;border-radius:12px;background:'+clr.bg+';display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;font-size:16px;font-weight:700;color:'+clr.c+'">'+initial+'</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+src+f.name+'</div>'+
-        '<div style="display:flex;gap:8px;margin-top:2px;font-size:12px;color:var(--t2)">'+
+        '<div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)">'+src+f.name+'</div>'+
+        '<div style="display:flex;gap:10px;margin-top:3px;font-size:12px;color:var(--t2)">'+
           '<span style="color:var(--teal);font-weight:600">'+Math.round(f.kcal)+' kkal</span>'+
-          '<span>B:<b>'+f.protein+'</b></span>'+
-          '<span>Y:<b>'+f.fat+'</b></span>'+
-          '<span>U:<b>'+f.carb+'</b></span>'+
+          '<span>B '+f.protein+'g</span>'+
+          '<span>Y '+f.fat+'g</span>'+
+          '<span>U '+f.carb+'g</span>'+
         '</div>'+
       '</div>'+
       editBtns+
