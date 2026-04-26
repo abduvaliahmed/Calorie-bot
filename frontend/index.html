@@ -248,6 +248,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <button class="btn bg2" onclick="document.getElementById('pers-panel').style.display='none'">Bekor qilish</button>
         </div>
 
+        <!-- Personal food edit panel -->
+        <div id="pers-edit-panel" style="display:none;margin-bottom:16px">
+          <div class="sec">Mahsulotni tahrirlash</div>
+          <div class="ig">
+            <div class="ir"><div class="ir-l">Nom</div><input type="text" id="pe-name"/></div>
+            <div class="ir">
+              <div class="ir-l">Birlik</div>
+              <select id="pe-unit">
+                <option value="100">100g uchun</option>
+                <option value="1">1 dona uchun</option>
+              </select>
+            </div>
+            <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="pe-kcal"/></div>
+            <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="pe-p"/></div>
+            <div class="ir"><div class="ir-l">Yog' (g)</div><input type="number" id="pe-f"/></div>
+            <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="pe-c"/></div>
+          </div>
+          <button class="btn bp" onclick="savePersEdit()">Saqlash</button>
+          <button class="btn bg2" onclick="document.getElementById('pers-edit-panel').style.display='none'">Bekor</button>
+        </div>
+
         <div style="text-align:center;margin-bottom:16px">
           <button class="btn bg2" id="pers-btn" style="width:auto;padding:10px 20px;font-size:14px" onclick="togglePers()">+ O'z mahsulotimni qo'shish</button>
         </div>
@@ -668,6 +689,58 @@ function initFood() {
   loadFoods();
 }
 
+var _persEditId = null;
+
+function openPersEdit(food) {
+  _persEditId = food.id;
+  document.getElementById("pe-name").value = food.name||"";
+  document.getElementById("pe-unit").value = food.per_grams===1?"1":"100";
+  document.getElementById("pe-kcal").value = food.kcal||0;
+  document.getElementById("pe-p").value = food.protein||0;
+  document.getElementById("pe-f").value = food.fat||0;
+  document.getElementById("pe-c").value = food.carb||0;
+  document.getElementById("pers-edit-panel").style.display = "block";
+  document.getElementById("pers-edit-panel").scrollIntoView({behavior:"smooth"});
+}
+
+async function savePersEdit() {
+  if(!_persEditId) return;
+  var name = document.getElementById("pe-name").value.trim();
+  var kcal = parseFloat(document.getElementById("pe-kcal").value)||0;
+  var protein = parseFloat(document.getElementById("pe-p").value)||0;
+  var fat = parseFloat(document.getElementById("pe-f").value)||0;
+  var carb = parseFloat(document.getElementById("pe-c").value)||0;
+  var pg = parseInt(document.getElementById("pe-unit").value)||100;
+  if(!name){toast(t("en"));return;}
+  if(!kcal){toast(t("ek"));return;}
+  showLoading(lang==="uz"?"Saqlanmoqda...":"Сохранение...");
+  try {
+    await req("/api/food/personal/"+_persEditId,"PUT",{name:name,kcal:kcal,protein:protein,fat:fat,carb:carb,per_grams:pg});
+    hideLoading();
+    toast(t("saved"));
+    document.getElementById("pers-edit-panel").style.display = "none";
+    _persEditId = null;
+    loadFoods();
+  } catch(e) {
+    hideLoading();
+    toast(t("err"));
+  }
+}
+
+async function delPersFood(id) {
+  if(!confirm(lang==="uz"?"O'chirishni tasdiqlaysizmi?":"Удалить?")) return;
+  showLoading(lang==="uz"?"O'chirilmoqda...":"Удаление...");
+  try {
+    await req("/api/food/personal/"+id,"DELETE");
+    hideLoading();
+    toast(t("deleted"));
+    loadFoods();
+  } catch(e) {
+    hideLoading();
+    toast(t("err"));
+  }
+}
+
 async function loadFoods() {
   foodPage=0;
   foodAllLoaded=false;
@@ -753,7 +826,13 @@ function showFoods(foods) {
   S.foods = sorted;
   
   el.innerHTML='<div class="card">'+sorted.map(function(f,i){
-    var src=f.source==="personal"?'<span style="font-size:10px;background:var(--tl);color:var(--td);border-radius:4px;padding:1px 5px;margin-right:4px">Men</span>':"";
+    var isPers = f.source==="personal";
+    var src=isPers?'<span style="font-size:10px;background:var(--tl);color:var(--td);border-radius:4px;padding:1px 5px;margin-right:4px">Men</span>':"";
+    var editBtns=isPers?
+      '<div style="display:flex;gap:4px">'+
+      '<button onclick="event.stopPropagation();openPersEdit(S.foods['+i+'])" style="width:28px;height:28px;border-radius:14px;background:var(--tl);border:none;cursor:pointer;font-size:12px">✏️</button>'+
+      '<button onclick="event.stopPropagation();delPersFood('+f.id+')" style="width:28px;height:28px;border-radius:14px;background:#FEEBEB;border:none;cursor:pointer;font-size:12px">🗑</button>'+
+      '</div>':'<div class="row-r"><div class="chev"></div></div>';
     return '<div class="row" onclick="selFood('+i+')" style="cursor:pointer">'+
       '<div class="row-t">'+
         '<div class="row-l">'+src+f.name+'</div>'+
@@ -764,7 +843,7 @@ function showFoods(foods) {
           '<span>U:<b>'+f.carb+'</b></span>'+
         '</div>'+
       '</div>'+
-      '<div class="row-r"><div class="chev"></div></div>'+
+      editBtns+
     '</div>';
   }).join("")+'</div>';
 }

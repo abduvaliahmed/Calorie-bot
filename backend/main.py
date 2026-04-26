@@ -181,6 +181,25 @@ def api_add_personal(data: dict, x_init_data: str = Header(default="")):
     add_personal_food(uid, data)
     return {"ok": True}
 
+@app.put("/api/food/personal/{food_id}")
+def api_edit_personal(food_id: int, data: dict, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        "UPDATE food_personal SET name=%s,kcal=%s,protein=%s,fat=%s,carb=%s,per_grams=%s WHERE id=%s AND user_id=%s",
+        (data.get("name",""),data.get("kcal",0),data.get("protein",0),data.get("fat",0),data.get("carb",0),data.get("per_grams",100),food_id,uid)
+    )
+    c.commit(); release(c)
+    return {"ok": True}
+
+@app.delete("/api/food/personal/{food_id}")
+def api_del_personal(food_id: int, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    c = conn(); cur = c.cursor()
+    cur.execute("DELETE FROM food_personal WHERE id=%s AND user_id=%s", (food_id, uid))
+    c.commit(); release(c)
+    return {"ok": True}
+
 @app.get("/api/food/personal")
 def api_get_personal(x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
