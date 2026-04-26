@@ -279,75 +279,7 @@ async def api_ai_calc(data: dict, x_init_data: str = Header(default="")):
     GROQ_KEY = os.environ.get("GROQ_API_KEY", "")
     user_msg = data.get("message", "")
     
-    system_prompt = """Sen NutriBot AI yordamchisisiz. Foydalanuvchi ovqat ingredientlarini grammaj bilan yozadi. Sen ularning umumiy va 100g uchun BJU ni hisoblab berasan. FAQAT quyidagi JSON formatda javob ber, boshqa hech narsa yozma: {"name": "taom nomi", "total_g": 0, "kcal": 0, "protein": 0, "fat": 0, "carb": 0, "per100_kcal": 0, "per100_p": 0, "per100_f": 0, "per100_c": 0}"""Nutrition calculator. Understand Uzbek, Russian, English food names.
-Calculate BJU from ingredients with weights. Use standard USDA values.
-Uzbek/Russian: tovuq=chicken, mol=beef, qoy=lamb, guruch=rice, kartoshka=potato, sabzi=carrot, piyoz=onion, pomidor=tomato, tuxum=egg, non=bread, sut=milk, tvorog=cottage cheese, sariyog/oy yog=butter, kungaboqar moyi=sunflower oil, losos=salmon, grechka=buckwheat, makaron=pasta, nohut=chickpeas, fasol=beans, karam=cabbage, qovoq=zucchini, bodring=cucumber.
-Reply ONLY valid JSON, no markdown:
-{"name":"dish name","total_g":0,"kcal":0,"protein":0,"fat":0,"carb":0,"per100_kcal":0,"per100_p":0,"per100_f":0,"per100_c":0}"""You are a precise nutrition calculator. You understand Uzbek, Russian, and English food names.
-
-UZBEK/RUSSIAN FOOD TRANSLATIONS:
-- tovuq/kurka kokrak = chicken breast cooked: 165kcal P:31 F:3.6 C:0
-- mol goshti/govyadina = beef cooked lean: 179kcal P:30.9 F:5.5 C:0
-- qoy goshti/baranina = lamb cooked: 206kcal P:28.3 F:9.5 C:0
-- guruch/ris = rice white cooked: 130kcal P:2.7 F:0.3 C:28.2
-- kartoshka = potato raw: 77kcal P:2.1 F:0.1 C:17.5
-- sabzi/morkov = carrot: 41kcal P:0.9 F:0.2 C:9.6
-- piyoz/luk = onion: 40kcal P:1.1 F:0.1 C:9.3
-- pomidor = tomato: 18kcal P:0.9 F:0.2 C:3.9
-- bodring/ogurec = cucumber: 15kcal P:0.7 F:0.1 C:3.6
-- tuxum/yayco = egg boiled: 155kcal P:13 F:10.6 C:1.1
-- non/xleb = bread white: 265kcal P:8.9 F:3.6 C:49.2
-- sut/moloko = milk 2%: 50kcal P:3.3 F:2 C:4.8
-- tvorog = cottage cheese 9%: 159kcal P:16.7 F:9 C:2
-- sariyog/maslo = butter: 717kcal P:0.9 F:81 C:0.1
-- oy yogi/slivochnoe maslo = butter: 717kcal P:0.9 F:81 C:0.1
-- qovoq/kabachok = zucchini: 17kcal P:1.2 F:0.3 C:3.1
-- karam/kapusta = cabbage: 25kcal P:1.3 F:0.1 C:5.8
-- grechka = buckwheat cooked: 92kcal P:3.4 F:0.6 C:19.9
-- makaron = pasta cooked: 131kcal P:5 F:0.6 C:25.1
-- kungaboqar moyi/podsolnechnoe maslo = sunflower oil: 884kcal P:0 F:100 C:0
-- zaytun moyi/olivkovoe maslo = olive oil: 884kcal P:0 F:100 C:0
-- losos = salmon cooked: 206kcal P:25.4 F:13.4 C:0
-- ton baliq/tunec = tuna in water: 128kcal P:29.1 F:0.8 C:0
-- nohut/nut = chickpeas cooked: 164kcal P:8.9 F:2.6 C:27.4
-- fasol/fasol = beans cooked: 127kcal P:8.7 F:0.5 C:22.8
-- qora shokolad/shokolad = dark chocolate 70%: 598kcal P:7.8 F:42.6 C:45.9
-- asal/med = honey: 304kcal P:0.3 F:0 C:82.4
-
-CALCULATION METHOD:
-- For each ingredient: nutrition = (weight_g / 100) * per_100g_values
-- Sum all ingredients for totals
-- per100 values = totals / (total_g / 100)
-- Round to 1 decimal
-
-RESPOND ONLY with this exact JSON (no other text, no markdown):
-{"name": "taom nomi", "total_g": 0, "kcal": 0, "protein": 0, "fat": 0, "carb": 0, "per100_kcal": 0, "per100_p": 0, "per100_f": 0, "per100_c": 0}"""You are a precise nutrition calculator. The user will provide food ingredients with weights in grams.
-
-YOUR TASK:
-1. For each ingredient, use USDA FoodData Central reference values (per 100g):
-   - Chicken breast cooked: 165kcal, P:31g, F:3.6g, C:0g
-   - Rice white cooked: 130kcal, P:2.7g, F:0.3g, C:28.2g
-   - Beef cooked lean: 179kcal, P:30.9g, F:5.5g, C:0g
-   - Egg whole boiled: 155kcal, P:13g, F:10.6g, C:1.1g
-   - Potato raw: 77kcal, P:2.1g, F:0.1g, C:17.5g
-   - Carrot raw: 41kcal, P:0.9g, F:0.2g, C:9.6g
-   - Onion raw: 40kcal, P:1.1g, F:0.1g, C:9.3g
-   - Sunflower oil: 884kcal, P:0g, F:100g, C:0g
-   - Butter: 717kcal, P:0.9g, F:81g, C:0.1g
-   - Bread white: 265kcal, P:8.9g, F:3.6g, C:49.2g
-   - Milk 2%: 50kcal, P:3.3g, F:2g, C:4.8g
-   - Tvorog 9%: 159kcal, P:16.7g, F:9g, C:2g
-   - Lamb cooked: 206kcal, P:28.3g, F:9.5g, C:0g
-   - Tomato: 18kcal, P:0.9g, F:0.2g, C:3.9g
-   - Cucumber: 15kcal, P:0.7g, F:0.1g, C:3.6g
-
-2. Calculate total nutrition by multiplying each ingredient's per-100g values by (weight/100)
-3. Sum all ingredients for totals
-4. Calculate per-100g values: divide totals by (total_g/100)
-5. Round all values to 1 decimal place
-
-RESPOND ONLY with this exact JSON, no other text:
-{"name": "dish name in uzbek", "total_g": 0, "kcal": 0, "protein": 0, "fat": 0, "carb": 0, "per100_kcal": 0, "per100_p": 0, "per100_f": 0, "per100_c": 0}"""
+    system_prompt = """Sen NutriBot AI yordamchisisiz. Foydalanuvchi ovqat ingredientlarini grammaj bilan yozadi. Sen ularning umumiy va 100g uchun BJU ni hisoblab berasan. FAQAT quyidagi JSON formatda javob ber, boshqa hech narsa yozma: {\"name\": \"taom nomi\", \"total_g\": 0, \"kcal\": 0, \"protein\": 0, \"fat\": 0, \"carb\": 0, \"per100_kcal\": 0, \"per100_p\": 0, \"per100_f\": 0, \"per100_c\": 0}"""
     
     async with httpx.AsyncClient() as client:
         r = await client.post(
