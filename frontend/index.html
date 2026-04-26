@@ -624,9 +624,9 @@ function renderHome() {
         '<div class="ring"><svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">'+circ+'</svg><div class="ring-in"><span class="ring-pct">'+kp+'%</span><span class="ring-sub">done</span></div></div>'+
       '</div>'+
       '<div style="display:flex;gap:8px">'+
-        '<div class="mc"><div class="mc-l">'+t("prot")+'</div><div class="mc-v">'+Math.round(tot.protein)+'g</div><div class="mc-b"><div class="mc-f" style="width:'+pp+'%"></div></div></div>'+
-        '<div class="mc"><div class="mc-l">'+t("fat")+'</div><div class="mc-v">'+Math.round(tot.fat)+'g</div><div class="mc-b"><div class="mc-f" style="width:'+fp+'%"></div></div></div>'+
-        '<div class="mc"><div class="mc-l">'+t("carb")+'</div><div class="mc-v">'+Math.round(tot.carb)+'g</div><div class="mc-b"><div class="mc-f" style="width:'+cp+'%"></div></div></div>'+
+        '<div class="mc"><div class="mc-l">'+t("prot")+'</div><div class="mc-v">'+Math.round(tot.protein)+'<span style="font-size:10px;opacity:0.7;font-weight:400">/'+Math.round(tar.protein)+'</span>g</div><div class="mc-b"><div class="mc-f" style="width:'+pp+'%"></div></div></div>'+
+        '<div class="mc"><div class="mc-l">'+t("fat")+'</div><div class="mc-v">'+Math.round(tot.fat)+'<span style="font-size:10px;opacity:0.7;font-weight:400">/'+Math.round(tar.fat)+'</span>g</div><div class="mc-b"><div class="mc-f" style="width:'+fp+'%"></div></div></div>'+
+        '<div class="mc"><div class="mc-l">'+t("carb")+'</div><div class="mc-v">'+Math.round(tot.carb)+'<span style="font-size:10px;opacity:0.7;font-weight:400">/'+Math.round(tar.carb)+'</span>g</div><div class="mc-b"><div class="mc-f" style="width:'+cp+'%"></div></div></div>'+
       '</div>'+
     '</div>'+
     '<div class="g2">'+
