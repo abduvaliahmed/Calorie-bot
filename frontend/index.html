@@ -355,6 +355,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     </div>
 
 
+
+    <!-- CALENDAR -->
+    <div class="screen" id="s-calendar">
+      <div class="hdr">
+        <div class="hdr-row">
+          <div class="back" onclick="go('home')">&#8249; Orqaga</div>
+          <div style="font-size:17px;font-weight:600">Tarix</div>
+          <div style="width:60px"></div>
+        </div>
+      </div>
+      <div class="scroll">
+        <!-- Week chart -->
+        <div class="sec">Haftalik kaloriya</div>
+        <div class="card" style="padding:16px;margin-bottom:14px">
+          <div id="cal-week-chart" class="bc"></div>
+        </div>
+        <!-- Date selector -->
+        <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px" id="cal-days"></div>
+        <!-- Day logs -->
+        <div id="cal-logs"></div>
+      </div>
+    </div>
+
     <!-- AI -->
     <div class="screen" id="s-ai">
       <div class="hdr">
@@ -620,6 +643,7 @@ function go(screen) {
   else if(screen==="profile")renderProfile();
   else if(screen==="admin")loadAdmin();
   else if(screen==="ai")initAI();
+  else if(screen==="calendar")initCalendar();
 }
 
 // ── HOME ──────────────────────────────────────────────────────────────────────
@@ -656,7 +680,7 @@ function renderHome() {
       '<div class="sc"><div class="sc-l">TDEE</div><div class="sc-v">'+fmt(u.tdee||0)+'<span class="sc-u"> kkal</span></div><div style="font-size:11px;color:var(--t2);margin-top:4px">x'+(u.activity||1)+'</div></div>'+
       '<div class="sc"><div class="sc-l">'+t("lean")+'</div><div class="sc-v">'+(u.lean_mass||0)+'<span class="sc-u"> kg</span></div></div>'+
     '</div>'+
-    '<div class="sec">'+t("today")+'</div>'+lhtml;
+    '<div class="sec" style="display:flex;justify-content:space-between;align-items:center">'+t("today")+'<button onclick="go(\"calendar\")" style="font-size:12px;color:var(--teal);background:none;border:none;cursor:pointer;font-weight:600">'+( lang==="uz"?"Tarix":"История")+' ›</button></div>'+lhtml;
 }
 
 async function delLog(id) {
@@ -1351,6 +1375,121 @@ async function saveLogEdit() {
   } catch(e) {
     hideLoading();
     toast(t("err"));
+  }
+}
+
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+var calSelectedDate = null;
+
+function formatDate(d) {
+  return d.toISOString().split("T")[0];
+}
+
+function formatDateDisplay(dateStr) {
+  var d = new Date(dateStr + "T00:00:00");
+  var today = formatDate(new Date());
+  var yest = formatDate(new Date(Date.now() - 86400000));
+  if(dateStr === today) return lang==="uz"?"Bugun":"Сегодня";
+  if(dateStr === yest) return lang==="uz"?"Kecha":"Вчера";
+  var months = lang==="uz"?
+    ["Yan","Fev","Mar","Apr","May","Iyn","Iyl","Avg","Sen","Okt","Noy","Dek"]:
+    ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
+  return d.getDate()+" "+months[d.getMonth()];
+}
+
+async function initCalendar() {
+  calSelectedDate = formatDate(new Date());
+  try {
+    var r = await req("/api/week");
+    var days = r.days || [];
+    var u = S.user || {};
+    var target = u.kcal_target || 2000;
+    
+    // Week chart
+    var chartEl = document.getElementById("cal-week-chart");
+    if(chartEl) {
+      chartEl.innerHTML = days.map(function(d){
+        var pct = Math.min(100, Math.round(d.kcal/target*100));
+        var color = d.kcal > target*1.1 ? "var(--ora)" : "var(--teal)";
+        var isToday = d.date === formatDate(new Date());
+        return '<div class="bc-c">'+
+          '<div class="bc-w"><div class="bc-f" style="height:'+pct+'%;background:'+color+';">'+(isToday?'<div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:2px;background:var(--teal)"></div>':'')+'</div></div>'+
+          '<div class="bc-l" style="'+(isToday?'color:var(--teal);font-weight:700':'')+'">'+formatDateDisplay(d.date).substring(0,3)+'</div>'+
+        '</div>';
+      }).join("");
+    }
+    
+    // Day pills
+    var daysEl = document.getElementById("cal-days");
+    if(daysEl) {
+      var pillsHtml = "";
+      for(var di=0; di<days.length; di++){
+        var d2 = days[di];
+        var isToday2 = d2.date === formatDate(new Date());
+        var isSel2 = d2.date === calSelectedDate;
+        var bg = isSel2 ? "var(--teal)" : "var(--card)";
+        var clr = isSel2 ? "#fff" : "var(--t1)";
+        var fw = isToday2 ? "700" : "500";
+        var kcalTxt = d2.kcal>0 ? '<br><span style="font-size:10px;opacity:0.8">'+Math.round(d2.kcal)+' kkal</span>' : '<br><span style="font-size:10px;opacity:0.4">—</span>';
+        pillsHtml += '<button onclick="selectCalDay(this.dataset.date)" data-date="'+d2.date+'" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:'+fw+';background:'+bg+';color:'+clr+';box-shadow:0 1px 4px rgba(0,0,0,0.08)">'+formatDateDisplay(d2.date)+kcalTxt+'</button>';
+      }
+      daysEl.innerHTML = pillsHtml;
+    }
+    
+    loadCalDay(calSelectedDate);
+  } catch(e) { console.error(e); }
+}
+
+async function selectCalDay(date) {
+  calSelectedDate = date;
+  initCalendar();
+}
+
+async function loadCalDay(date) {
+  var el = document.getElementById("cal-logs");
+  if(!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div>';
+  try {
+    var r = await req("/api/day/"+date);
+    var logs = r.logs || [];
+    var tot = r.totals || {};
+    var u = S.user || {};
+    
+    var dateTitle = '<div class="sec">'+formatDateDisplay(date)+'</div>';
+    
+    if(!logs.length) {
+      el.innerHTML = dateTitle + '<div class="emp"><div class="emp-ic">🍽</div><div class="emp-t">'+(lang==="uz"?"Bu kunda ovqat yo'q":"В этот день ничего нет")+'</div></div>';
+      return;
+    }
+    
+    // Totals card
+    var totCard = '<div class="card" style="padding:14px;margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+        '<div style="font-size:15px;font-weight:700">'+Math.round(tot.kcal)+' kkal</div>'+
+        '<div style="font-size:13px;color:var(--t2)">/ '+(u.kcal_target||2000)+' kkal</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:12px">'+
+        '<span style="font-size:13px">P: <b>'+Math.round(tot.protein)+'g</b></span>'+
+        '<span style="font-size:13px">Y: <b>'+Math.round(tot.fat)+'g</b></span>'+
+        '<span style="font-size:13px">U: <b>'+Math.round(tot.carb)+'g</b></span>'+
+      '</div>'+
+    '</div>';
+    
+    var logsHtml = logs.map(function(l){
+      return '<div class="fi">'+
+        '<div class="fi-ic">'+fIcon(l.food_name)+'</div>'+
+        '<div class="fi-inf">'+
+          '<div class="fi-n">'+l.food_name+'</div>'+
+          '<div class="fi-m">'+l.grams+'g · P:'+l.protein+'g Y:'+l.fat+'g U:'+l.carb+'g</div>'+
+        '</div>'+
+        '<div class="fi-k">'+Math.round(l.kcal)+' kkal</div>'+
+      '</div>';
+    }).join("");
+    
+    el.innerHTML = dateTitle + totCard + logsHtml;
+  } catch(e) {
+    el.innerHTML = '<div class="emp"><div class="emp-ic">❌</div><div class="emp-t">Xato</div></div>';
   }
 }
 

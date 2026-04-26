@@ -131,6 +131,39 @@ def api_calc_preview(data: dict):
     except Exception as e:
         raise HTTPException(400, str(e))
 
+@app.get("/api/day/{date}")
+def api_get_day(date: str, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        "SELECT id,food_name,grams,kcal,protein,fat,carb,logged_at FROM food_log WHERE user_id=%s AND DATE(logged_at)=%s ORDER BY logged_at",
+        (uid, date)
+    )
+    logs = [dict(r) for r in cur.fetchall()]
+    totals = {"kcal":0,"protein":0,"fat":0,"carb":0}
+    for l in logs:
+        for k in totals: totals[k] += float(l.get(k,0) or 0)
+    for k in totals: totals[k] = round(totals[k],1)
+    release(c)
+    return {"date": date, "logs": logs, "totals": totals}
+
+@app.get("/api/week")
+def api_get_week(x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    from datetime import date, timedelta
+    c = conn(); cur = c.cursor()
+    days = []
+    for i in range(6, -1, -1):
+        d = (date.today() - timedelta(days=i)).isoformat()
+        cur.execute(
+            "SELECT COALESCE(SUM(kcal),0) as kcal, COALESCE(SUM(protein),0) as protein, COALESCE(SUM(fat),0) as fat, COALESCE(SUM(carb),0) as carb FROM food_log WHERE user_id=%s AND DATE(logged_at)=%s",
+            (uid, d)
+        )
+        row = dict(cur.fetchone())
+        days.append({"date": d, "kcal": round(float(row["kcal"]),1), "protein": round(float(row["protein"]),1), "fat": round(float(row["fat"]),1), "carb": round(float(row["carb"]),1)})
+    release(c)
+    return {"days": days}
+
 @app.get("/api/today")
 def api_today(x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
