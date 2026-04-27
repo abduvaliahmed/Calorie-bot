@@ -286,27 +286,92 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         <div id="food-sentinel" style="height:20px"></div>
 
         <!-- Gram panel -->
-        <div id="gram-panel" style="display:none">
-          <div class="sec" id="gp-name">Mahsulot</div>
-          <div class="rc">
-            <div class="rc-t" id="gp-per">100g uchun</div>
-            <div class="rc-r"><span class="rc-l">Kaloriya</span><span class="rc-v" id="g100-k">-</span></div>
-            <div class="rc-r"><span class="rc-l">Oqsil</span><span class="rc-v" id="g100-p">-</span></div>
-            <div class="rc-r"><span class="rc-l">Yog'</span><span class="rc-v" id="g100-f">-</span></div>
-            <div class="rc-r"><span class="rc-l">Uglevod</span><span class="rc-v" id="g100-c">-</span></div>
+        <div id="gram-panel" style="display:none;margin-top:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:17px;font-weight:700;color:var(--t1)" id="gp-name">Mahsulot</div>
+            <div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 8px;border-radius:10px" id="gp-per">100g uchun</div>
           </div>
-          <div class="ig">
-            <div class="ir"><div class="ir-l" id="gram-lbl">Miqdor (g)</div><input type="number" id="gram-val" value="100" min="1" oninput="onGram()"/></div>
+
+          <!-- Creative circle + macros -->
+          <div style="background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px;display:flex;align-items:center;gap:20px">
+            <!-- SVG doira -->
+            <div style="position:relative;flex-shrink:0;width:90px;height:90px">
+              <svg width="90" height="90" viewBox="0 0 90 90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="var(--sep)" stroke-width="6"/>
+                <circle id="gp-arc-p" cx="45" cy="45" r="38" fill="none" stroke="#4CD964" stroke-width="6" stroke-linecap="round" stroke-dasharray="0 239"/>
+                <circle id="gp-arc-f" cx="45" cy="45" r="38" fill="none" stroke="#FF9500" stroke-width="6" stroke-linecap="round" stroke-dasharray="0 239" stroke-dashoffset="0"/>
+                <circle id="gp-arc-c" cx="45" cy="45" r="38" fill="none" stroke="#5AC8FA" stroke-width="6" stroke-linecap="round" stroke-dasharray="0 239" stroke-dashoffset="0"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:18px;font-weight:800;color:var(--t1)" id="g100-k">-</div>
+                <div style="font-size:9px;color:var(--t2)">kkal</div>
+              </div>
+            </div>
+            <!-- Macros -->
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:3px;height:28px;border-radius:2px;background:#4CD964;flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:10px;color:var(--t2)" id="gp-lbl-p">Oqsil</div>
+                  <div style="font-size:16px;font-weight:700;color:#4CD964" id="g100-p">-</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:3px;height:28px;border-radius:2px;background:#FF9500;flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:10px;color:var(--t2)" id="gp-lbl-f">Yog'</div>
+                  <div style="font-size:16px;font-weight:700;color:#FF9500" id="g100-f">-</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:3px;height:28px;border-radius:2px;background:#5AC8FA;flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:10px;color:var(--t2)" id="gp-lbl-c">Uglevod</div>
+                  <div style="font-size:16px;font-weight:700;color:#5AC8FA" id="g100-c">-</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="rc">
-            <div class="rc-t" id="gr-title">100g uchun hisob</div>
-            <div class="rc-r"><span class="rc-l">Kaloriya</span><span class="rc-v" id="gr-k">-</span></div>
-            <div class="rc-r"><span class="rc-l">Oqsil</span><span class="rc-v" id="gr-p">-</span></div>
-            <div class="rc-r"><span class="rc-l">Yog'</span><span class="rc-v" id="gr-f">-</span></div>
-            <div class="rc-r"><span class="rc-l">Uglevod</span><span class="rc-v" id="gr-c">-</span></div>
+
+          <!-- Amount input -->
+          <div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:10px">
+            <div style="font-size:12px;color:var(--t2);margin-bottom:8px" id="gram-lbl">Miqdor (g)</div>
+            <input type="number" id="gram-val" value="100" min="1" oninput="onGram()"
+              style="width:100%;border:none;background:var(--bg);border-radius:12px;padding:12px 16px;font-size:22px;font-weight:700;color:var(--t1);text-align:center;outline:none;box-sizing:border-box"/>
           </div>
-          <button class="btn bp" onclick="addLog()">Qo'shish</button>
+
+          <!-- Calculated result -->
+          <div id="gr-result-card" style="background:rgba(29,158,117,0.08);border-radius:16px;padding:16px;margin-bottom:12px">
+            <div style="font-size:11px;color:var(--t2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px" id="gr-title">Hisob</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end">
+              <div>
+                <div style="font-size:32px;font-weight:800;color:var(--teal)" id="gr-k">-</div>
+                <div style="font-size:11px;color:var(--t2)">kkal</div>
+              </div>
+              <div style="display:flex;gap:16px">
+                <div style="text-align:center">
+                  <div style="font-size:15px;font-weight:700;color:#4CD964" id="gr-p">-</div>
+                  <div style="font-size:10px;color:var(--t2)" id="gr-lbl-p">Oqsil</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:15px;font-weight:700;color:#FF9500" id="gr-f">-</div>
+                  <div style="font-size:10px;color:var(--t2)" id="gr-lbl-f">Yog'</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:15px;font-weight:700;color:#5AC8FA" id="gr-c">-</div>
+                  <div style="font-size:10px;color:var(--t2)" id="gr-lbl-c">Uglevod</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn bp" onclick="addLog()" style="font-size:16px;font-weight:700">+ Qo'shish</button>
         </div>
+
+        <!-- Scroll to top button -->
+        <button id="scroll-top-btn" onclick="scrollToFoodTop()" style="display:none;position:fixed;bottom:90px;right:16px;width:42px;height:42px;border-radius:21px;background:var(--teal);border:none;cursor:pointer;box-shadow:0 4px 12px rgba(29,158,117,0.4);z-index:100;display:none;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
     </div>
 
@@ -972,21 +1037,63 @@ function showFoods(foods) {
   }).join("")+'</div>';
 }
 
+function updateFoodArc(protein, fat, carb) {
+  var total = protein*4 + fat*9 + carb*4;
+  if(total <= 0) return;
+  var circ = 2 * Math.PI * 38;
+  var pLen = (protein*4/total)*circ;
+  var fLen = (fat*9/total)*circ;
+  var cLen = (carb*4/total)*circ;
+  var pOff = 0;
+  var fOff = -(pLen);
+  var cOff = -(pLen + fLen);
+  var arcP = document.getElementById("gp-arc-p");
+  var arcF = document.getElementById("gp-arc-f");
+  var arcC = document.getElementById("gp-arc-c");
+  if(arcP) { arcP.setAttribute("stroke-dasharray", pLen+" "+(circ-pLen)); arcP.setAttribute("stroke-dashoffset", "0"); }
+  if(arcF) { arcF.setAttribute("stroke-dasharray", fLen+" "+(circ-fLen)); arcF.setAttribute("stroke-dashoffset", fOff); }
+  if(arcC) { arcC.setAttribute("stroke-dasharray", cLen+" "+(circ-cLen)); arcC.setAttribute("stroke-dashoffset", cOff); }
+}
+
+function scrollToFoodTop() {
+  var addScreen = document.getElementById("s-add-food");
+  if(addScreen) {
+    var scroll = addScreen.querySelector(".scroll");
+    if(scroll) scroll.scrollTo({top:0, behavior:"smooth"});
+  }
+}
+
 function selFood(i) {
   var f=S.foods[i]; if(!f)return;
   S.sel=f;
   var isUnit=f.per_grams===1;
-  document.getElementById("gp-name").textContent=f.name;
+  var displayName = (lang==="ru" && f.name_ru) ? f.name_ru : f.name;
+  document.getElementById("gp-name").textContent=displayName;
   document.getElementById("gp-per").textContent=isUnit?t("per1"):t("per100");
-  document.getElementById("g100-k").textContent=Math.round(f.kcal)+" kkal";
+  document.getElementById("g100-k").textContent=Math.round(f.kcal);
   document.getElementById("g100-p").textContent=f.protein+"g";
   document.getElementById("g100-f").textContent=f.fat+"g";
   document.getElementById("g100-c").textContent=f.carb+"g";
+  // Labels
+  var isRu = lang==="ru";
+  if(document.getElementById("gp-lbl-p")) document.getElementById("gp-lbl-p").textContent=isRu?"Белки":"Oqsil";
+  if(document.getElementById("gp-lbl-f")) document.getElementById("gp-lbl-f").textContent=isRu?"Жиры":"Yog'";
+  if(document.getElementById("gp-lbl-c")) document.getElementById("gp-lbl-c").textContent=isRu?"Углев.":"Uglevod";
+  if(document.getElementById("gr-lbl-p")) document.getElementById("gr-lbl-p").textContent=isRu?"Белки":"Oqsil";
+  if(document.getElementById("gr-lbl-f")) document.getElementById("gr-lbl-f").textContent=isRu?"Жиры":"Yog'";
+  if(document.getElementById("gr-lbl-c")) document.getElementById("gr-lbl-c").textContent=isRu?"Углев.":"Uglevod";
   document.getElementById("gram-lbl").textContent=isUnit?t("am_d"):t("am_g");
   document.getElementById("gram-val").value=isUnit?1:100;
   document.getElementById("gram-panel").style.display="block";
+  updateFoodArc(f.protein, f.fat, f.carb);
   onGram();
-  document.getElementById("gram-panel").scrollIntoView({behavior:"smooth"});
+  // Scroll to gram panel smoothly
+  setTimeout(function() {
+    document.getElementById("gram-panel").scrollIntoView({behavior:"smooth", block:"start"});
+    // Show scroll-to-top button
+    var tb = document.getElementById("scroll-top-btn");
+    if(tb) tb.style.display = "flex";
+  }, 100);
 }
 
 function onGram() {
@@ -994,8 +1101,9 @@ function onGram() {
   var g=parseFloat(document.getElementById("gram-val").value)||0;
   var r=g/f.per_grams;
   var u=f.per_grams===1?" dona":"g";
-  document.getElementById("gr-title").textContent=g+u+" uchun hisob";
-  document.getElementById("gr-k").textContent=Math.round(f.kcal*r)+" kkal";
+  var isRu=lang==="ru";
+  document.getElementById("gr-title").textContent=g+u+(isRu?" — расчёт":" uchun hisob");
+  document.getElementById("gr-k").textContent=Math.round(f.kcal*r);
   document.getElementById("gr-p").textContent=fd(f.protein*r)+"g";
   document.getElementById("gr-f").textContent=fd(f.fat*r)+"g";
   document.getElementById("gr-c").textContent=fd(f.carb*r)+"g";
@@ -1010,7 +1118,8 @@ async function addLog() {
   showLoading(lang==="uz"?"Qo'shilmoqda...":"Добавление...");
   var r=g/f.per_grams;
   try{
-    await req("/api/food-log","POST",{food_name:f.name,grams:g,protein:fd(f.protein*r),fat:fd(f.fat*r),carb:fd(f.carb*r),kcal:fd(f.kcal*r)});
+    var logName = (lang==="ru" && f.name_ru) ? f.name_ru : f.name;
+    await req("/api/food-log","POST",{food_name:logName,grams:g,protein:fd(f.protein*r),fat:fd(f.fat*r),carb:fd(f.carb*r),kcal:fd(f.kcal*r)});
     await loadToday();
     hideLoading();
     toast(t("added"));
