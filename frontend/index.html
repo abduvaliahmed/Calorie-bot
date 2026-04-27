@@ -230,7 +230,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         </div>
         <!-- Personal food add panel -->
         <div id="pers-panel" style="display:none;margin-bottom:16px">
-          <div class="sec">Yangi mahsulot</div>
+          <div class="sec" id="new-food-sec">Yangi mahsulot</div>
           <div class="ig">
             <div class="ir"><div class="ir-l">Nom</div><input type="text" id="np-name" placeholder="Masalan: Somsa"/></div>
             <div class="ir">
@@ -245,8 +245,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
             <div class="ir"><div class="ir-l">Yog' (g)</div><input type="number" id="np-f" placeholder="15"/></div>
             <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="np-c" placeholder="30"/></div>
           </div>
-          <button class="btn bp" onclick="savePersFood()">Saqlash</button>
-          <button class="btn bg2" onclick="document.getElementById('pers-panel').style.display='none'">Bekor qilish</button>
+          <button class="btn bp" onclick="savePersFood()" id="pers-save-btn">Saqlash</button>
+          <button class="btn bg2" id="pers-cancel-btn" onclick="document.getElementById('pers-panel').style.display='none'">Bekor qilish</button>
         </div>
 
         <!-- Personal food edit panel -->
@@ -344,9 +344,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
       <div class="hdr">
         <div class="hdr-row">
           <div id="ob-back" style="font-size:17px;color:var(--teal);cursor:pointer;min-width:60px" onclick="obBack()">&#8249; Orqaga</div>
-          <div style="text-align:center">
+          <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px">
             <div style="font-size:17px;font-weight:600" id="ob-title">Sozlash</div>
-            <div style="font-size:12px;color:var(--t2)" id="ob-step">1 / 5</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="font-size:12px;color:var(--t2)" id="ob-step">1 / 5</div>
+              <button onclick="toggleLang()" id="ob-lang-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer">RU</button>
+            </div>
           </div>
           <div style="font-size:17px;color:var(--teal);cursor:pointer;min-width:60px;text-align:right" id="ob-next-btn" onclick="obNext()">Keyingi</div>
         </div>
@@ -446,9 +449,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <button class="btn bp" onclick="adminAdd()">Saqlash</button>
           <button class="btn bg2" onclick="toggleAdminAdd()">Bekor</button>
         </div>
-        <div class="sec">Foydalanuvchilar</div>
+        <div class="sec" id="admin-users-sec">Foydalanuvchilar</div>
         <div id="admin-users"><div style="text-align:center;padding:16px;color:var(--t2)">Yuklanmoqda...</div></div>
-        <div class="sec">Global mahsulotlar</div>
+        <div class="sec" id="admin-foods-sec">Global mahsulotlar</div>
         <div id="admin-edit-panel" style="display:none;margin-bottom:16px">
           <div class="sec" id="admin-edit-title">Tahrirlash</div>
           <div class="ig">
@@ -471,7 +474,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 <div class="overlay" id="overlay">
   <div class="overlay-box">
     <svg width="48" height="98" xmlns="http://www.w3.org/2000/svg" viewBox="510 390 220 440"><path class="lp" d="M0 0 C3.06671084 1.35875406 5.07279895 2.86146743 7.35546875 5.30859375 C7.97333252 5.96762695 8.59119629 6.62666016 9.2277832 7.30566406 C9.87448975 8.00916992 10.52119629 8.71267578 11.1875 9.4375 C11.8580542 10.1603418 12.5286084 10.88318359 13.21948242 11.62792969 C17.62939662 16.41629277 21.8569669 21.29192767 25.91015625 26.38671875 C28.13195894 29.16501034 30.43827797 31.85870991 32.75 34.5625 C48.43066396 53.39871554 61.65201603 74.3059915 73 96 C98.46374619 145.14198514 104.78948319 196.27874349 89.4375 246.75 C82.4754622 268.30303362 70.47449131 286.62433199 55 303 C38.60514089 320.4170687 19.15803236 333.82024776 0 341 C-1.33865673 337.17359415 -0.24735562 333.71743961 1.109375 330.08203125 C7.01187102 313.89261703 11.43554701 298.1049336 14 281 C17.56158251 255.46459035 13.65126172 229.68429492 0.84765625 209.59375 C0 208 0 208 0 205 C17.66466427 221.57200462 35.22343889 244.90725396 36.11352539 270.22973633 C36 296 36 296 36 296 C41.51675226 290.07894675 46.6352638 284.1548997 51.0625 277.375 C63.5873413 257.98166913 71.32340671 238.98823956 75 219 C84.57776084 166.21135754 64.65238256 116.11693147 36.65234375 75.73828125 C24.75575291 59.04555407 16.73011265 48.83910775 8 39 C1 31 1 31 1 31 C-36.96003825 68.68496551 -68.93694321 119.08426275 -77.421875 172.48828125 C-79.3125 207.265625 -79.3125 207.265625 -79.3125 207.265625 C-76.48048008 247.91704217 -70 268 -70 268 C-59.42721684 301.49522882 -43.16094327 329.25322776 -21 353 C-12.74662197 362.4668964 -6.02700224 368.81962454 1 375 C4.95889325 378.20245757 4.95889325 378.20245757 7.25390625 377.89453125 C39.78843778 367.29651173 81.59824274 342.89025274 98.2578125 311.640625 C89.2044834 348.14470542 56.27405901 376.61180448 22.19140625 394.79296875 C6.67663234 403.03870284 6.67663234 403.03870284 4.01953125 402.88671875 C-15.00057598 394.53553047 -33.69898606 373.02731076 -46 357 C-65.5995686 329.41844039 -73.4375 315.5 -73.4375 315.5 C-87.99076071 280.39369861 -96 250 -96 250 C-100.33755395 213.58732149 -100.31567383 204.9284668 -100.31567383 204.9284668 C-99.31339891 176.49961694 -97 166 -97 166 C-92.08980575 137.56319916 -82.74501905 116.02166548 -72 95 C-59.54096059 71.27479508 -45.5381971 51.89159138 -30.44726562 33.75146484 C-16.94945537 17.13266767 -8.53551501 8.45780167 0 0 Z" transform="translate(626,405)"/></svg>
-    <div class="overlay-txt" id="overlay-txt">Yuklanmoqda...</div>
+    <div class="overlay-txt" id="overlay-txt"></div>
   </div>
 </div>
 <div id="le-panel" style="display:none;position:fixed;inset:0;z-index:997;background:rgba(0,0,0,0.4);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeLogEdit()">
@@ -500,7 +503,7 @@ var initData = tg ? tg.initData : "";
 var tgU = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : {};
 if (tg) { tg.ready(); tg.expand(); }
 
-var lang = "uz";
+var lang = (tgU && tgU.language_code && tgU.language_code.startsWith("ru")) ? "ru" : "uz";
 var S = { user: null, today: null, foods: [], sel: null };
 
 // ── TRANSLATIONS ─────────────────────────────────────────────────────────────
@@ -613,6 +616,38 @@ async function req(path,method,body) {
 }
 
 // ── LANG ──────────────────────────────────────────────────────────────────────
+function updateUITexts() {
+  // Onboarding lang button
+  var oblb = document.getElementById("ob-lang-btn");
+  if(oblb) oblb.textContent = lang==="uz" ? "RU" : "UZ";
+  // Loading screen
+  var lt = document.getElementById("loading-txt");
+  if(lt) lt.textContent = lang==="uz" ? "Yuklanmoqda..." : "Загрузка...";
+  
+  // Overlay default
+  var ot = document.getElementById("overlay-txt");
+  if(ot && !ot.textContent) ot.textContent = lang==="uz" ? "Yuklanmoqda..." : "Загрузка...";
+  
+  // Personal food panel
+  var nfs = document.getElementById("new-food-sec");
+  if(nfs) nfs.textContent = lang==="uz" ? "Yangi mahsulot" : "Новый продукт";
+  
+  // Add food title
+  var at = document.getElementById("add-title");
+  if(at) at.textContent = t("add_t");
+  
+  // Pers btn
+  var pb = document.getElementById("pers-btn");
+  if(pb) pb.textContent = t("my_f");
+  
+  // Save btn
+  var psb = document.getElementById("pers-save-btn");
+  if(psb) psb.textContent = t("save");
+  
+  var pcb = document.getElementById("pers-cancel-btn");
+  if(pcb) pcb.textContent = t("cancel");
+}
+
 function toggleLang() {
   lang = lang==="uz" ? "ru" : "uz";
   var lbl = lang==="uz" ? "RU" : "UZ";
@@ -627,7 +662,9 @@ function toggleLang() {
     else if(id==="profile")renderProfile();
     else if(id==="stats")renderStats();
     else if(id==="add-food")initFood();
+    else if(id==="onboard")renderOB();
   }
+  updateUITexts();
   toast(lang==="uz"?"O'zbekcha":"Русский язык");
 }
 
@@ -880,9 +917,10 @@ function showFoods(foods) {
   
   el.innerHTML='<div class="card">'+sorted.map(function(f,i){
     var isPers = f.source==="personal";
+    var displayName = (lang==="ru" && f.name_ru) ? f.name_ru : f.name;
     var clr = getFoodColor(f.name);
-    var initial = getFoodInitial(f.name);
-    var src = isPers ? '<span style="font-size:9px;background:var(--teal);color:#fff;border-radius:4px;padding:1px 5px;margin-right:4px;vertical-align:middle">MEN</span>' : '';
+    var initial = getFoodInitial(displayName);
+    var src = isPers ? '<span style="font-size:9px;background:var(--teal);color:#fff;border-radius:4px;padding:1px 5px;margin-right:4px;vertical-align:middle">МОЙ</span>' : '';
     var editBtns = isPers ?
       '<div style="display:flex;gap:4px;flex-shrink:0">'+
       '<button onclick="event.stopPropagation();openPersEdit(S.foods['+i+'])" style="width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:13px;color:var(--t2)">✎</button>'+
@@ -892,7 +930,7 @@ function showFoods(foods) {
     return '<div onclick="selFood('+i+')" style="display:flex;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--sep);cursor:pointer;active:background:#f8f8f8">'+
       '<div style="width:40px;height:40px;border-radius:12px;background:'+clr.bg+';display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;font-size:16px;font-weight:700;color:'+clr.c+'">'+initial+'</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)">'+src+f.name+'</div>'+
+        '<div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)">'+src+displayName+'</div>'+
         '<div style="display:flex;gap:10px;margin-top:3px;font-size:12px;color:var(--t2)">'+
           '<span style="color:var(--teal);font-weight:600">'+Math.round(f.kcal)+' kkal</span>'+
           '<span>B '+f.protein+'g</span>'+
@@ -1054,6 +1092,7 @@ var OB={step:1,data:{}};
 
 function startOB() {
   OB={step:1,data:S.user?JSON.parse(JSON.stringify(S.user)):{}};
+  updateUITexts();
   renderOB();
   var prev=document.querySelector(".screen.act");
   if(prev)prev.classList.remove("act");
@@ -1224,7 +1263,7 @@ async function loadUsers() {
     var r=await req("/api/admin/users");
     var users=r.users||[];
     var el=document.getElementById("admin-users");
-    if(!users.length){el.innerHTML="<div style='padding:12px;color:var(--t2);text-align:center'>Foydalanuvchilar yoq</div>";return;}
+    if(!users.length){el.innerHTML="<div style='padding:12px;color:var(--t2);text-align:center'>"+(lang==="ru"?"Пользователей нет":"Foydalanuvchilar yoq")+"</div>";return;}
     var goalMap={lose:"Ozish",maintain:"Saqlash",muscle:"Massa"};
     el.innerHTML='<div class="sc" style="margin-bottom:12px"><div class="sc-l">Jami</div><div class="sc-v">'+r.count+'<span class="sc-u"> ta</span></div></div>'+
     '<div class="card">'+users.map(function(u){
@@ -1693,6 +1732,7 @@ async function init() {
       S.user=r.user;
       S.today=td;
       if(r.user.lang)lang=r.user.lang;
+      updateUITexts();
       var lbl=lang==="uz"?"RU":"UZ";
       var b1=document.getElementById("lang-btn");
       var b2=document.getElementById("lang-btn2");
@@ -1700,9 +1740,11 @@ async function init() {
       if(b2)b2.textContent=lbl;
       go("home");
     }else{
+      updateUITexts();
       startOB();
     }
   }catch(e){
+    updateUITexts();
     startOB();
   }
 }
