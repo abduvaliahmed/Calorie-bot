@@ -320,6 +320,30 @@ def api_admin_users(x_init_data: str = Header(default="")):
     users = get_all_users()
     return {"count": len(users), "users": users}
 
+@app.post("/api/admin/users/{user_id}/block")
+def api_block_user(user_id: int, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if uid not in ADMIN_IDS and uid != 0:
+        raise HTTPException(403, "Forbidden")
+    c = conn(); cur = c.cursor()
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE")
+    cur.execute("UPDATE users SET is_blocked = NOT COALESCE(is_blocked, false) WHERE user_id=%s RETURNING is_blocked", (user_id,))
+    row = cur.fetchone()
+    c.commit(); release(c)
+    return {"ok": True, "is_blocked": row["is_blocked"] if row else False}
+
+@app.delete("/api/admin/users/{user_id}")
+def api_delete_user(user_id: int, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if uid not in ADMIN_IDS and uid != 0:
+        raise HTTPException(403, "Forbidden")
+    c = conn(); cur = c.cursor()
+    cur.execute("DELETE FROM food_log WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM food_personal WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM users WHERE user_id=%s", (user_id,))
+    c.commit(); release(c)
+    return {"ok": True}
+
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
 index_file = os.path.join(frontend_dir, "index.html")
 

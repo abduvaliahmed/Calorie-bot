@@ -1228,15 +1228,60 @@ async function loadUsers() {
     var goalMap={lose:"Ozish",maintain:"Saqlash",muscle:"Massa"};
     el.innerHTML='<div class="sc" style="margin-bottom:12px"><div class="sc-l">Jami</div><div class="sc-v">'+r.count+'<span class="sc-u"> ta</span></div></div>'+
     '<div class="card">'+users.map(function(u){
-      var g=u.gender==="male"?"👨":"👩";
-      var goal=goalMap[u.goal]||u.goal||"-";
       var nm=u.first_name||(u.username?'@'+u.username:'ID:'+u.user_id);
-      return '<div class="row"><div class="row-t"><div class="row-l">'+g+' '+nm+'</div><div class="row-s">'+(u.age||"?")+'y · '+(u.weight||"?")+'kg · '+goal+'</div></div><div class="row-r" style="font-size:12px">'+(u.fat_pct||0)+'%</div></div>';
+      var goal=goalMap[u.goal]||u.goal||"-";
+      var isBlocked=u.is_blocked;
+      var reg=u.created_at?(new Date(u.created_at)).toLocaleDateString("ru-RU"):"?";
+      var upd=u.updated_at?(new Date(u.updated_at)).toLocaleDateString("ru-RU"):"?";
+      return '<div style="padding:14px 16px;border-bottom:.5px solid var(--sep)">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
+          '<div style="font-size:15px;font-weight:600;color:'+(isBlocked?'#C62828':'var(--t1)')+'">'+
+            (isBlocked?'🚫 ':'')+nm+
+          '</div>'+
+          '<div style="display:flex;gap:6px">'+
+            '<button onclick="adminBlockUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:'+(isBlocked?'#E8F9F2':'#FFF3E0')+';color:'+(isBlocked?'#0F6E56':'#E65100')+'">'+
+              (isBlocked?'Ochish':'Bloklash')+
+            '</button>'+
+            '<button onclick="adminDeleteUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:#FEEBEB;color:#C62828">'+
+              "O'chir"+
+            '</button>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-size:12px;color:var(--t2);display:flex;gap:12px;flex-wrap:wrap">'+
+          '<span>'+(u.age||"?")+'y</span>'+
+          '<span>'+(u.weight||"?")+'kg</span>'+
+          '<span>'+goal+'</span>'+
+          '<span>'+(u.fat_pct||0)+'% yog</span>'+
+          '<span style="color:var(--teal)">'+Math.round(u.kcal_target||0)+' kkal</span>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--t2);margin-top:4px">'+
+          'Kirgan: '+reg+' · Yangilangan: '+upd+
+        '</div>'+
+      '</div>';
     }).join('')+'</div>';
   }catch(e){
     var el=document.getElementById("admin-users");
     if(el)el.innerHTML='<div style="padding:12px;color:var(--t2);text-align:center">Yuklab bolmadi</div>';
   }
+}
+
+async function adminBlockUser(userId) {
+  try{
+    var r = await req("/api/admin/users/"+userId+"/block","POST",{});
+    toast(r.is_blocked?"Bloklandi":"Blok ochildi");
+    loadUsers();
+  }catch(e){toast(t("err"));}
+}
+
+async function adminDeleteUser(userId, name) {
+  if(!confirm(name+" ni o'chirishni tasdiqlaysizmi? Barcha ma'lumotlari o'chib ketadi!")) return;
+  showLoading("O'chirilmoqda...");
+  try{
+    await req("/api/admin/users/"+userId,"DELETE");
+    hideLoading();
+    toast("O'chirildi!");
+    loadUsers();
+  }catch(e){hideLoading();toast(t("err"));}
 }
 
 var adminFoods = [];
