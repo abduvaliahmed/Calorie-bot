@@ -1708,8 +1708,8 @@ async function sendAI() {
       '</div>' +
 
       '<div style="display:flex;gap:8px">' +
-        '<button id="ai-add-' + rid + '" class="ai-log-btn" style="flex:2">' + addLabel + '</button>' +
-        '<button id="ai-save-' + rid + '" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)">' + saveLabel + '</button>' +
+        '<button id="ai-add-' + rid + '" class="ai-log-btn" style="flex:2" onclick="window._aiAddLog(\''+rid+'\',this)">' + addLabel + '</button>' +
+        '<button id="ai-save-' + rid + '" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)" onclick="window._aiSave(\''+rid+'\',this)">' + saveLabel + '</button>' +
       '</div>';
 
     window._aiLastResult = r;
@@ -1723,33 +1723,13 @@ async function sendAI() {
     setTimeout(function() {
       var partsIn = document.getElementById('ai-parts-'+rid);
       var eatenIn = document.getElementById('ai-eaten-'+rid);
-      var addBtn  = document.getElementById('ai-add-'+rid);
-      var saveBtn = document.getElementById('ai-save-'+rid);
-      
-      function upd() {
-        var r2 = window._aiResults[rid];
-        if(!r2) return;
-        var parts = parseFloat(partsIn.value) || 1;
-        var eaten = parseFloat(eatenIn.value) || 1;
-        if(eaten > parts) { eatenIn.value = parts; eaten = parts; }
-        var k = Math.round(r2.kcal / parts * eaten);
-        var p = Math.round(r2.protein / parts * eaten * 10) / 10;
-        var f = Math.round(r2.fat / parts * eaten * 10) / 10;
-        var c = Math.round(r2.carb / parts * eaten * 10) / 10;
-        r2._parts = parts; r2._eaten = eaten;
-        var el = document.getElementById('ai-portion-res-'+rid);
-        if(el) el.innerHTML =
-          '<span style="font-size:17px;font-weight:700;color:var(--teal)">'+k+' kkal</span>'+
-          '<span style="color:var(--t2)">P: <b style="color:var(--t1)">'+p+'</b>g</span>'+
-          '<span style="color:var(--t2)">Y: <b style="color:var(--t1)">'+f+'</b>g</span>'+
-          '<span style="color:var(--t2)">U: <b style="color:var(--t1)">'+c+'</b>g</span>';
-      }
-      
-      if(partsIn) partsIn.addEventListener('input', upd);
-      if(eatenIn) eatenIn.addEventListener('input', upd);
-      if(addBtn) addBtn.addEventListener('click', function() { addAIPortionToLog(rid, addBtn); });
-      if(saveBtn) saveBtn.addEventListener('click', function() { saveAIToMyFoods(rid, saveBtn); });
+      if(partsIn) partsIn.oninput = function() { updateAIPortionResult(rid); };
+      if(eatenIn) eatenIn.oninput = function() { updateAIPortionResult(rid); };
     }, 50);
+    
+    // Register onclick handlers
+    window._aiAddLog = addAIPortionToLog;
+    window._aiSave = saveAIToMyFoods;
     
   } catch(e) {
     var th = document.getElementById('ai-thinking');
@@ -1785,18 +1765,22 @@ function setAIEaten(rid, n) {
 function updateAIPortionResult(rid) {
   var r = window._aiResults && window._aiResults[rid];
   if(!r) return;
-  var parts = r._parts || 1;
-  var eaten = r._eaten || 1;
+  var partsEl = document.getElementById('ai-parts-'+rid);
+  var eatenEl = document.getElementById('ai-eaten-'+rid);
+  var parts = partsEl ? (parseFloat(partsEl.value) || 1) : (r._parts || 1);
+  var eaten = eatenEl ? (parseFloat(eatenEl.value) || 1) : (r._eaten || 1);
+  if(eaten > parts) { if(eatenEl) eatenEl.value = parts; eaten = parts; }
+  r._parts = parts; r._eaten = eaten;
   var k = Math.round(r.kcal / parts * eaten);
   var p = Math.round(r.protein / parts * eaten * 10) / 10;
   var f = Math.round(r.fat / parts * eaten * 10) / 10;
   var c = Math.round(r.carb / parts * eaten * 10) / 10;
   var el = document.getElementById('ai-portion-res-'+rid);
-  if(el) el.innerHTML = 
-    '<span style="font-size:15px;font-weight:700;color:var(--teal)">'+k+' kkal</span>'+
-    '<span>P: <b>'+p+'</b>g</span>'+
-    '<span>Y: <b>'+f+'</b>g</span>'+
-    '<span>U: <b>'+c+'</b>g</span>';
+  if(el) el.innerHTML =
+    '<span style="font-size:17px;font-weight:700;color:var(--teal)">'+k+' kkal</span>'+
+    '<span style="color:var(--t2)">P: <b style="color:var(--t1)">'+p+'</b>g</span>'+
+    '<span style="color:var(--t2)">Y: <b style="color:var(--t1)">'+f+'</b>g</span>'+
+    '<span style="color:var(--t2)">U: <b style="color:var(--t1)">'+c+'</b>g</span>';
 }
 
 async function addAIPortionToLog(rid, btn) {
