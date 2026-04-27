@@ -51,7 +51,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await send_app(update)
         return ConversationHandler.END
     await update.message.reply_text(
-        "Salom! 👋\n\n<b>NutriBot</b> ga xush kelibsiz!\n\n"
+        "Salom! 👋\n\n<b>BARG</b> ga xush kelibsiz!\n\n"
         "Ilovadan foydalanish uchun <b>promo kod</b> kiriting:",
         parse_mode="HTML"
     )
@@ -69,7 +69,7 @@ async def check_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         allowed_users.add(uid)
         await save_user_info(uid, first_name, username)
         await update.message.reply_text(
-            "Kod tasdiqlandi! NutriBot ga xush kelibsiz!",
+            "Kod tasdiqlandi! BARG ga xush kelibsiz!",
             reply_markup=ReplyKeyboardRemove()
         )
         await send_app(update)
@@ -83,7 +83,7 @@ async def check_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def send_app(update: Update):
     kb = InlineKeyboardMarkup([[
-        InlineKeyboardButton("NutriBot ochish", web_app=WebAppInfo(url=WEBAPP_URL))
+        InlineKeyboardButton("BARG ochish", web_app=WebAppInfo(url=WEBAPP_URL))
     ]])
     await update.message.reply_text("Pastdagi tugmani bosib ilovani oching!", reply_markup=kb)
 
