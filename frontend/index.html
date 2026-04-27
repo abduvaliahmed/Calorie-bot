@@ -1663,31 +1663,97 @@ async function sendAI() {
     var thinking = document.getElementById('ai-thinking');
     if(thinking) thinking.remove();
     
-    var html = '<div style="font-weight:600;margin-bottom:8px">' + r.name + '</div>' +
-      '<div style="background:rgba(29,158,117,0.08);border-radius:10px;padding:10px;margin-bottom:8px">' +
-      '<div style="font-size:12px;color:var(--t2);margin-bottom:4px">JAMI (' + r.total_g + 'g)</div>' +
-      '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
-      '<span><b>' + Math.round(r.kcal) + '</b> kkal</span>' +
-      '<span>P: <b>' + r.protein + '</b>g</span>' +
-      '<span>Y: <b>' + r.fat + '</b>g</span>' +
-      '<span>U: <b>' + r.carb + '</b>g</span>' +
-      '</div></div>' +
-      '<div style="background:rgba(0,0,0,0.04);border-radius:10px;padding:10px;margin-bottom:10px">' +
-      '<div style="font-size:12px;color:var(--t2);margin-bottom:4px">100g UCHUN</div>' +
-      '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
-      '<span><b>' + Math.round(r.per100_kcal) + '</b> kkal</span>' +
-      '<span>P: <b>' + r.per100_p + '</b>g</span>' +
-      '<span>Y: <b>' + r.per100_f + '</b>g</span>' +
-      '<span>U: <b>' + r.per100_c + '</b>g</span>' +
-      '</div></div>' +
-      '<div style="display:flex;gap:8px;margin-top:10px">'+
-      '<button class="ai-log-btn" style="flex:1" onclick="addAIToLog(this)">+ Logga qo&#39;shish</button>'+
-      '<button class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)" onclick="saveAIToMyFoods(this)">+ Mahsulotlarimga</button>'+
+    // Portion system
+    var totalParts = 1;
+    var eatenParts = 1;
+    var rid = 'ai_' + Date.now();
+    window._aiResults = window._aiResults || {};
+    window._aiResults[rid] = r;
+
+    function calcPortionKcal(tot, parts, eaten) {
+      return Math.round(tot / parts * eaten * 10) / 10;
+    }
+
+    function updatePortionDisplay(rid) {
+      var r = window._aiResults[rid];
+      var parts = parseInt(document.getElementById('ai-parts-'+rid).value) || 1;
+      var eaten = parseFloat(document.getElementById('ai-eaten-'+rid).value) || 1;
+      var k = Math.round(r.kcal / parts * eaten);
+      var p = Math.round(r.protein / parts * eaten * 10) / 10;
+      var f = Math.round(r.fat / parts * eaten * 10) / 10;
+      var c = Math.round(r.carb / parts * eaten * 10) / 10;
+      document.getElementById('ai-res-'+rid).innerHTML =
+        '<span><b>'+k+'</b> kkal</span>' +
+        '<span>P: <b>'+p+'</b>g</span>' +
+        '<span>Y: <b>'+f+'</b>g</span>' +
+        '<span>U: <b>'+c+'</b>g</span>';
+      window._aiResults[rid]._portion = {kcal:k, protein:p, fat:f, carb:c, parts:parts, eaten:eaten};
+    }
+    window.updatePortionDisplay = updatePortionDisplay;
+
+    var portionLabel = lang==="ru" ? "Разделить на порции" : "Porsiyalarga bo'lish";
+    var partsLabel = lang==="ru" ? "Neча порций всего:" : "Jami necha porsiya:";
+    var eatenLabel = lang==="ru" ? "Я съел:" : "Men yedim:";
+    var portion1 = lang==="ru" ? "1 порция (всё)" : "1 porsiya (hammasi)";
+
+    var html = '<div data-rid="'+rid+'" style="font-weight:600;margin-bottom:8px">' + r.name + '</div>' +
+      '<div style="background:rgba(29,158,117,0.08);border-radius:10px;padding:10px;margin-bottom:10px">' +
+      '<div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">' + portionLabel + '</div>' +
+      '<div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;flex-wrap:wrap">' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<span style="font-size:13px;color:var(--t2)">' + partsLabel + '</span>' +
+          '<select id="ai-parts-'+rid+'" style="border:1px solid var(--sep);border-radius:8px;padding:4px 8px;font-size:14px;background:var(--card);color:var(--t1)">' + +
+          '<option value="1">1</option><option value="2">2</option><option value="3">3</option>' +
+          '<option value="4">4</option><option value="5">5</option><option value="6">6</option>' +
+          '</select>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<span style="font-size:13px;color:var(--t2)">' + eatenLabel + '</span>' +
+          '<select id="ai-eaten-'+rid+'" style="border:1px solid var(--sep);border-radius:8px;padding:4px 8px;font-size:14px;background:var(--card);color:var(--t1)">' + +
+          '<option value="1">' + portion1 + '</option>' +
+          '<option value="0.5">1/2</option><option value="0.333">1/3</option>' +
+          '<option value="0.25">1/4</option><option value="0.75">3/4</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div id="ai-res-'+rid+'" data-rid="'+rid+'" style="display:flex;gap:12px;flex-wrap:wrap;font-size:15px">' +
+        '<span><b>' + Math.round(r.kcal) + '</b> kkal</span>' +
+        '<span>P: <b>' + r.protein + '</b>g</span>' +
+        '<span>Y: <b>' + r.fat + '</b>g</span>' +
+        '<span>U: <b>' + r.carb + '</b>g</span>' +
+      '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:4px">'+
+      '<button class="ai-log-btn" style="flex:1" onclick="addAIPortionToLog(this.closest(\'[data-rid]\').dataset.rid,this)">' + (lang==="ru"?"+ В журнал":"+ Logga qo'shish") + '</button>'+
+ + (lang==="ru"?"+ В журнал":"+ Logga qo'shish") + '</button>'+
+      '<button class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)" onclick="saveAIToMyFoods(this)" data-rid="'+rid+'">' + (lang==="ru"?"+ В мои продукты":"+ Mahsulotlarimga") + '</button>'+
       '</div>';
     
     window._aiLastResult = r;
+    window._aiResults[rid] = r;
     
     addAIMsg('bot', html);
+    
+    // Add change listeners after DOM update
+    setTimeout(function() {
+      var ps = document.getElementById('ai-parts-'+rid);
+      var es = document.getElementById('ai-eaten-'+rid);
+      function upd() {
+        var r2 = window._aiResults[rid];
+        if(!r2) return;
+        var parts = parseFloat(ps.value) || 1;
+        var eaten = parseFloat(es.value) || 1;
+        var k = Math.round(r2.kcal / parts * eaten);
+        var p = Math.round(r2.protein / parts * eaten * 10) / 10;
+        var f = Math.round(r2.fat / parts * eaten * 10) / 10;
+        var c = Math.round(r2.carb / parts * eaten * 10) / 10;
+        var el = document.getElementById('ai-res-'+rid);
+        if(el) el.innerHTML = '<span><b>'+k+'</b> kkal</span><span>P: <b>'+p+'</b>g</span><span>Y: <b>'+f+'</b>g</span><span>U: <b>'+c+'</b>g</span>';
+        r2._portion = {kcal:k, protein:p, fat:f, carb:c, parts:parts, eaten:eaten};
+      }
+      if(ps) ps.addEventListener('change', upd);
+      if(es) es.addEventListener('change', upd);
+    }, 100);
     
   } catch(e) {
     var thinking = document.getElementById('ai-thinking');
@@ -1696,6 +1762,33 @@ async function sendAI() {
   }
   
   btn.disabled = false;
+}
+
+async function addAIPortionToLog(rid, btn) {
+  var r = window._aiResults && window._aiResults[rid];
+  if(!r) return;
+  var portion = r._portion || {kcal: Math.round(r.kcal), protein: r.protein, fat: r.fat, carb: r.carb};
+  if(btn) btn.disabled = true;
+  showLoading(lang==="uz"?"Qo'shilmoqda...":"Добавление...");
+  try {
+    await req('/api/food-log', 'POST', {
+      food_name: r.name,
+      grams: Math.round(r.total_g * (portion.eaten || 1) / (portion.parts || 1)),
+      kcal: portion.kcal,
+      protein: portion.protein,
+      fat: portion.fat,
+      carb: portion.carb
+    });
+    await loadToday();
+    hideLoading();
+    renderHome();
+    toast(t('added'));
+    if(btn) { btn.textContent = lang==="uz"?"✓ Qo'shildi":"✓ Добавлено"; btn.style.background = "#34C759"; }
+  } catch(e) {
+    hideLoading();
+    toast(t('err'));
+    if(btn) btn.disabled = false;
+  }
 }
 
 async function addAIToLog(btn, idx) {
