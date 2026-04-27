@@ -97,8 +97,9 @@ def api_save_profile(data: ProfileIn, x_init_data: str = Header(default="")):
         raise HTTPException(400, f"Calculation error: {e}")
 
     if data.plan_type == "manual" and data.kcal_target and data.protein_ratio and data.fat_ratio:
-        protein_g = round(data.weight * data.protein_ratio, 1)
-        fat_g = round(data.weight * data.fat_ratio, 1)
+        lean = calc.get("lean_mass") or (data.weight * 0.8)
+        protein_g = round(lean * data.protein_ratio, 1)
+        fat_g = round(lean * data.fat_ratio, 1)
         kcal_t = data.kcal_target
         carb_g = round(max(0, (kcal_t - protein_g * 4 - fat_g * 9) / 4), 1)
         macros = {"protein_g": protein_g, "fat_g": fat_g, "carb_g": carb_g}
