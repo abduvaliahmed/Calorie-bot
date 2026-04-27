@@ -1408,8 +1408,8 @@ async function adminDel(id) {
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
-async function saveAIToMyFoods(btn) {
-  var r = window._aiLastResult;
+async function saveAIToMyFoods(rid, btn) {
+  var r = (rid && window._aiResults && window._aiResults[rid]) ? window._aiResults[rid] : window._aiLastResult;
   if(!r) return;
   if(btn) btn.disabled = true;
   showLoading(lang==="uz"?"Saqlanmoqda...":"Сохранение...");
