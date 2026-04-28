@@ -1912,50 +1912,63 @@ async function sendAI() {
     window._aiResults[rid] = r;
 
     var isRu = lang === "ru";
-    var totalLabel = isRu ? "ИТОГО" : "JAMI";
-    var partsLabel = isRu ? "Разделить на порций" : "Necha qismga bo'lindi";
-    var eatenLabel = isRu ? "Я съел порций" : "Men necha qism yedim";
-    var addLabel   = isRu ? "Добавить в дневник" : "Logga qo'shish";
-    var saveLabel  = isRu ? "В мои продукты" : "Mahsulotlarimga";
-    var oqsil      = isRu ? "Белки" : "Oqsil";
-    var yog        = isRu ? "Жиры" : "Yog'";
-    var uglev      = isRu ? "Углев." : "Uglevod";
+    var addLabel  = isRu ? "Добавить в дневник" : "Logga qo'shish";
+    var saveLabel = isRu ? "В мои продукты" : "Mahsulotlarimga";
+    var oqsil     = isRu ? "Белки" : "Oqsil";
+    var yog2      = isRu ? "Жиры" : "Yog'";
+    var uglev     = isRu ? "Углев." : "Uglevod";
+    var partsLbl  = isRu ? "Разделить на" : "Qismlarga bo'l";
+    var eatenLbl  = isRu ? "Я съел" : "Men yedim";
 
     var html =
-      '<div style="font-weight:700;font-size:16px;margin-bottom:10px;color:var(--t1)">' + r.name + '</div>' +
+      // Name
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
+        '<div style="font-size:17px;font-weight:700;color:var(--t1)">'+r.name+'</div>'+
+        '<div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 10px;border-radius:10px">'+(isRu?"рецепт":"retsept")+'</div>'+
+      '</div>'+
 
-      '<div style="background:var(--teal);border-radius:14px;padding:14px;margin-bottom:10px">' +
-        '<div style="font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:1px;margin-bottom:6px">' + totalLabel + '</div>' +
-        '<div style="font-size:28px;font-weight:700;color:#fff;line-height:1">' + Math.round(r.kcal) + '<span style="font-size:14px;font-weight:400"> kkal</span></div>' +
-        '<div style="display:flex;gap:16px;margin-top:8px">' +
-          '<div><div style="font-size:15px;font-weight:700;color:#fff">' + r.protein + 'g</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">' + oqsil + '</div></div>' +
-          '<div><div style="font-size:15px;font-weight:700;color:#fff">' + r.fat + 'g</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">' + yog + '</div></div>' +
-          '<div><div style="font-size:15px;font-weight:700;color:#fff">' + r.carb + 'g</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">' + uglev + '</div></div>' +
-        '</div>' +
-      '</div>' +
+      // Teal total card
+      '<div style="background:var(--teal);border-radius:16px;padding:16px;margin-bottom:12px">'+
+        '<div style="font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:1px;margin-bottom:6px">'+(isRu?"ИТОГО":"JAMI")+'</div>'+
+        '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+          '<div style="font-size:30px;font-weight:800;color:#fff;line-height:1">'+Math.round(r.kcal)+'<span style="font-size:14px;font-weight:400"> kkal</span></div>'+
+          '<div style="display:flex;gap:14px">'+
+            '<div style="text-align:center"><div style="font-size:14px;font-weight:700;color:#fff">'+r.protein+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+oqsil+'</div></div>'+
+            '<div style="text-align:center"><div style="font-size:14px;font-weight:700;color:#fff">'+r.fat+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+yog2+'</div></div>'+
+            '<div style="text-align:center"><div style="font-size:14px;font-weight:700;color:#fff">'+r.carb+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+uglev+'</div></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
 
-      '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:.5px solid var(--sep)">' +
-        '<div style="display:flex;gap:12px;margin-bottom:10px">' +
-          '<div style="flex:1">' +
-            '<div style="font-size:12px;color:var(--t2);margin-bottom:6px">' + partsLabel + '</div>' +
-            '<input id="ai-parts-' + rid + '" type="number" value="1" min="1" max="100" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px 12px;font-size:18px;font-weight:700;text-align:center;color:var(--t1);background:var(--bg);outline:none">' +
-          '</div>' +
-          '<div style="flex:1">' +
-            '<div style="font-size:12px;color:var(--t2);margin-bottom:6px">' + eatenLabel + '</div>' +
-            '<input id="ai-eaten-' + rid + '" type="number" value="1" min="1" max="100" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px 12px;font-size:18px;font-weight:700;text-align:center;color:var(--t1);background:var(--bg);outline:none">' +
-          '</div>' +
-        '</div>' +
-        '<div id="ai-portion-res-' + rid + '" style="padding:12px;background:var(--bg);border-radius:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">' +
-          '<span style="font-size:17px;font-weight:700;color:var(--teal)">' + Math.round(r.kcal) + ' kkal</span>' +
-          '<span style="color:var(--t2)">P: <b style="color:var(--t1)">' + r.protein + '</b>g</span>' +
-          '<span style="color:var(--t2)">Y: <b style="color:var(--t1)">' + r.fat + '</b>g</span>' +
-          '<span style="color:var(--t2)">U: <b style="color:var(--t1)">' + r.carb + '</b>g</span>' +
-        '</div>' +
-      '</div>' +
+      // Portion inputs
+      '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+        '<div style="display:flex;gap:12px;margin-bottom:10px">'+
+          '<div style="flex:1">'+
+            '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+partsLbl+'</div>'+
+            '<input id="ai-parts-'+rid+'" type="number" value="1" min="1" max="100"'+
+              ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+          '</div>'+
+          '<div style="flex:1">'+
+            '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+eatenLbl+'</div>'+
+            '<input id="ai-eaten-'+rid+'" type="number" value="1" min="1" max="100"'+
+              ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+          '</div>'+
+        '</div>'+
+        // Result
+        '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">'+
+          '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+          '<div style="display:flex;gap:14px">'+
+            '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">'+r.protein+'g</div><div style="font-size:9px;color:var(--t2)">'+oqsil+'</div></div>'+
+            '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">'+r.fat+'g</div><div style="font-size:9px;color:var(--t2)">'+yog2+'</div></div>'+
+            '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+r.carb+'g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
 
-      '<div style="display:flex;gap:8px">' +
-        '<button id="ai-add-' + rid + '" class="ai-log-btn" style="flex:2" onclick="window._aiAddLog(\''+rid+'\',this)">' + addLabel + '</button>' +
-        '<button id="ai-save-' + rid + '" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)" onclick="window._aiSave(\''+rid+'\',this)">' + saveLabel + '</button>' +
+      // Buttons
+      '<div style="display:flex;gap:8px">'+
+        '<button id="ai-add-'+rid+'" class="ai-log-btn" style="flex:2;font-size:15px;font-weight:700">'+addLabel+'</button>'+
+        '<button id="ai-save-'+rid+'" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)">'+saveLabel+'</button>'+
       '</div>';
 
     window._aiLastResult = r;
@@ -2021,12 +2034,15 @@ function updateAIPortionResult(rid) {
   var p = Math.round(r.protein / parts * eaten * 10) / 10;
   var f = Math.round(r.fat / parts * eaten * 10) / 10;
   var c = Math.round(r.carb / parts * eaten * 10) / 10;
+  var isRu2 = lang==="ru";
   var el = document.getElementById('ai-portion-res-'+rid);
   if(el) el.innerHTML =
-    '<span style="font-size:17px;font-weight:700;color:var(--teal)">'+k+' kkal</span>'+
-    '<span style="color:var(--t2)">P: <b style="color:var(--t1)">'+p+'</b>g</span>'+
-    '<span style="color:var(--t2)">Y: <b style="color:var(--t1)">'+f+'</b>g</span>'+
-    '<span style="color:var(--t2)">U: <b style="color:var(--t1)">'+c+'</b>g</span>';
+    '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+k+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+    '<div style="display:flex;gap:14px">'+
+      '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">'+p+'g</div><div style="font-size:9px;color:var(--t2)">'+(isRu2?"Белки":"Oqsil")+'</div></div>'+
+      '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">'+f+'g</div><div style="font-size:9px;color:var(--t2)">'+(isRu2?"Жиры":"Yog")+'</div></div>'+
+      '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+c+'g</div><div style="font-size:9px;color:var(--t2)">'+(isRu2?"Углев.":"Uglevod")+'</div></div>'+
+    '</div>';
 }
 
 async function addAIPortionToLog(rid, btn) {
