@@ -1618,6 +1618,7 @@ async function adminDel(id) {
 async function saveAIToMyFoods(rid, btn) {
   var r = (rid && window._aiResults && window._aiResults[rid]) ? window._aiResults[rid] : window._aiLastResult;
   if(!r) return;
+  if(btn && btn.disabled) return;  // prevent double call
   if(btn) btn.disabled = true;
   showLoading(lang==="uz"?"Saqlanmoqda...":"Сохранение...");
   try {
@@ -1911,6 +1912,13 @@ async function sendAI() {
     window._aiResults = window._aiResults || {};
     window._aiResults[rid] = r;
 
+    // Detect if recipe (multiple ingredients) or single food
+    var isRecipe = input.indexOf("g,") >= 0 || input.indexOf("gr,") >= 0 || 
+                   input.indexOf("gramm,") >= 0 || input.split(",").length > 2 ||
+                   input.indexOf("pishirdim") >= 0 || input.indexOf("tayyorladim") >= 0 ||
+                   input.indexOf("приготовил") >= 0 || input.indexOf("рецепт") >= 0;
+    r._isRecipe = isRecipe;
+    
     var isRu = lang === "ru";
     var addLabel  = isRu ? "Добавить в дневник" : "Logga qo'shish";
     var saveLabel = isRu ? "В мои продукты" : "Mahsulotlarimga";
@@ -1940,20 +1948,22 @@ async function sendAI() {
         '</div>'+
       '</div>'+
 
-      // Portion inputs
-      '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
-        '<div style="display:flex;gap:12px;margin-bottom:10px">'+
-          '<div style="flex:1">'+
-            '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+partsLbl+'</div>'+
-            '<input id="ai-parts-'+rid+'" type="number" value="1" min="1" max="100"'+
-              ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+      // Portion inputs - only for recipes, gramm for single food
+      (isRecipe ?
+        '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+          '<div style="font-size:11px;color:var(--t2);margin-bottom:10px;text-align:center">'+(isRu?"Разделите на порции":"Porsiyalarga bo'ling")+'</div>'+
+          '<div style="display:flex;gap:12px;margin-bottom:10px">'+
+            '<div style="flex:1">'+
+              '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+partsLbl+'</div>'+
+              '<input id="ai-parts-'+rid+'" type="number" value="1" min="1" max="100"'+
+                ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+            '</div>'+
+            '<div style="flex:1">'+
+              '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+eatenLbl+'</div>'+
+              '<input id="ai-eaten-'+rid+'" type="number" value="1" min="1" max="100"'+
+                ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+            '</div>'+
           '</div>'+
-          '<div style="flex:1">'+
-            '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+eatenLbl+'</div>'+
-            '<input id="ai-eaten-'+rid+'" type="number" value="1" min="1" max="100"'+
-              ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
-          '</div>'+
-        '</div>'+
         // Result
         '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">'+
           '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
@@ -1963,7 +1973,23 @@ async function sendAI() {
             '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+r.carb+'g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
           '</div>'+
         '</div>'+
-      '</div>'+
+      '</div>'
+      // Single food - gramm input
+      : '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+          '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Количество (г)":"Miqdor (g)")+'</div>'+
+          '<input id="ai-parts-'+rid+'" type="number" value="'+r.total_g+'" min="1"'+
+            ' style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:22px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+          '<input id="ai-eaten-'+rid+'" type="hidden" value="1"/>'+
+          '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">'+
+            '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+            '<div style="display:flex;gap:14px">'+
+              '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">'+r.protein+'g</div><div style="font-size:9px;color:var(--t2)">'+oqsil+'</div></div>'+
+              '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">'+r.fat+'g</div><div style="font-size:9px;color:var(--t2)">'+yog2+'</div></div>'+
+              '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+r.carb+'g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
+            '</div>'+
+          '</div>'+
+        '</div>'
+      ) +
 
       // Buttons
       '<div style="display:flex;gap:8px">'+
@@ -2048,6 +2074,7 @@ function updateAIPortionResult(rid) {
 async function addAIPortionToLog(rid, btn) {
   var r = window._aiResults && window._aiResults[rid];
   if(!r) return;
+  if(btn && btn.disabled) return;  // prevent double call
   var parts = r._parts || 1;
   var eaten = r._eaten || 1;
   var k = Math.round(r.kcal / parts * eaten * 10) / 10;
