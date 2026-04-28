@@ -1978,17 +1978,17 @@ async function sendAI() {
     addAIMsg('bot', html);
     document.getElementById('ai-scroll').scrollTop = 99999;
     
-    // Setup input listeners
+    // Setup all listeners
     setTimeout(function() {
       var partsIn = document.getElementById('ai-parts-'+rid);
       var eatenIn = document.getElementById('ai-eaten-'+rid);
+      var addBtn  = document.getElementById('ai-add-'+rid);
+      var saveBtn = document.getElementById('ai-save-'+rid);
       if(partsIn) partsIn.oninput = function() { updateAIPortionResult(rid); };
       if(eatenIn) eatenIn.oninput = function() { updateAIPortionResult(rid); };
-    }, 50);
-    
-    // Register onclick handlers
-    window._aiAddLog = addAIPortionToLog;
-    window._aiSave = saveAIToMyFoods;
+      if(addBtn) addBtn.onclick = function() { addAIPortionToLog(rid, addBtn); };
+      if(saveBtn) saveBtn.onclick = function() { saveAIToMyFoods(rid, saveBtn); };
+    }, 100);
     
   } catch(e) {
     var th = document.getElementById('ai-thinking');
