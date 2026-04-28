@@ -518,18 +518,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 </div>
 <div id="le-panel" style="display:none;position:fixed;inset:0;z-index:997;background:rgba(0,0,0,0.4);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeLogEdit()">
   <div style="background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-width:480px;padding-bottom:calc(20px + var(--sb))">
+    <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-size:17px;font-weight:600" id="le-name">Tahrirlash</div>
-      <div onclick="closeLogEdit()" style="font-size:22px;color:var(--t2);cursor:pointer">×</div>
+      <div style="font-size:17px;font-weight:700;color:var(--t1)" id="le-name">Tahrirlash</div>
+      <button onclick="closeLogEdit()" style="width:30px;height:30px;border-radius:15px;background:rgba(120,120,128,0.15);border:none;cursor:pointer;font-size:18px;color:var(--t2)">✕</button>
     </div>
-    <div class="ig">
-      <div class="ir"><div class="ir-l">Gramm</div><input type="number" id="le-grams" oninput="onLeGrams()" min="1" style="font-weight:600"/></div>
-      <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="le-kcal" step="0.1"/></div>
-      <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="le-p" step="0.1"/></div>
-      <div class="ir"><div class="ir-l">Yog (g)</div><input type="number" id="le-f" step="0.1"/></div>
-      <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="le-c" step="0.1"/></div>
+    <!-- Gramm input big -->
+    <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px" id="le-gram-lbl">Miqdor (g)</div>
+      <input type="number" id="le-grams" oninput="onLeGrams()" min="1"
+        style="width:100%;border:none;background:transparent;font-size:28px;font-weight:800;color:var(--t1);text-align:center;outline:none;box-sizing:border-box"/>
     </div>
-    <button class="btn bp" onclick="saveLogEdit()">Saqlash</button>
+    <!-- Macros result -->
+    <div style="background:rgba(29,158,117,0.08);border-radius:16px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+        <div>
+          <div style="font-size:10px;color:var(--t2);margin-bottom:2px" id="le-result-lbl">Hisob</div>
+          <div style="font-size:26px;font-weight:800;color:var(--teal)" id="le-kcal-show">-</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div style="text-align:center">
+            <div style="font-size:14px;font-weight:700;color:#4CD964" id="le-p-show">-</div>
+            <div style="font-size:10px;color:var(--t2)" id="le-p-lbl">Oqsil</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px;font-weight:700;color:#FF9500" id="le-f-show">-</div>
+            <div style="font-size:10px;color:var(--t2)" id="le-f-lbl">Yog'</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px;font-weight:700;color:#5AC8FA" id="le-c-show">-</div>
+            <div style="font-size:10px;color:var(--t2)" id="le-c-lbl">Uglevod</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Hidden inputs for save -->
+    <input type="hidden" id="le-kcal"/><input type="hidden" id="le-p"/><input type="hidden" id="le-f"/><input type="hidden" id="le-c"/>
+    <button class="btn bp" onclick="saveLogEdit()" style="font-size:16px;font-weight:700;margin-bottom:8px" id="le-save-btn">Saqlash</button>
     <button class="btn bg2" onclick="closeLogEdit()">Bekor</button>
   </div>
 </div>
@@ -1201,35 +1226,70 @@ function renderProfile() {
   var gLbl=u.gender==="male"?t("male"):t("female");
   var aSfx=t("a_sfx"); var sSfx=t("s_sfx");
   var adminBtn=u.is_admin?'<button class="btn bp" onclick="go(\'admin\')" style="margin-bottom:32px">⚙️ Admin panel</button>':'<div style="height:32px"></div>';
+  var isRu = lang==="ru";
   document.getElementById("profile-body").innerHTML=
     '<div style="padding:0 0 16px">'+
-      '<div style="text-align:center;margin:20px 0">'+
-        '<div class="av">'+nm[0].toUpperCase()+'</div>'+
-        '<div style="font-size:20px;font-weight:700;margin-bottom:6px">'+(tgU.first_name||"")+(tgU.last_name?" "+tgU.last_name:"")+'</div>'+
-        '<span class="gp">'+gIcon(u.goal)+" "+gLabel(u.goal)+'</span>'+
+      // Hero card
+      '<div style="background:var(--teal);border-radius:20px;padding:24px 20px;margin-bottom:14px;position:relative;overflow:hidden">'+
+        '<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>'+
+        '<div style="position:absolute;bottom:-30px;right:20px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.06)"></div>'+
+        '<div style="display:flex;align-items:center;gap:16px">'+
+          '<div style="width:60px;height:60px;border-radius:30px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;flex-shrink:0">'+nm[0].toUpperCase()+'</div>'+
+          '<div>'+
+            '<div style="font-size:20px;font-weight:700;color:#fff">'+(tgU.first_name||"")+(tgU.last_name?" "+tgU.last_name:"")+'</div>'+
+            '<div style="font-size:13px;color:rgba(255,255,255,0.8);margin-top:4px">'+gIcon(u.goal)+" "+gLabel(u.goal)+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:12px;margin-top:16px">'+
+          '<div style="flex:1;background:rgba(255,255,255,0.15);border-radius:12px;padding:10px;text-align:center">'+
+            '<div style="font-size:18px;font-weight:800;color:#fff">'+u.weight+'<span style="font-size:11px;font-weight:400"> kg</span></div>'+
+            '<div style="font-size:10px;color:rgba(255,255,255,0.7)">'+(isRu?"Вес":"Vazn")+'</div>'+
+          '</div>'+
+          '<div style="flex:1;background:rgba(255,255,255,0.15);border-radius:12px;padding:10px;text-align:center">'+
+            '<div style="font-size:18px;font-weight:800;color:#fff">'+(u.lean_mass||0)+'<span style="font-size:11px;font-weight:400"> kg</span></div>'+
+            '<div style="font-size:10px;color:rgba(255,255,255,0.7)">'+(isRu?"Сухая масса":t("lean"))+'</div>'+
+          '</div>'+
+          '<div style="flex:1;background:rgba(255,255,255,0.15);border-radius:12px;padding:10px;text-align:center">'+
+            '<div style="font-size:18px;font-weight:800;color:#fff">'+(u.fat_pct||0)+'<span style="font-size:11px;font-weight:400">%</span></div>'+
+            '<div style="font-size:10px;color:rgba(255,255,255,0.7)">'+(isRu?"Жир":"Yog' %")+'</div>'+
+          '</div>'+
+        '</div>'+
       '</div>'+
-      '<div class="g2">'+
-        '<div class="sc"><div class="sc-l">'+t("fat_p")+'</div><div class="sc-v">'+(u.fat_pct||0)+'<span class="sc-u">%</span></div><span class="bdg bg">'+(u.fat_zone||"-")+'</span></div>'+
-        '<div class="sc"><div class="sc-l">'+t("lean")+'</div><div class="sc-v">'+(u.lean_mass||0)+'<span class="sc-u"> kg</span></div></div>'+
-        '<div class="sc"><div class="sc-l">BMR</div><div class="sc-v">'+fmt(u.bmr||0)+'<span class="sc-u"> kkal</span></div></div>'+
-        '<div class="sc"><div class="sc-l">TDEE</div><div class="sc-v">'+fmt(u.tdee||0)+'<span class="sc-u"> kkal</span></div></div>'+
+      // Daily target card
+      '<div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px">'+
+        '<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">'+(isRu?"Суточная норма":"Kunlik norma")+'</div>'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+          '<div style="font-size:13px;color:var(--t2)">'+(isRu?"Калории":"Kaloriya")+'</div>'+
+          '<div style="font-size:22px;font-weight:800;color:var(--teal)">'+fmt(u.kcal_target||0)+' <span style="font-size:13px;font-weight:400">kkal</span></div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px">'+
+          '<div style="flex:1;border-radius:12px;padding:10px;background:rgba(76,217,100,0.1);border:.5px solid rgba(76,217,100,0.3)">'+
+            '<div style="font-size:10px;color:#4CD964;margin-bottom:2px">'+t("prot")+'</div>'+
+            '<div style="font-size:16px;font-weight:700;color:var(--t1)">'+(u.protein_g||0)+'g</div>'+
+          '</div>'+
+          '<div style="flex:1;border-radius:12px;padding:10px;background:rgba(255,149,0,0.1);border:.5px solid rgba(255,149,0,0.3)">'+
+            '<div style="font-size:10px;color:#FF9500;margin-bottom:2px">'+t("fat")+'</div>'+
+            '<div style="font-size:16px;font-weight:700;color:var(--t1)">'+(u.fat_g||0)+'g</div>'+
+          '</div>'+
+          '<div style="flex:1;border-radius:12px;padding:10px;background:rgba(90,200,250,0.1);border:.5px solid rgba(90,200,250,0.3)">'+
+            '<div style="font-size:10px;color:#5AC8FA;margin-bottom:2px">'+t("carb")+'</div>'+
+            '<div style="font-size:16px;font-weight:700;color:var(--t1)">'+(u.carb_g||0)+'g</div>'+
+          '</div>'+
+        '</div>'+
       '</div>'+
-      '<div class="sec">'+t("data")+'</div>'+
-      '<div class="card">'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("gender")+'</div></div><div class="row-r">'+gLbl+'</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("age")+'</div></div><div class="row-r">'+u.age+aSfx+'</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("weight")+'</div></div><div class="row-r">'+u.weight+' kg</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("height")+'</div></div><div class="row-r">'+u.height+' sm</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("steps")+'</div></div><div class="row-r">'+fmt(u.steps)+sSfx+'</div></div>'+
+      // Body data card
+      '<div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px">'+
+        '<div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">'+t("data")+'</div>'+
+        '<div style="display:flex;flex-direction:column;gap:0">'+
+          '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--sep)"><span style="color:var(--t2)">'+t("gender")+'</span><span style="font-weight:600">'+gLbl+'</span></div>'+
+          '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--sep)"><span style="color:var(--t2)">'+t("age")+'</span><span style="font-weight:600">'+u.age+aSfx+'</span></div>'+
+          '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--sep)"><span style="color:var(--t2)">'+t("height")+'</span><span style="font-weight:600">'+u.height+' sm</span></div>'+
+          '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--sep)"><span style="color:var(--t2)">BMR</span><span style="font-weight:600">'+fmt(u.bmr||0)+' kkal</span></div>'+
+          '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--sep)"><span style="color:var(--t2)">TDEE</span><span style="font-weight:600">'+fmt(u.tdee||0)+' kkal</span></div>'+
+          '<div style="display:flex;justify-content:space-between;padding:10px 0"><span style="color:var(--t2)">'+t("steps")+'</span><span style="font-weight:600">'+fmt(u.steps)+sSfx+'</span></div>'+
+        '</div>'+
       '</div>'+
-      '<div class="sec">'+t("dg")+'</div>'+
-      '<div class="card">'+
-        '<div class="row"><div class="row-t"><div class="row-l">Kaloriya</div></div><div class="row-r" style="color:var(--teal);font-weight:600">'+fmt(u.kcal_target||0)+' kkal</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("prot")+'</div></div><div class="row-r">'+(u.protein_g||0)+'g</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("fat")+'</div></div><div class="row-r">'+(u.fat_g||0)+'g</div></div>'+
-        '<div class="row"><div class="row-t"><div class="row-l">'+t("carb")+'</div></div><div class="row-r">'+(u.carb_g||0)+'g</div></div>'+
-      '</div>'+
-      '<button class="btn bg2" onclick="startOB()" style="margin-bottom:12px">'+t("update")+'</button>'+
+      '<button class="btn bp" onclick="startOB()" style="margin-bottom:8px;font-size:16px;font-weight:700">'+t("update")+'</button>'+
       adminBtn+
     '</div>';
 }
@@ -1590,6 +1650,19 @@ var _leOrigC = 0;
 
 function openLogEdit(id, name, grams, kcal, protein, fat, carb) {
   editLogId = id;
+  var isRu = lang === "ru";
+  var gramLbl = document.getElementById("le-gram-lbl");
+  var pLbl = document.getElementById("le-p-lbl");
+  var fLbl = document.getElementById("le-f-lbl");
+  var cLbl = document.getElementById("le-c-lbl");
+  var resLbl = document.getElementById("le-result-lbl");
+  var savBtn = document.getElementById("le-save-btn");
+  if(gramLbl) gramLbl.textContent = isRu ? "Количество (г)" : "Miqdor (g)";
+  if(pLbl) pLbl.textContent = isRu ? "Белки" : "Oqsil";
+  if(fLbl) fLbl.textContent = isRu ? "Жиры" : "Yog'";
+  if(cLbl) cLbl.textContent = isRu ? "Углев." : "Uglevod";
+  if(resLbl) resLbl.textContent = isRu ? "Расчёт" : "Hisob";
+  if(savBtn) savBtn.textContent = isRu ? "Сохранить" : "Saqlash";
   _leOrigGrams = grams;
   _leOrigKcal = kcal;
   _leOrigP = protein;
@@ -1601,13 +1674,39 @@ function openLogEdit(id, name, grams, kcal, protein, fat, carb) {
   document.getElementById("le-p").value = protein;
   document.getElementById("le-f").value = fat;
   document.getElementById("le-c").value = carb;
+  // Update display
+  var ks = document.getElementById("le-kcal-show");
+  var ps = document.getElementById("le-p-show");
+  var fs = document.getElementById("le-f-show");
+  var cs = document.getElementById("le-c-show");
+  if(ks) ks.textContent = Math.round(kcal) + " kkal";
+  if(ps) ps.textContent = protein + "g";
+  if(fs) fs.textContent = fat + "g";
+  if(cs) cs.textContent = carb + "g";
   var lep = document.getElementById("le-panel");
   lep.style.display = "flex";
-  lep.scrollIntoView({behavior:"smooth"});
 }
 
 function onLeGrams() {
   var g = parseFloat(document.getElementById("le-grams").value)||0;
+  var ratio = _leOrigGrams > 0 ? g / _leOrigGrams : 0;
+  var k = Math.round(_leOrigKcal * ratio * 10) / 10;
+  var p = Math.round(_leOrigP * ratio * 10) / 10;
+  var f = Math.round(_leOrigF * ratio * 10) / 10;
+  var c = Math.round(_leOrigC * ratio * 10) / 10;
+  var ks = document.getElementById("le-kcal-show");
+  var ps = document.getElementById("le-p-show");
+  var fs = document.getElementById("le-f-show");
+  var cs = document.getElementById("le-c-show");
+  if(ks) ks.textContent = k + " kkal";
+  if(ps) ps.textContent = p + "g";
+  if(fs) fs.textContent = f + "g";
+  if(cs) cs.textContent = c + "g";
+  // Also update hidden inputs
+  document.getElementById("le-kcal").value = k;
+  document.getElementById("le-p").value = p;
+  document.getElementById("le-f").value = f;
+  document.getElementById("le-c").value = c;
   if(!g || !_leOrigGrams) return;
   var ratio = g / _leOrigGrams;
   document.getElementById("le-kcal").value = Math.round(_leOrigKcal * ratio * 10) / 10;
