@@ -78,6 +78,13 @@ def health():
 @app.get("/api/user")
 def api_get_user(x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
+    if uid != 0:
+        try:
+            c = conn(); cur = c.cursor()
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMP")
+            cur.execute("UPDATE users SET last_seen=NOW() WHERE user_id=%s", (uid,))
+            c.commit(); release(c)
+        except: pass
     user = get_user(uid)
     if not user:
         return {"exists": False}

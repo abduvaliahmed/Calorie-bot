@@ -1473,36 +1473,49 @@ async function loadUsers() {
     var el=document.getElementById("admin-users");
     if(!users.length){el.innerHTML="<div style='padding:12px;color:var(--t2);text-align:center'>"+(lang==="ru"?"Пользователей нет":"Foydalanuvchilar yoq")+"</div>";return;}
     var goalMap={lose:"Ozish",maintain:"Saqlash",muscle:"Massa"};
-    el.innerHTML='<div class="sc" style="margin-bottom:12px"><div class="sc-l">Jami</div><div class="sc-v">'+r.count+'<span class="sc-u"> ta</span></div></div>'+
+    el.innerHTML='<div style="font-size:13px;color:var(--t2);margin-bottom:10px">Jami: <b style="color:var(--t1)">'+r.count+' ta</b></div>'+
     '<div class="card">'+users.map(function(u){
-      var nm=u.first_name||(u.username?'@'+u.username:'ID:'+u.user_id);
-      var goal=goalMap[u.goal]||u.goal||"-";
-      var isBlocked=u.is_blocked;
-      var reg=u.created_at?(new Date(u.created_at)).toLocaleDateString("ru-RU"):"?";
-      var upd=u.updated_at?(new Date(u.updated_at)).toLocaleDateString("ru-RU"):"?";
+      var nm = u.first_name || (u.username ? '@'+u.username : 'ID:'+u.user_id);
+      var un = u.username ? ' @'+u.username : '';
+      var goal = goalMap[u.goal]||u.goal||"-";
+      var isBlocked = u.is_blocked;
+      var reg = u.created_at ? (new Date(u.created_at)).toLocaleDateString("ru-RU") : "?";
+      var lastSeen = u.last_seen ? (function(){
+        var d = new Date(u.last_seen);
+        var now = new Date();
+        var diff = Math.floor((now-d)/60000);
+        if(diff < 1) return "Hozir online";
+        if(diff < 60) return diff+" daqiqa oldin";
+        if(diff < 1440) return Math.floor(diff/60)+" soat oldin";
+        return d.toLocaleDateString("ru-RU")+" "+d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+      })() : "Hali kirmagan";
+      var isOnline = u.last_seen && (new Date()-new Date(u.last_seen)) < 300000;
       return '<div style="padding:14px 16px;border-bottom:.5px solid var(--sep)">'+
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
-          '<div style="font-size:15px;font-weight:600;color:'+(isBlocked?'#C62828':'var(--t1)')+'">'+
-            (isBlocked?'🚫 ':'')+nm+
+          '<div style="display:flex;align-items:center;gap:8px">'+
+            (isOnline?'<div style="width:8px;height:8px;border-radius:4px;background:#34C759;flex-shrink:0"></div>':'<div style="width:8px;height:8px;border-radius:4px;background:var(--sep);flex-shrink:0"></div>')+
+            '<div>'+
+              '<div style="font-size:15px;font-weight:600;color:'+(isBlocked?'#C62828':'var(--t1)')+'">'+nm+'</div>'+
+              (un?'<div style="font-size:11px;color:var(--t2)">'+un+'</div>':'')+
+            '</div>'+
           '</div>'+
           '<div style="display:flex;gap:6px">'+
             '<button onclick="adminBlockUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:'+(isBlocked?'#E8F9F2':'#FFF3E0')+';color:'+(isBlocked?'#0F6E56':'#E65100')+'">'+
-              (isBlocked?'Ochish':'Bloklash')+
+              (isBlocked?'Ochish':'Blok')+
             '</button>'+
-            '<button onclick="adminDeleteUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:#FEEBEB;color:#C62828">'+
-              "O'chir"+
-            '</button>'+
+            '<button onclick="adminDeleteUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:#FEEBEB;color:#C62828">✕</button>'+
           '</div>'+
         '</div>'+
-        '<div style="font-size:12px;color:var(--t2);display:flex;gap:12px;flex-wrap:wrap">'+
+        '<div style="font-size:12px;color:var(--t2);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">'+
           '<span>'+(u.age||"?")+'y</span>'+
           '<span>'+(u.weight||"?")+'kg</span>'+
           '<span>'+goal+'</span>'+
-          '<span>'+(u.fat_pct||0)+'% yog</span>'+
-          '<span style="color:var(--teal)">'+Math.round(u.kcal_target||0)+' kkal</span>'+
+          '<span>'+(u.fat_pct||0)+'%yog</span>'+
+          '<span style="color:var(--teal);font-weight:600">'+Math.round(u.kcal_target||0)+' kkal</span>'+
         '</div>'+
-        '<div style="font-size:11px;color:var(--t2);margin-top:4px">'+
-          'Kirgan: '+reg+' · Yangilangan: '+upd+
+        '<div style="font-size:11px;display:flex;gap:10px">'+
+          '<span style="color:'+(isOnline?'#34C759':'var(--t2)')+'">⏱ '+lastSeen+'</span>'+
+          '<span style="color:var(--t2)">📅 '+reg+'</span>'+
         '</div>'+
       '</div>';
     }).join('')+'</div>';

@@ -193,7 +193,10 @@ def get_global_foods():
 
 def get_all_users():
     c = conn(); cur = c.cursor()
-    cur.execute("SELECT user_id,lang,gender,age,weight,goal,kcal_target,fat_pct,created_at,updated_at FROM users ORDER BY created_at DESC")
+    # Add last_seen column if not exists
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMP")
+    c.commit()
+    cur.execute("SELECT user_id,first_name,username,lang,gender,age,weight,goal,kcal_target,fat_pct,is_blocked,created_at,updated_at,last_seen FROM users ORDER BY last_seen DESC NULLS LAST")
     rows = cur.fetchall(); release(c)
     return [dict(r) for r in rows]
 
