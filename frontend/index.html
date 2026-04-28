@@ -286,7 +286,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
         <div id="food-sentinel" style="height:20px"></div>
 
         <!-- Gram panel -->
-        <div id="gram-panel" style="display:none;margin-top:8px">
+        <div id="gram-overlay" onclick="closeGramPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199"></div>
+        <div id="gram-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + var(--sb));box-shadow:0 -4px 24px rgba(0,0,0,0.15);max-height:85vh;overflow-y:auto">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div style="font-size:17px;font-weight:700;color:var(--t1)" id="gp-name">Mahsulot</div>
             <div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 8px;border-radius:10px" id="gp-per">100g uchun</div>
@@ -795,54 +796,59 @@ function renderHome() {
     '<div class="emp"><div class="emp-ic">🍽</div><div class="emp-t">'+t("empty")+'</div><div class="emp-s">'+t("empty2")+'</div></div>':
     logs.map(function(l){return '<div class="fi"><div class="fi-ic">'+fIcon(l.food_name)+'</div><div class="fi-inf"><div class="fi-n">'+l.food_name+'</div><div class="fi-m">'+l.grams+'g · P:'+l.protein+'g Y:'+l.fat+'g U:'+l.carb+'g</div></div><div class="fi-k">'+Math.round(l.kcal)+' kkal</div><button onclick="openLogEdit('+l.id+',\''+l.food_name+'\','+l.grams+','+l.kcal+','+l.protein+','+l.fat+','+l.carb+')" style="width:28px;height:28px;border-radius:14px;background:var(--tl);border:none;cursor:pointer;margin-left:4px;font-size:13px;flex-shrink:0">✏️</button><button class="del" onclick="delLog('+l.id+')">✕</button></div>';}).join("");
   document.getElementById("home-body").innerHTML=
-    '<div class="hero">'+
-      // Row 1: kcal + arc
+    '<div class="hero" style="background:'+(tot.kcal>tar.kcal?'linear-gradient(135deg,#C62828,#E53935)':'var(--teal)')+';transition:background 0.5s">'+
       '<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">'+
-        // Big arc
-        '<div style="position:relative;flex-shrink:0;width:96px;height:96px">'+
-          '<svg width="96" height="96" viewBox="0 0 96 96" style="transform:rotate(-90deg)">'+
-            '<circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="7"/>'+
-            '<circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/>'+
-          '</svg>'+
-          '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
-            '<div style="font-size:22px;font-weight:800;color:#fff;line-height:1">'+kp+'%</div>'+
-            '<div style="font-size:9px;color:rgba(255,255,255,0.7)">'+(lang==="ru"?"цель":"maqsad")+'</div>'+
-          '</div>'+
-        '</div>'+
-        // Kcal text
+        // Multi-color arc
+        (function(){
+          var circ2=2*Math.PI*40;
+          var pRatio=Math.min(1,(tot.protein*4)/(tar.protein*4||1));
+          var fRatio=Math.min(1,(tot.fat*9)/(tar.fat*9||1));
+          var cRatio=Math.min(1,(tot.carb*4)/(tar.carb*4||1));
+          var pLen=(pRatio/3)*circ2, fLen=(fRatio/3)*circ2, cLen=(cRatio/3)*circ2;
+          var seg=circ2/3;
+          return '<div style="position:relative;flex-shrink:0;width:100px;height:100px">'+
+            '<svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">'+
+              '<circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="7"/>'+
+              '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+pLen.toFixed(1)+' '+(circ2-pLen).toFixed(1)+'" stroke-dashoffset="0"/>'+
+              '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+fLen.toFixed(1)+' '+(circ2-fLen).toFixed(1)+'" stroke-dashoffset="'+(-seg).toFixed(1)+'"/>'+
+              '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+cLen.toFixed(1)+' '+(circ2-cLen).toFixed(1)+'" stroke-dashoffset="'+(-seg*2).toFixed(1)+'"/>'+
+            '</svg>'+
+            '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
+              '<div style="font-size:14px;font-weight:800;color:#fff;line-height:1">'+kp+'%</div>'+
+              '<div style="font-size:8px;color:rgba(255,255,255,0.7)">'+(lang==="ru"?"цель":"maqsad")+'</div>'+
+            '</div>'+
+          '</div>';
+        })() +
         '<div style="flex:1">'+
-          '<div style="font-size:38px;font-weight:800;color:#fff;line-height:1">'+fmt(tot.kcal)+'</div>'+
+          '<div style="font-size:38px;font-weight:800;color:#fff;line-height:1'+(tot.kcal>tar.kcal?';text-shadow:0 0 20px rgba(255,200,200,0.8)':'')+'">'+(tot.kcal>tar.kcal?'⚠️ ':'')+fmt(tot.kcal)+'</div>'+
           '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px">/ '+fmt(tar.kcal)+' kkal</div>'+
+          (tot.kcal>tar.kcal?'<div style="font-size:10px;color:#FFCDD2;margin-top:4px;font-weight:600">'+(lang==="ru"?"Превышение!":"Norma oshdi!")+'</div>':'')+ 
         '</div>'+
       '</div>'+
-      // Row 2: macros with neon bars
-      '<div style="display:flex;gap:10px">'+
-        // Protein
-        '<div style="flex:1;background:rgba(255,255,255,0.1);border-radius:14px;padding:10px">'+
-          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
-            '<div style="width:3px;height:18px;border-radius:2px;background:#4CD964"></div>'+
-            '<div style="font-size:10px;color:rgba(255,255,255,0.7)">'+t("prot")+'</div>'+
+      '<div style="display:flex;gap:8px">'+
+        '<div style="flex:1;background:rgba(255,255,255,'+(tot.protein>tar.protein?'0.25':'0.1')+');border-radius:14px;padding:10px;border:'+(tot.protein>tar.protein?'1px solid #FF453A':'1px solid transparent')+'">'+
+          '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">'+
+            '<div style="width:3px;height:16px;border-radius:2px;background:'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+'"></div>'+
+            '<div style="font-size:9px;color:rgba(255,255,255,0.7)">'+t("prot")+'</div>'+
           '</div>'+
-          '<div style="font-size:16px;font-weight:700;color:#fff">'+Math.round(tot.protein)+'<span style="font-size:10px;font-weight:400;opacity:0.6">/'+Math.round(tar.protein)+'g</span></div>'+
-          '<div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:6px"><div style="height:100%;width:'+pp+'%;background:#4CD964;border-radius:2px;max-width:100%"></div></div>'+
+          '<div style="font-size:15px;font-weight:700;color:'+(tot.protein>tar.protein?'#FFCDD2':'#fff')+'">'+Math.round(tot.protein)+'<span style="font-size:9px;opacity:0.6">/'+Math.round(tar.protein)+'g</span></div>'+
+          '<div style="height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:5px"><div style="height:100%;width:'+Math.min(pp,100)+'%;background:'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+';border-radius:1px"></div></div>'+
         '</div>'+
-        // Fat
-        '<div style="flex:1;background:rgba(255,255,255,0.1);border-radius:14px;padding:10px">'+
-          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
-            '<div style="width:3px;height:18px;border-radius:2px;background:#FF9500"></div>'+
-            '<div style="font-size:10px;color:rgba(255,255,255,0.7)">'+t("fat")+'</div>'+
+        '<div style="flex:1;background:rgba(255,255,255,'+(tot.fat>tar.fat?'0.25':'0.1')+');border-radius:14px;padding:10px;border:'+(tot.fat>tar.fat?'1px solid #FF453A':'1px solid transparent')+'">'+
+          '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">'+
+            '<div style="width:3px;height:16px;border-radius:2px;background:'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+'"></div>'+
+            '<div style="font-size:9px;color:rgba(255,255,255,0.7)">'+t("fat")+'</div>'+
           '</div>'+
-          '<div style="font-size:16px;font-weight:700;color:#fff">'+Math.round(tot.fat)+'<span style="font-size:10px;font-weight:400;opacity:0.6">/'+Math.round(tar.fat)+'g</span></div>'+
-          '<div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:6px"><div style="height:100%;width:'+fp+'%;background:#FF9500;border-radius:2px;max-width:100%"></div></div>'+
+          '<div style="font-size:15px;font-weight:700;color:'+(tot.fat>tar.fat?'#FFCDD2':'#fff')+'">'+Math.round(tot.fat)+'<span style="font-size:9px;opacity:0.6">/'+Math.round(tar.fat)+'g</span></div>'+
+          '<div style="height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:5px"><div style="height:100%;width:'+Math.min(fp,100)+'%;background:'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+';border-radius:1px"></div></div>'+
         '</div>'+
-        // Carb
-        '<div style="flex:1;background:rgba(255,255,255,0.1);border-radius:14px;padding:10px">'+
-          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
-            '<div style="width:3px;height:18px;border-radius:2px;background:#5AC8FA"></div>'+
-            '<div style="font-size:10px;color:rgba(255,255,255,0.7)">'+t("carb")+'</div>'+
+        '<div style="flex:1;background:rgba(255,255,255,'+(tot.carb>tar.carb?'0.25':'0.1')+');border-radius:14px;padding:10px;border:'+(tot.carb>tar.carb?'1px solid #FF453A':'1px solid transparent')+'">'+
+          '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">'+
+            '<div style="width:3px;height:16px;border-radius:2px;background:'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+'"></div>'+
+            '<div style="font-size:9px;color:rgba(255,255,255,0.7)">'+t("carb")+'</div>'+
           '</div>'+
-          '<div style="font-size:16px;font-weight:700;color:#fff">'+Math.round(tot.carb)+'<span style="font-size:10px;font-weight:400;opacity:0.6">/'+Math.round(tar.carb)+'g</span></div>'+
-          '<div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:6px"><div style="height:100%;width:'+cp+'%;background:#5AC8FA;border-radius:2px;max-width:100%"></div></div>'+
+          '<div style="font-size:15px;font-weight:700;color:'+(tot.carb>tar.carb?'#FFCDD2':'#fff')+'">'+Math.round(tot.carb)+'<span style="font-size:9px;opacity:0.6">/'+Math.round(tar.carb)+'g</span></div>'+
+          '<div style="height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:5px"><div style="height:100%;width:'+Math.min(cp,100)+'%;background:'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+';border-radius:1px"></div></div>'+
         '</div>'+
       '</div>'+
     '</div>'+
@@ -1030,7 +1036,7 @@ function onFoodQ(q) {
     try{
       var r=await req("/api/food/search?q="+encodeURIComponent(q));
       showFoods(r.results||[]);
-      document.getElementById("gram-panel").style.display="none";
+      closeGramPanel();
     }catch(e){}
   },300);
 }
@@ -1095,6 +1101,11 @@ function updateFoodArc(protein, fat, carb) {
   if(arcC) { arcC.setAttribute("stroke-dasharray", cLen+" "+(circ-cLen)); arcC.setAttribute("stroke-dashoffset", cOff); }
 }
 
+function closeGramPanel() {
+  document.getElementById("gram-panel").style.display = "none";
+  document.getElementById("gram-overlay").style.display = "none";
+}
+
 function scrollToFoodTop() {
   var addScreen = document.getElementById("s-add-food");
   if(addScreen) {
@@ -1124,24 +1135,10 @@ function selFood(i) {
   if(document.getElementById("gr-lbl-c")) document.getElementById("gr-lbl-c").textContent=isRu?"Углев.":"Uglevod";
   document.getElementById("gram-lbl").textContent=isUnit?t("am_d"):t("am_g");
   document.getElementById("gram-val").value=isUnit?1:100;
+  document.getElementById("gram-overlay").style.display="block";
   document.getElementById("gram-panel").style.display="block";
   updateFoodArc(f.protein, f.fat, f.carb);
   onGram();
-  // Show scroll-to-top button, scroll panel into view without going to bottom
-  setTimeout(function() {
-    var panel = document.getElementById("gram-panel");
-    var screen = document.getElementById("s-add-food");
-    var scrollEl = screen ? screen.querySelector(".scroll") : null;
-    if(panel && scrollEl) {
-      var panelTop = panel.offsetTop;
-      var scrollH = scrollEl.clientHeight;
-      var panelH = panel.offsetHeight;
-      // Center the panel in view
-      scrollEl.scrollTo({top: panelTop - (scrollH/2) + (panelH/2), behavior:"smooth"});
-    }
-    var tb = document.getElementById("scroll-top-btn");
-    if(tb) { tb.style.display = "flex"; }
-  }, 100);
 }
 
 function onGram() {
@@ -1171,7 +1168,7 @@ async function addLog() {
     await loadToday();
     hideLoading();
     toast(t("added"));
-    document.getElementById("gram-panel").style.display="none";
+    closeGramPanel();
     document.getElementById("food-q").value="";
     if(btn){btn.disabled=false;btn.textContent=t("add_b");}
     loadFoods();
