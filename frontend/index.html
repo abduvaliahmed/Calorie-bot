@@ -2156,9 +2156,11 @@ async function addAIToLog(btn, idx) {
 }
 
 async function init() {
+  var loading=document.getElementById("s-loading");
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today")]);
     var r=results[0]; var td=results[1];
+    if(loading)loading.classList.remove("act");
     if(r&&r.exists&&r.user){
       S.user=r.user;
       S.today=td;
@@ -2175,6 +2177,7 @@ async function init() {
       startOB();
     }
   }catch(e){
+    if(loading)loading.classList.remove("act");
     updateUITexts();
     startOB();
   }
