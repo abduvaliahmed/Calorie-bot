@@ -754,10 +754,13 @@ function toggleLang() {
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function go(screen) {
+  // Always close loading screen
+  var loading=document.getElementById("s-loading");
+  if(loading)loading.classList.remove("act");
   var prev=document.querySelector(".screen.act");
   var next=document.getElementById("s-"+screen);
-  if(!next||prev===next)return;
-  if(prev)prev.classList.remove("act");
+  if(!next)return;
+  if(prev&&prev!==next)prev.classList.remove("act");
   next.classList.add("act");
   if(screen==="home")renderHome();
   else if(screen==="add-food")initFood();
@@ -1299,6 +1302,11 @@ var OB={step:1,data:{}};
 
 function startOB() {
   OB={step:1,data:S.user?JSON.parse(JSON.stringify(S.user)):{}};
+  // Close loading screen
+  var loading = document.getElementById("s-loading");
+  var onboard = document.getElementById("s-onboard");
+  if(loading) loading.classList.remove("act");
+  if(onboard) onboard.classList.add("act");
   updateUITexts();
   renderOB();
   var prev=document.querySelector(".screen.act");
