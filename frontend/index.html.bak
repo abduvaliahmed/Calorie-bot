@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>NutriBot</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#1D9E75;--teal-l:#E1F5EE;--teal-d:#0F6E56;
+  --bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--text2:#6d6d72;
+  --sep:#e5e5ea;--red:#FF3B30;--orange:#FF9500;--blue:#007AFF;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;color:var(--text)}
+
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative}
+.screens{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);transition:transform .3s ease;transform:translateX(100%);overflow:hidden}
+.screen.active{transform:translateX(0)}
+.screen.back{transform:translateX(-30%)}
+
+.hdr{background:var(--card);padding:calc(var(--safe-top) + 12px) 16px 0;flex-shrink:0;border-bottom:.5px solid var(--sep)}
+.hdr-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
+.hdr-title{font-size:22px;font-weight:700}
+.hdr-back{font-size:17px;color:var(--teal);cursor:pointer;display:flex;align-items:center;gap:2px}
+.hdr-action{font-size:17px;color:var(--teal);cursor:pointer}
+
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
+
+.tab-bar{background:var(--card);border-top:.5px solid var(--sep);display:flex;padding:8px 0;padding-bottom:calc(8px + var(--safe-bot));flex-shrink:0}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.tab svg{width:24px;height:24px}
+.tab span{font-size:10px;color:var(--text2)}
+.tab.on svg path,.tab.on svg circle{stroke:var(--teal)!important}
+.tab.on span{color:var(--teal)}
+
+.hero{background:var(--teal);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.hero-kcal{font-size:36px;font-weight:800;line-height:1}
+.hero-sub{font-size:13px;opacity:.75;margin-top:4px}
+.ring{position:relative;width:72px;height:72px}
+.ring svg{transform:rotate(-90deg)}
+.ring-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-size:16px;font-weight:800}
+.ring-lbl{font-size:9px;opacity:.8}
+.macro-row{display:flex;gap:8px}
+.mc{flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:8px;text-align:center}
+.mc-lbl{font-size:10px;opacity:.8;margin-bottom:2px}
+.mc-val{font-size:14px;font-weight:700}
+.mc-bar{height:3px;background:rgba(255,255,255,.3);border-radius:2px;margin-top:5px;overflow:hidden}
+.mc-fill{height:100%;background:#fff;border-radius:2px}
+
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:14px;padding:14px}
+.stat-lbl{font-size:12px;color:var(--text2);margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:700}
+.stat-unit{font-size:13px;font-weight:400;color:var(--text2)}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;margin-top:4px}
+.bg{background:#E8F9F2;color:#0F6E56}
+.bo{background:#FFF3E0;color:#E65100}
+.br{background:#FEEBEB;color:#C62828}
+
+.sec{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin:18px 0 8px 4px}
+.card{background:var(--card);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.row{display:flex;align-items:center;padding:13px 16px;border-bottom:.5px solid var(--sep)}
+.row:last-child{border-bottom:none}
+.row-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;font-size:18px}
+.row-text{flex:1}
+.row-lbl{font-size:15px}
+.row-sub{font-size:13px;color:var(--text2);margin-top:1px}
+.row-right{font-size:15px;color:var(--text2)}
+.chev{width:7px;height:7px;border-right:1.5px solid #c7c7cc;border-top:1.5px solid #c7c7cc;transform:rotate(45deg);margin-left:6px}
+
+.food-item{background:var(--card);border-radius:14px;display:flex;align-items:center;padding:12px 14px;margin-bottom:8px}
+.food-ic{width:40px;height:40px;border-radius:10px;background:var(--teal-l);display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;font-size:20px}
+.food-info{flex:1;min-width:0}
+.food-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.food-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.food-kcal{font-size:14px;font-weight:600;color:var(--teal);flex-shrink:0;margin-left:8px}
+.del{width:30px;height:30px;border-radius:15px;background:#FEEBEB;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:8px;flex-shrink:0}
+
+.fab{position:absolute;bottom:84px;right:16px;width:52px;height:52px;border-radius:26px;background:var(--teal);border:none;color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(29,158,117,.4);z-index:10}
+
+.search-bar{background:rgba(118,118,128,.12);border-radius:10px;display:flex;align-items:center;padding:8px 12px;margin-bottom:16px;gap:8px}
+.search-bar input{border:none;background:transparent;font-size:15px;color:var(--text);flex:1;outline:none}
+.search-bar input::placeholder{color:var(--text2)}
+
+.inp-group{background:var(--card);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.inp-row{display:flex;align-items:center;padding:4px 16px;border-bottom:.5px solid var(--sep)}
+.inp-row:last-child{border-bottom:none}
+.inp-lbl{font-size:15px;color:var(--text);width:120px;flex-shrink:0}
+.inp-row input{flex:1;border:none;background:transparent;font-size:15px;color:var(--text);padding:10px 0;text-align:right;outline:none}
+
+.seg{display:flex;background:rgba(118,118,128,.12);border-radius:9px;padding:2px;margin-bottom:16px}
+.seg button{flex:1;padding:7px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--text2);border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--card);color:var(--text)}
+
+.btn{border:none;border-radius:14px;padding:15px;width:100%;font-size:17px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-p{background:var(--teal);color:#fff}
+.btn-s{background:var(--teal-l);color:var(--teal-d)}
+.btn-g{background:transparent;color:var(--teal);border:1.5px solid var(--teal);padding:14px}
+
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.choice{background:var(--card);border-radius:14px;padding:16px;text-align:center;cursor:pointer;border:2px solid transparent}
+.choice.on{border-color:var(--teal);background:var(--teal-l)}
+.choice-ic{font-size:30px;margin-bottom:6px}
+.choice-lbl{font-size:14px;font-weight:500}
+
+.onboard-hdr{text-align:center;padding:10px 0 16px}
+.onboard-step{width:34px;height:34px;border-radius:17px;background:var(--teal);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.onboard-ttl{font-size:20px;font-weight:700;margin-bottom:6px}
+.onboard-sub{font-size:14px;color:var(--text2);line-height:1.5}
+.progress-wrap{height:3px;background:var(--sep);border-radius:2px;margin:8px 0 0;overflow:hidden}
+.progress-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .3s}
+
+.result-card{background:var(--teal-l);border-radius:14px;padding:16px;margin-bottom:12px}
+.result-title{font-size:13px;font-weight:600;color:var(--teal-d);margin-bottom:10px}
+.result-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid rgba(29,158,117,.15)}
+.result-row:last-child{border-bottom:none}
+.result-lbl{font-size:14px;color:var(--text2)}
+.result-val{font-size:14px;font-weight:600;color:var(--teal-d)}
+
+.avatar{width:72px;height:72px;border-radius:36px;background:var(--teal);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:30px;font-weight:700;color:#fff}
+.goal-pill{display:inline-flex;align-items:center;gap:6px;background:var(--teal-l);color:var(--teal-d);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-ic{font-size:48px;margin-bottom:12px}
+.empty-ttl{font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px}
+.empty-sub{font-size:14px;line-height:1.5}
+
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px;margin-bottom:4px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+.bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;background:var(--teal-l);border-radius:4px 4px 0 0;overflow:hidden}
+.bar-fill{width:100%;background:var(--teal);border-radius:4px 4px 0 0}
+.bar-lbl{font-size:10px;color:var(--text2)}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px}
+.spinner{width:40px;height:40px;border:3px solid var(--teal-l);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="screens" id="screens">
+
+    <!-- LOADING -->
+    <div class="screen active" id="s-loading">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div style="color:var(--text2);font-size:14px">Yuklanmoqda...</div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="screen" id="s-home">
+      <div class="hdr">
+        <div class="hdr-row">
+          <div class="hdr-title" id="home-greeting">Salom! 👋</div>
+          <div style="width:38px;height:38px;border-radius:19px;background:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="go('profile')">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#fff" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="scroll" id="home-scroll">
+        <div id="home-body"></div>
+        <div style="height:70px"></div>
+      </div>
+      <button class="fab" onclick="go('add-food')">+</button>
+      <div class="tab-bar" id="tb-home">
+        <div class="tab on" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="var(--teal)" stroke-width="1.8"/></svg><span>Asosiy</span></div>
+        <div class="tab" onclick="go('add-food')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8E8E93" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Ovqat</span></div>
+        <div class="tab" onclick="go('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Statistika</span></div>
+        <div class="tab" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#8E8E93" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Profil</span></div>
+      </div>
+    </div>
+
+    <!-- ADD FOOD -->
+    <div class="screen" id="s-add-food">
+      <div class="hdr">
+        <div class="hdr-row">
+          <div class="hdr-back" onclick="back()">‹ Orqaga</div>
+          <div class="hdr-title" style="font-size:17px">Ovqat qo'shish</div>
+          <div style="width:60px"></div>
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="search-bar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#8E8E93" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#8E8E93" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="food-search" placeholder="Mahsulot nomini qidiring..." oninput="searchFood(this.value)"/>
+        </div>
+        <div id="food-results"></div>
+        <div id="gram-panel" style="display:none">
+          <div class="sec" id="gp-name">Mahsulot</div>
+          <div class="result-card">
+            <div class="result-title">100g uchun</div>
+            <div class="result-row"><span class="result-lbl">Kaloriya</span><span class="result-val" id="gp-kcal100">—</span></div>
+            <div class="result-row"><span class="result-lbl">Oqsil</span><span class="result-val" id="gp-p100">—</span></div>
+            <div class="result-row"><span class="result-lbl">Yog'</span><span class="result-val" id="gp-f100">—</span></div>
+            <div class="result-row"><span class="result-lbl">Uglevod</span><span class="result-val" id="gp-c100">—</span></div>
+          </div>
+          <div class="inp-group">
+            <div class="inp-row"><div class="inp-lbl">Miqdor (g)</div><input type="number" id="gram-val" value="100" min="1" max="2000" oninput="updateGramCalc()"/></div>
+          </div>
+          <div class="result-card" id="gram-result">
+            <div class="result-title" id="gr-title">100g uchun hisob</div>
+            <div class="result-row"><span class="result-lbl">Kaloriya</span><span class="result-val" id="gr-kcal">—</span></div>
+            <div class="result-row"><span class="result-lbl">Oqsil</span><span class="result-val" id="gr-p">—</span></div>
+            <div class="result-row"><span class="result-lbl">Yog'</span><span class="result-val" id="gr-f">—</span></div>
+            <div class="result-row"><span class="result-lbl">Uglevod</span><span class="result-val" id="gr-c">—</span></div>
+          </div>
+          <button class="btn btn-p" onclick="addFoodLog()">Qo'shish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="screen" id="s-stats">
+      <div class="hdr"><div class="hdr-row"><div class="hdr-title">Statistika</div></div></div>
+      <div class="scroll" id="stats-body">
+        <div class="sec">Haftalik kaloriya</div>
+        <div class="card" style="padding:16px">
+          <div class="bar-chart" id="week-chart"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px" id="week-labels"></div>
+        </div>
+        <div class="grid2" id="stats-cards"></div>
+        <div class="sec">Makronutrientlar (o'rtacha)</div>
+        <div class="card" style="padding:16px" id="macro-stats"></div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#8E8E93" stroke-width="1.8"/></svg><span>Asosiy</span></div>
+        <div class="tab" onclick="go('add-food')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8E8E93" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Ovqat</span></div>
+        <div class="tab on" onclick="go('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round"/></svg><span>Statistika</span></div>
+        <div class="tab" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#8E8E93" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Profil</span></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="s-profile">
+      <div class="hdr"><div class="hdr-row"><div class="hdr-title">Profil</div></div></div>
+      <div class="scroll" id="profile-body"></div>
+      <div class="tab-bar">
+        <div class="tab" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#8E8E93" stroke-width="1.8"/></svg><span>Asosiy</span></div>
+        <div class="tab" onclick="go('add-food')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#8E8E93" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Ovqat</span></div>
+        <div class="tab" onclick="go('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg><span>Statistika</span></div>
+        <div class="tab on" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--teal)" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round"/></svg><span>Profil</span></div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="screen" id="s-onboard">
+      <div class="hdr">
+        <div class="hdr-row">
+          <div style="font-size:17px;color:var(--text2)" id="ob-step-label">1 / 5</div>
+          <div class="hdr-title" style="font-size:17px">Sozlash</div>
+          <div style="font-size:17px;color:var(--teal);cursor:pointer" onclick="obNext()" id="ob-next-btn">Keyingi</div>
+        </div>
+        <div class="progress-wrap"><div class="progress-fill" id="ob-progress" style="width:20%"></div></div>
+      </div>
+      <div class="scroll" id="ob-body"></div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin;
+const tg = window.Telegram?.WebApp;
+const initData = tg?.initData || "";
+const tgUser = tg?.initDataUnsafe?.user || {};
+
+if(tg){tg.ready();tg.expand();}
+
+let state = {
+  user: null,
+  today: null,
+  foods: [],
+  selectedFood: null,
+  ob: {step:1, data:{}},
+  history: [],
+};
+
+const h = {
+  api: async(path, method="GET", body=null)=>{
+    const opts={method,headers:{"Content-Type":"application/json","X-Init-Data":initData}};
+    if(body)opts.body=JSON.stringify(body);
+    const r=await fetch(API+path,opts);
+    if(!r.ok)throw new Error(r.status);
+    return r.json();
+  },
+  fmt: n=>Math.round(n).toLocaleString("ru"),
+  fmtD: n=>Math.round(n*10)/10,
+  pct: (a,b)=>b>0?Math.min(100,Math.round(a/b*100)):0,
+  bar: (pct,color="#1D9E75")=>`<div style="height:6px;background:var(--sep);border-radius:3px;overflow:hidden;margin-top:5px"><div style="height:6px;background:${color};border-radius:3px;width:${pct}%"></div></div>`,
+  badge: (txt,cls)=>`<span class="badge ${cls}">${txt}</span>`,
+  toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);},
+  goalLabel: g=>({lose:"Vazn yo'qotish",maintain:"Vaznni saqlash",muscle:"Massa nabor"}[g]||g),
+  goalIcon: g=>({lose:"🔻",maintain:"⚖️",muscle:"💪"}[g]||""),
+};
+
+async function init(){
+  try{
+    const r = await h.api("/api/user");
+    if(r.exists){
+      state.user=r.user;
+      await loadToday();
+      go("home");
+    } else {
+      startOnboard();
+    }
+  } catch(e){
+    go("home");
+  }
+}
+
+async function loadToday(){
+  try{
+    const r=await h.api("/api/today");
+    state.today=r;
+  } catch(e){}
+}
+
+function go(screen){
+  const prev=document.querySelector(".screen.active");
+  const next=document.getElementById("s-"+screen);
+  if(!next||prev===next)return;
+  if(prev)prev.classList.remove("active");
+  next.classList.add("active");
+  if(screen==="home")renderHome();
+  if(screen==="add-food")renderAddFood();
+  if(screen==="stats")renderStats();
+  if(screen==="profile")renderProfile();
+}
+
+function back(){
+  go("home");
+}
+
+function renderHome(){
+  if(!state.user){go("onboard");return;}
+  const u=state.user;
+  const t=state.today||{totals:{kcal:0,protein:0,fat:0,carb:0},logs:[],targets:{kcal:u.kcal_target||2000,protein:u.protein_g||150,fat:u.fat_g||70,carb:u.carb_g||200}};
+  const tot=t.totals; const tar=t.targets;
+  const name=tgUser.first_name||"";
+  document.getElementById("home-greeting").textContent=name?`Salom, ${name}! 👋`:"Salom! 👋";
+  const kpct=h.pct(tot.kcal,tar.kcal);
+  const ppct=h.pct(tot.protein,tar.protein);
+  const fpct=h.pct(tot.fat,tar.fat);
+  const cpct=h.pct(tot.carb,tar.carb);
+  const circ=`<circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="7"/><circle cx="36" cy="36" r="30" fill="none" stroke="white" stroke-width="7" stroke-dasharray="${Math.PI*2*30}" stroke-dashoffset="${Math.PI*2*30*(1-kpct/100)}" stroke-linecap="round"/>`;
+  let logsHtml="";
+  const foodIcons={"tovuq":"🍗","tuxum":"🥚","guruch":"🍚","banan":"🍌","olma":"🍎","non":"🍞","sut":"🥛","tvorog":"🧀","losos":"🐟","ton":"🐟"};
+  const getIcon=name=>{const k=name.toLowerCase();for(const[w,ic]of Object.entries(foodIcons))if(k.includes(w))return ic;return"🍽";};
+  if(t.logs.length===0){
+    logsHtml=`<div class="empty"><div class="empty-ic">🍽</div><div class="empty-ttl">Hali hech narsa yo'q</div><div class="empty-sub">Ovqat qo'shish uchun + tugmasini bosing</div></div>`;
+  } else {
+    logsHtml=t.logs.map(l=>`<div class="food-item"><div class="food-ic">${getIcon(l.food_name)}</div><div class="food-info"><div class="food-name">${l.food_name}</div><div class="food-meta">${l.grams}g · P:${h.fmtD(l.protein)}g Y:${h.fmtD(l.fat)}g U:${h.fmtD(l.carb)}g</div></div><div class="food-kcal">${Math.round(l.kcal)} kkal</div><button class="del" onclick="delLog(${l.id})">✕</button></div>`).join("");
+  }
+  document.getElementById("home-body").innerHTML=`
+    <div class="hero">
+      <div class="hero-top">
+        <div><div class="hero-kcal">${h.fmt(tot.kcal)}</div><div class="hero-sub">/ ${h.fmt(tar.kcal)} kkal maqsad</div></div>
+        <div class="ring"><svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">${circ}</svg><div class="ring-mid"><span class="ring-pct">${kpct}%</span><span class="ring-lbl">bajarildi</span></div></div>
+      </div>
+      <div class="macro-row">
+        <div class="mc"><div class="mc-lbl">Oqsil</div><div class="mc-val">${Math.round(tot.protein)}g</div><div class="mc-bar"><div class="mc-fill" style="width:${ppct}%"></div></div></div>
+        <div class="mc"><div class="mc-lbl">Yog'</div><div class="mc-val">${Math.round(tot.fat)}g</div><div class="mc-bar"><div class="mc-fill" style="width:${fpct}%"></div></div></div>
+        <div class="mc"><div class="mc-lbl">Uglevod</div><div class="mc-val">${Math.round(tot.carb)}g</div><div class="mc-bar"><div class="mc-fill" style="width:${cpct}%"></div></div></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="stat"><div class="stat-lbl">Yog' foizi</div><div class="stat-val">${u.fat_pct||0}<span class="stat-unit">%</span></div>${h.badge(u.fat_zone||"—","bg")}</div>
+      <div class="stat"><div class="stat-lbl">BMR</div><div class="stat-val">${h.fmt(u.bmr||0)}<span class="stat-unit"> kkal</span></div><div style="font-size:11px;color:var(--text2);margin-top:4px">tinch holat</div></div>
+      <div class="stat"><div class="stat-lbl">TDEE</div><div class="stat-val">${h.fmt(u.tdee||0)}<span class="stat-unit"> kkal</span></div><div style="font-size:11px;color:var(--text2);margin-top:4px">×${u.activity||1}</div></div>
+      <div class="stat"><div class="stat-lbl">Yog'siz vazn</div><div class="stat-val">${u.lean_mass||0}<span class="stat-unit"> kg</span></div></div>
+    </div>
+    <div class="sec">Bugungi ovqatlar</div>
+    ${logsHtml}
+  `;
+}
+
+async function delLog(id){
+  try{
+    await h.api(`/api/food-log/${id}`,"DELETE");
+    await loadToday();
+    renderHome();
+    h.toast("O'chirildi");
+  } catch(e){h.toast("Xato!");}
+}
+
+let searchTimer=null;
+function renderAddFood(){
+  document.getElementById("food-search").value="";
+  document.getElementById("gram-panel").style.display="none";
+  document.getElementById("food-results").innerHTML="";
+  loadPopularFoods();
+}
+
+async function loadPopularFoods(){
+  const r=await h.api("/api/food/search?q=");
+  showFoodResults(r.results.slice(0,8));
+}
+
+function searchFood(q){
+  clearTimeout(searchTimer);
+  if(q.length<1){loadPopularFoods();document.getElementById("gram-panel").style.display="none";return;}
+  searchTimer=setTimeout(async()=>{
+    const r=await h.api(`/api/food/search?q=${encodeURIComponent(q)}`);
+    showFoodResults(r.results);
+    document.getElementById("gram-panel").style.display="none";
+  },300);
+}
+
+function showFoodResults(foods){
+  if(!foods.length){
+    document.getElementById("food-results").innerHTML=`<div class="empty"><div class="empty-ic">🔍</div><div class="empty-ttl">Topilmadi</div><div class="empty-sub">Boshqa nom bilan qidiring</div></div>`;
+    return;
+  }
+  document.getElementById("food-results").innerHTML=`<div class="card">${foods.map((f,i)=>`<div class="row" onclick="selectFood(${i})" style="cursor:pointer"><div class="row-text"><div class="row-lbl">${f.name}</div><div class="row-sub">${Math.round(f.kcal)} kkal · P:${f.protein}g Y:${f.fat}g U:${f.carb}g</div></div><div class="row-right"><div class="chev"></div></div></div>`).join("")}</div>`;
+  state.foods=foods;
+}
+
+function selectFood(i){
+  const f=state.foods[i];
+  state.selectedFood=f;
+  document.getElementById("gp-name").textContent=f.name;
+  document.getElementById("gp-kcal100").textContent=Math.round(f.kcal)+" kkal";
+  document.getElementById("gp-p100").textContent=f.protein+"g";
+  document.getElementById("gp-f100").textContent=f.fat+"g";
+  document.getElementById("gp-c100").textContent=f.carb+"g";
+  document.getElementById("gram-val").value=100;
+  document.getElementById("gram-panel").style.display="block";
+  updateGramCalc();
+  document.getElementById("gram-panel").scrollIntoView({behavior:"smooth"});
+}
+
+function updateGramCalc(){
+  const f=state.selectedFood;if(!f)return;
+  const g=parseFloat(document.getElementById("gram-val").value)||0;
+  const r=g/f.per_grams;
+  document.getElementById("gr-title").textContent=`${g}g uchun hisob`;
+  document.getElementById("gr-kcal").textContent=Math.round(f.kcal*r)+" kkal";
+  document.getElementById("gr-p").textContent=Math.round(f.protein*r*10)/10+"g";
+  document.getElementById("gr-f").textContent=Math.round(f.fat*r*10)/10+"g";
+  document.getElementById("gr-c").textContent=Math.round(f.carb*r*10)/10+"g";
+}
+
+async function addFoodLog(){
+  const f=state.selectedFood;if(!f)return;
+  const g=parseFloat(document.getElementById("gram-val").value)||0;
+  if(g<=0){h.toast("Gramm kiriting!");return;}
+  const r=g/f.per_grams;
+  try{
+    await h.api("/api/food-log","POST",{
+      food_name:f.name,grams:g,
+      protein:Math.round(f.protein*r*10)/10,
+      fat:Math.round(f.fat*r*10)/10,
+      carb:Math.round(f.carb*r*10)/10,
+      kcal:Math.round(f.kcal*r*10)/10,
+    });
+    await loadToday();
+    h.toast("✅ Qo'shildi!");
+    document.getElementById("gram-panel").style.display="none";
+    document.getElementById("food-search").value="";
+    loadPopularFoods();
+  } catch(e){h.toast("Xato!");}
+}
+
+function renderStats(){
+  const u=state.user;
+  if(!u){document.getElementById("stats-body").innerHTML=`<div class="empty"><div class="empty-ic">📊</div><div class="empty-ttl">Profil yo'q</div></div>`;return;}
+  const days=["Du","Se","Ch","Pa","Sh","Ya","Du"];
+  const vals=[85,72,95,60,78,40,69];
+  const chartHtml=vals.map((v,i)=>`<div class="bar-col"><div class="bar-wrap"><div class="bar-fill" style="height:${v}%"></div></div><div class="bar-lbl">${days[i]}</div></div>`).join("");
+  document.getElementById("week-chart").innerHTML=chartHtml;
+  document.getElementById("stats-cards").innerHTML=`
+    <div class="stat"><div class="stat-lbl">O'rtacha kaloriya</div><div class="stat-val">1 980<span class="stat-unit"> kkal</span></div>${h.badge("Maqsadga yaqin","bg")}</div>
+    <div class="stat"><div class="stat-lbl">Maqsad bajarildi</div><div class="stat-val">5<span class="stat-unit">/7</span></div>${h.badge("71%","bo")}</div>
+  `;
+  document.getElementById("macro-stats").innerHTML=`
+    <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px">Oqsil</span><span style="font-size:14px;font-weight:500">${u.protein_g||0}g maqsad</span></div>${h.bar(90,"var(--teal)")}</div>
+    <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px">Yog'</span><span style="font-size:14px;font-weight:500">${u.fat_g||0}g maqsad</span></div>${h.bar(87,"var(--orange)")}</div>
+    <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px">Uglevod</span><span style="font-size:14px;font-weight:500">${u.carb_g||0}g maqsad</span></div>${h.bar(93,"var(--blue)")}</div>
+  `;
+}
+
+function renderProfile(){
+  const u=state.user;
+  if(!u){document.getElementById("profile-body").innerHTML=`<div class="scroll"><div class="empty"><div class="empty-ic">👤</div><div class="empty-ttl">Profil yo'q</div><div class="empty-sub">Sozlashni boshlang</div></div><button class="btn btn-p" onclick="startOnboard()">Profil yaratish</button></div>`;return;}
+  const name=tgUser.first_name||"U";
+  document.getElementById("profile-body").innerHTML=`<div class="scroll">
+    <div style="text-align:center;margin-bottom:20px">
+      <div class="avatar">${name[0].toUpperCase()}</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:6px">${tgUser.first_name||""} ${tgUser.last_name||""}</div>
+      <span class="goal-pill">${h.goalIcon(u.goal)} ${h.goalLabel(u.goal)}</span>
+    </div>
+    <div class="grid2">
+      <div class="stat"><div class="stat-lbl">Yog' foizi</div><div class="stat-val">${u.fat_pct||0}<span class="stat-unit">%</span></div>${h.badge(u.fat_zone||"—","bg")}</div>
+      <div class="stat"><div class="stat-lbl">Yog'siz vazn</div><div class="stat-val">${u.lean_mass||0}<span class="stat-unit"> kg</span></div></div>
+      <div class="stat"><div class="stat-lbl">BMR</div><div class="stat-val">${h.fmt(u.bmr||0)}<span class="stat-unit"> kkal</span></div></div>
+      <div class="stat"><div class="stat-lbl">TDEE</div><div class="stat-val">${h.fmt(u.tdee||0)}<span class="stat-unit"> kkal</span></div></div>
+    </div>
+    <div class="sec">Ma'lumotlar</div>
+    <div class="card">
+      <div class="row"><div class="row-text"><div class="row-lbl">Jins</div></div><div class="row-right">${u.gender==="male"?"Erkak":"Ayol"}</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Yosh</div></div><div class="row-right">${u.age} yosh</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Vazn</div></div><div class="row-right">${u.weight} kg</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Bo'y</div></div><div class="row-right">${u.height} sm</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Qadamlar</div></div><div class="row-right">${h.fmt(u.steps)}/kun</div></div>
+    </div>
+    <div class="sec">Kunlik maqsad</div>
+    <div class="card">
+      <div class="row"><div class="row-text"><div class="row-lbl">Kaloriya</div></div><div class="row-right" style="color:var(--teal);font-weight:600">${h.fmt(u.kcal_target||0)} kkal</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Oqsil</div></div><div class="row-right">${u.protein_g||0}g</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Yog'</div></div><div class="row-right">${u.fat_g||0}g</div></div>
+      <div class="row"><div class="row-text"><div class="row-lbl">Uglevod</div></div><div class="row-right">${u.carb_g||0}g</div></div>
+    </div>
+    <button class="btn btn-g" onclick="startOnboard()" style="margin-bottom:32px">Profilni yangilash</button>
+  </div>`;
+}
+
+// ONBOARDING
+const obSteps=[
+  {step:1,title:"Jins va yoshingiz",sub:"Aniq hisob-kitob uchun kerak",render:()=>`
+    <div class="choice-grid">
+      <div class="choice ${OB.data.gender==='male'?'on':''}" onclick="obChoice('gender','male',this)"><div class="choice-ic">👨</div><div class="choice-lbl">Erkak</div></div>
+      <div class="choice ${OB.data.gender==='female'?'on':''}" onclick="obChoice('gender','female',this)"><div class="choice-ic">👩</div><div class="choice-lbl">Ayol</div></div>
+    </div>
+    <div class="inp-group">
+      <div class="inp-row"><div class="inp-lbl">Yosh</div><input type="number" value="${OB.data.age||''}" placeholder="25" onchange="OB.data.age=+this.value"/></div>
+      <div class="inp-row"><div class="inp-lbl">Vazn (kg)</div><input type="number" value="${OB.data.weight||''}" placeholder="80" onchange="OB.data.weight=+this.value"/></div>
+      <div class="inp-row"><div class="inp-lbl">Bo'y (sm)</div><input type="number" value="${OB.data.height||''}" placeholder="175" onchange="OB.data.height=+this.value"/></div>
+    </div>`},
+  {step:2,title:"O'lchamlar",sub:"Yog' foizini hisoblash uchun",render:()=>`
+    <div class="inp-group">
+      <div class="inp-row"><div class="inp-lbl">Qorin (sm)</div><input type="number" value="${OB.data.waist||''}" placeholder="90" onchange="OB.data.waist=+this.value"/></div>
+      <div class="inp-row"><div class="inp-lbl">Bo'yin (sm)</div><input type="number" value="${OB.data.neck||''}" placeholder="38" onchange="OB.data.neck=+this.value"/></div>
+      ${OB.data.gender==='female'?`<div class="inp-row"><div class="inp-lbl">Tos (sm)</div><input type="number" value="${OB.data.hip||''}" placeholder="95" onchange="OB.data.hip=+this.value"/></div>`:''}
+    </div>
+    <div class="result-card" style="font-size:13px;color:var(--teal-d);line-height:1.6">
+      📐 O'lchash qoidasi:<br>• Qorin — kindik darajasida, nafas chiqargan holda<br>• Bo'yin — eng tor qismidan
+    </div>`},
+  {step:3,title:"Faollik",sub:"Kunlik qadamlar soni",render:()=>`
+    <div class="inp-group">
+      <div class="inp-row"><div class="inp-lbl">Qadamlar/kun</div><input type="number" value="${OB.data.steps||''}" placeholder="8000" onchange="OB.data.steps=+this.value"/></div>
+    </div>
+    <div class="card" style="padding:14px">
+      ${[["3 000 dan kam","×1.20"],["5 000 – 10 000","×1.35–1.40"],["10 000 – 15 000","×1.45–1.50"],["15 000 – 20 000","×1.55–1.60"],["20 000+","×1.65–1.70"]].map(([r,c])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--sep)"><span style="font-size:13px;color:var(--text2)">${r}</span><span style="font-size:13px;font-weight:600;color:var(--teal)">${c}</span></div>`).join("")}
+    </div>`},
+  {step:4,title:"Maqsadingiz",sub:"Nima uchun ovqatlanishni nazorat qilasiz?",render:()=>`
+    <div class="choice-grid" style="grid-template-columns:1fr">
+      <div class="choice ${OB.data.goal==='lose'?'on':''}" onclick="obChoice('goal','lose',this)" style="display:flex;align-items:center;text-align:left;gap:12px"><div class="choice-ic" style="font-size:24px">🔻</div><div><div class="choice-lbl">Vazn yo'qotish</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Kaloriya defitsiti</div></div></div>
+      <div class="choice ${OB.data.goal==='maintain'?'on':''}" onclick="obChoice('goal','maintain',this)" style="display:flex;align-items:center;text-align:left;gap:12px"><div class="choice-ic" style="font-size:24px">⚖️</div><div><div class="choice-lbl">Vaznni saqlash</div><div style="font-size:12px;color:var(--text2);margin-top:2px">TDEE ga teng</div></div></div>
+      <div class="choice ${OB.data.goal==='muscle'?'on':''}" onclick="obChoice('goal','muscle',this)" style="display:flex;align-items:center;text-align:left;gap:12px"><div class="choice-ic" style="font-size:24px">💪</div><div><div class="choice-lbl">Massa nabor</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Kaloriya profitsiti</div></div></div>
+    </div>`},
+  {step:5,title:"Ovqatlanish rejasi",sub:"Kaloriya maqsadini belgilang",render:()=>`
+    <div class="seg"><button class="seg-btn ${OB.data.plan_type!=='manual'?'on':''}" onclick="OB.data.plan_type='auto';obRender()">Avtomatik</button><button class="seg-btn ${OB.data.plan_type==='manual'?'on':''}" onclick="OB.data.plan_type='manual';obRender()">Manual</button></div>
+    ${OB.data.plan_type==='manual'?`
+    <div class="inp-group">
+      <div class="inp-row"><div class="inp-lbl">Kaloriya (kkal)</div><input type="number" value="${OB.data.kcal_target||''}" placeholder="2000" onchange="OB.data.kcal_target=+this.value"/></div>
+      <div class="inp-row"><div class="inp-lbl">Oqsil (g/kg)</div><input type="number" step="0.1" value="${OB.data.protein_ratio||''}" placeholder="2.0" onchange="OB.data.protein_ratio=+this.value"/></div>
+      <div class="inp-row"><div class="inp-lbl">Yog' (g/kg)</div><input type="number" step="0.1" value="${OB.data.fat_ratio||''}" placeholder="1.0" onchange="OB.data.fat_ratio=+this.value"/></div>
+    </div>`:`<div class="result-card"><div class="result-title">Avtomatik hisoblash</div><div style="font-size:13px;color:var(--teal-d);line-height:1.6">Maqsadingizga qarab TDEE asosida:<br>• Ozish: TDEE − 400 kkal<br>• Saqlash: TDEE<br>• Massa: TDEE + 300 kkal</div></div>`}
+    <button class="btn btn-p" onclick="obSave()">Saqlash ✓</button>`},
+];
+
+let OB={step:1,data:{}};
+
+function startOnboard(){
+  OB={step:1,data:state.user?{...state.user}:{}};
+  obRender();
+  go("onboard");
+}
+
+function obRender(){
+  const s=obSteps[OB.step-1];
+  document.getElementById("ob-step-label").textContent=`${OB.step} / ${obSteps.length}`;
+  document.getElementById("ob-progress").style.width=`${OB.step/obSteps.length*100}%`;
+  document.getElementById("ob-next-btn").textContent=OB.step<obSteps.length?"Keyingi":"Saqlash";
+  document.getElementById("ob-body").innerHTML=`<div style="padding:16px"><div class="onboard-hdr"><div class="onboard-step">${OB.step}</div><div class="onboard-ttl">${s.title}</div><div class="onboard-sub">${s.sub}</div></div>${s.render()}</div>`;
+}
+
+function obChoice(key,val,el){
+  OB.data[key]=val;
+  el.closest(".choice-grid").querySelectorAll(".choice").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");
+}
+
+function obNext(){
+  if(OB.step<obSteps.length){OB.step++;obRender();}
+  else obSave();
+}
+
+async function obSave(){
+  try{
+    const r=await h.api("/api/profile","POST",{...OB.data,lang:"uz"});
+    state.user=r.user;
+    await loadToday();
+    h.toast("✅ Profil saqlandi!");
+    go("home");
+  } catch(e){h.toast("Xato! Barcha maydonlarni to'ldiring.");}
+}
+
+init();
+</script>
+</body>
+</html>
