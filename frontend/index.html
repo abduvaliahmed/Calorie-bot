@@ -198,16 +198,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <input id="food-q" placeholder="Mahsulot nomini qidiring..." oninput="onFoodQ(this.value)"/>
         </div>
         <div id="pers-panel" style="display:none;margin-bottom:16px">
-          <div class="sec" id="new-food-sec">Yangi mahsulot</div>
-          <div class="ig">
-            <div class="ir"><div class="ir-l">Nom</div><input type="text" id="np-name" placeholder="Masalan: Somsa"/></div>
-            <div class="ir"><div class="ir-l">Birlik</div><select id="np-unit" onchange="onNpUnit()"><option value="100">100g uchun</option><option value="1">1 dona uchun</option></select></div>
-            <div class="ir"><div class="ir-l" id="np-kl">Kaloriya/100g</div><input type="number" id="np-kcal" placeholder="300"/></div>
-            <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="np-p" placeholder="10"/></div>
-            <div class="ir"><div class="ir-l">Yog' (g)</div><input type="number" id="np-f" placeholder="15"/></div>
-            <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="np-c" placeholder="30"/></div>
+          <div style="background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px">
+            <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:16px" id="new-food-sec">Yangi mahsulot</div>
+            <!-- Name -->
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Nom</div>
+              <input type="text" id="np-name" placeholder="Masalan: Somsa" style="width:100%;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box"/>
+            </div>
+            <!-- Unit -->
+            <div style="margin-bottom:16px">
+              <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Birlik</div>
+              <div style="display:flex;gap:8px">
+                <button id="np-unit-100" onclick="setNpUnit('100')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--teal);background:var(--teal);color:#fff;font-size:14px;font-weight:600;cursor:pointer">100g</button>
+                <button id="np-unit-1" onclick="setNpUnit('1')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--sep);background:transparent;color:var(--t2);font-size:14px;font-weight:600;cursor:pointer">1 dona</button>
+              </div>
+              <input type="hidden" id="np-unit" value="100"/>
+            </div>
+            <!-- KBJU inputs -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+              <div style="background:var(--bg);border-radius:14px;padding:14px">
+                <div style="font-size:10px;color:var(--t2);margin-bottom:6px" id="np-kl">kkal/100g</div>
+                <input type="number" id="np-kcal" placeholder="300" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:var(--teal);outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="background:rgba(76,217,100,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(76,217,100,0.2)">
+                <div style="font-size:10px;color:#4CD964;margin-bottom:6px">Oqsil (g)</div>
+                <input type="number" id="np-p" placeholder="10" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#4CD964;outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="background:rgba(255,149,0,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(255,149,0,0.2)">
+                <div style="font-size:10px;color:#FF9500;margin-bottom:6px">Yog' (g)</div>
+                <input type="number" id="np-f" placeholder="15" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#FF9500;outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="background:rgba(90,200,250,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(90,200,250,0.2)">
+                <div style="font-size:10px;color:#5AC8FA;margin-bottom:6px">Uglevod (g)</div>
+                <input type="number" id="np-c" placeholder="30" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#5AC8FA;outline:none;box-sizing:border-box"/>
+              </div>
+            </div>
           </div>
-          <button class="btn bp" onclick="savePersFood()" id="pers-save-btn">Saqlash</button>
+          <button class="btn bp" onclick="savePersFood()" id="pers-save-btn" style="font-size:16px;font-weight:700">Saqlash</button>
           <button class="btn bg2" id="pers-cancel-btn" onclick="document.getElementById('pers-panel').style.display='none'">Bekor qilish</button>
         </div>
         <div id="pers-edit-panel" style="display:none;margin-bottom:16px">
@@ -368,38 +395,106 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 
     <!-- ADMIN -->
     <div class="screen" id="s-admin">
-      <div class="hdr"><div class="hdr-row"><div class="back" onclick="go('profile')">&#8249; Orqaga</div><div style="font-size:17px;font-weight:600">Admin panel</div><div style="width:60px"></div></div></div>
+      <div class="hdr"><div class="hdr-row">
+        <div class="back" onclick="go('profile')">&#8249; Orqaga</div>
+        <div style="font-size:17px;font-weight:600">Admin panel</div>
+        <div style="width:60px"></div>
+      </div></div>
       <div class="scroll">
-        <button class="btn bp" style="margin-top:0;margin-bottom:12px" onclick="toggleAdminAdd()">+ Yangi mahsulot</button>
-        <div id="admin-add" style="display:none;margin-bottom:16px">
-          <div class="ig">
-            <div class="ir"><div class="ir-l">Nom (uz)</div><input type="text" id="af-name" placeholder="Tovuq ko'krak"/></div>
-            <div class="ir"><div class="ir-l">Nom (ru)</div><input type="text" id="af-ru" placeholder="Куриная грудка"/></div>
-            <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="af-k" placeholder="120"/></div>
-            <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="af-p" placeholder="23"/></div>
-            <div class="ir"><div class="ir-l">Yog' (g)</div><input type="number" id="af-f" placeholder="2"/></div>
-            <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="af-c" placeholder="0"/></div>
-          </div>
-          <button class="btn bp" onclick="adminAdd()">Saqlash</button>
-          <button class="btn bg2" onclick="toggleAdminAdd()">Bekor</button>
+        <!-- Tabs: users / foods -->
+        <div style="display:flex;background:rgba(118,118,128,.12);border-radius:10px;padding:3px;margin-bottom:16px">
+          <button id="atab-users" onclick="switchAdminTab('users')" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:var(--card);color:var(--t1)">Foydalanuvchilar</button>
+          <button id="atab-foods" onclick="switchAdminTab('foods')" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:var(--t2)">Mahsulotlar</button>
         </div>
-        <div class="sec">Foydalanuvchilar</div>
-        <div id="admin-users"><div style="text-align:center;padding:16px;color:var(--t2)">Yuklanmoqda...</div></div>
-        <div class="sec">Global mahsulotlar</div>
-        <div id="admin-edit-panel" style="display:none;margin-bottom:16px">
-          <div class="ig">
-            <div class="ir"><div class="ir-l">Nom (uz)</div><input type="text" id="ae-name"/></div>
-            <div class="ir"><div class="ir-l">Nom (ru)</div><input type="text" id="ae-ru"/></div>
-            <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="ae-k"/></div>
-            <div class="ir"><div class="ir-l">Oqsil (g)</div><input type="number" id="ae-p"/></div>
-            <div class="ir"><div class="ir-l">Yog' (g)</div><input type="number" id="ae-f"/></div>
-            <div class="ir"><div class="ir-l">Uglevod (g)</div><input type="number" id="ae-c"/></div>
-          </div>
-          <button class="btn bp" onclick="adminSaveEdit()">Saqlash</button>
-          <button class="btn bg2" onclick="document.getElementById('admin-edit-panel').style.display='none'">Bekor</button>
+
+        <!-- Users tab -->
+        <div id="admin-tab-users">
+          <div id="admin-users"><div style="text-align:center;padding:16px;color:var(--t2)">Yuklanmoqda...</div></div>
         </div>
-        <div id="admin-list"><div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div></div>
+
+        <!-- Foods tab -->
+        <div id="admin-tab-foods" style="display:none">
+          <button class="btn bp" style="margin-top:0;margin-bottom:12px;font-size:15px;font-weight:700" onclick="toggleAdminAdd()">+ Yangi mahsulot</button>
+          <div id="admin-add" style="display:none;margin-bottom:16px">
+            <div style="background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:16px">Yangi mahsulot</div>
+              <div style="margin-bottom:12px">
+                <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Nom (uz)</div>
+                <input type="text" id="af-name" placeholder="Tovuq ko'krak" style="width:100%;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="margin-bottom:16px">
+                <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Nom (ru)</div>
+                <input type="text" id="af-ru" placeholder="Куриная грудка" style="width:100%;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:var(--bg);border-radius:14px;padding:14px">
+                  <div style="font-size:10px;color:var(--t2);margin-bottom:6px">kkal/100g</div>
+                  <input type="number" id="af-k" placeholder="120" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:var(--teal);outline:none;box-sizing:border-box"/>
+                </div>
+                <div style="background:rgba(76,217,100,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(76,217,100,0.2)">
+                  <div style="font-size:10px;color:#4CD964;margin-bottom:6px">Oqsil (g)</div>
+                  <input type="number" id="af-p" placeholder="23" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#4CD964;outline:none;box-sizing:border-box"/>
+                </div>
+                <div style="background:rgba(255,149,0,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(255,149,0,0.2)">
+                  <div style="font-size:10px;color:#FF9500;margin-bottom:6px">Yog' (g)</div>
+                  <input type="number" id="af-f" placeholder="2" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#FF9500;outline:none;box-sizing:border-box"/>
+                </div>
+                <div style="background:rgba(90,200,250,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(90,200,250,0.2)">
+                  <div style="font-size:10px;color:#5AC8FA;margin-bottom:6px">Uglevod (g)</div>
+                  <input type="number" id="af-c" placeholder="0" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#5AC8FA;outline:none;box-sizing:border-box"/>
+                </div>
+              </div>
+            </div>
+            <button class="btn bp" onclick="adminAdd()" style="font-size:16px;font-weight:700">Saqlash</button>
+            <button class="btn bg2" onclick="toggleAdminAdd()">Bekor</button>
+          </div>
+          <!-- Edit panel -->
+          <div id="admin-edit-panel" style="display:none;margin-bottom:16px">
+            <div style="background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tahrirlash</div>
+              <div style="margin-bottom:12px">
+                <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Nom (uz)</div>
+                <input type="text" id="ae-name" style="width:100%;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="margin-bottom:16px">
+                <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Nom (ru)</div>
+                <input type="text" id="ae-ru" style="width:100%;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box"/>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:var(--bg);border-radius:14px;padding:14px">
+                  <div style="font-size:10px;color:var(--t2);margin-bottom:6px">kkal/100g</div>
+                  <input type="number" id="ae-k" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:var(--teal);outline:none;box-sizing:border-box"/>
+                </div>
+                <div style="background:rgba(76,217,100,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(76,217,100,0.2)">
+                  <div style="font-size:10px;color:#4CD964;margin-bottom:6px">Oqsil (g)</div>
+                  <input type="number" id="ae-p" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#4CD964;outline:none;box-sizing:border-box"/>
+                </div>
+                <div style="background:rgba(255,149,0,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(255,149,0,0.2)">
+                  <div style="font-size:10px;color:#FF9500;margin-bottom:6px">Yog' (g)</div>
+                  <input type="number" id="ae-f" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#FF9500;outline:none;box-sizing:border-box"/>
+                </div>
+                <div style="background:rgba(90,200,250,0.08);border-radius:14px;padding:14px;border:.5px solid rgba(90,200,250,0.2)">
+                  <div style="font-size:10px;color:#5AC8FA;margin-bottom:6px">Uglevod (g)</div>
+                  <input type="number" id="ae-c" style="width:100%;border:none;background:transparent;font-size:20px;font-weight:700;color:#5AC8FA;outline:none;box-sizing:border-box"/>
+                </div>
+              </div>
+            </div>
+            <button class="btn bp" onclick="adminSaveEdit()" style="font-size:16px;font-weight:700">Saqlash</button>
+            <button class="btn bg2" onclick="document.getElementById('admin-edit-panel').style.display='none'">Bekor</button>
+          </div>
+          <div id="admin-list"><div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div></div>
+        </div>
       </div>
+    </div>
+
+    <!-- USER PROFILE (admin view) -->
+    <div class="screen" id="s-user-profile">
+      <div class="hdr"><div class="hdr-row">
+        <div class="back" onclick="go('admin')">&#8249; Orqaga</div>
+        <div style="font-size:17px;font-weight:600" id="uprofile-title">Foydalanuvchi</div>
+        <div style="width:60px"></div>
+      </div></div>
+      <div class="scroll" id="uprofile-body"></div>
     </div>
 
   </div>
@@ -562,7 +657,7 @@ function go(screen){
   next.classList.add("act");
   if(screen==="home")renderHome();
   else if(screen==="add-food")initFood();
-  else if(screen==="stats")renderStats();
+  else if(screen==="stats"){renderStats();}
   else if(screen==="profile")renderProfile();
   else if(screen==="admin")loadAdmin();
   else if(screen==="ai")initAI();
@@ -817,7 +912,21 @@ async function addLog(){
 }
 
 function togglePers(){var p=document.getElementById("pers-panel");p.style.display=p.style.display==="none"?"block":"none";}
-function onNpUnit(){var u=document.getElementById("np-unit").value;document.getElementById("np-kl").textContent=u==="1"?"Kaloriya/dona":"Kaloriya/100g";}
+function setNpUnit(v){
+  document.getElementById('np-unit').value=v;
+  var b100=document.getElementById('np-unit-100');
+  var b1=document.getElementById('np-unit-1');
+  if(v==='100'){
+    b100.style.background='var(--teal)';b100.style.color='#fff';b100.style.borderColor='var(--teal)';
+    b1.style.background='transparent';b1.style.color='var(--t2)';b1.style.borderColor='var(--sep)';
+    document.getElementById('np-kl').textContent='kkal/100g';
+  }else{
+    b1.style.background='var(--teal)';b1.style.color='#fff';b1.style.borderColor='var(--teal)';
+    b100.style.background='transparent';b100.style.color='var(--t2)';b100.style.borderColor='var(--sep)';
+    document.getElementById('np-kl').textContent='kkal/dona';
+  }
+}
+function onNpUnit(){setNpUnit(document.getElementById('np-unit').value);}
 
 async function savePersFood(){
   var name=document.getElementById("np-name").value.trim();
@@ -835,17 +944,69 @@ async function savePersFood(){
   }catch(e){toast(t("err"));}
 }
 
-function renderStats(){
+async function renderStats(){
   var u=S.user;if(!u)return;
-  var days=t("days");var vals=[85,72,95,60,78,40,69];
-  document.getElementById("week-chart").innerHTML=vals.map(function(v,i){return '<div class="bc-c"><div class="bc-w"><div class="bc-f" style="height:'+v+'%"></div></div><div class="bc-l">'+days[i]+'</div></div>';}).join("");
-  document.getElementById("stats-grid").innerHTML=
-    '<div class="sc"><div class="sc-l">'+t("avg")+'</div><div class="sc-v">1 980<span class="sc-u"> kkal</span></div></div>'+
-    '<div class="sc"><div class="sc-l">'+t("gd")+'</div><div class="sc-v">5<span class="sc-u">/7</span></div></div>';
-  document.getElementById("stats-macros").innerHTML=
-    '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px">'+t("prot")+'</span><span style="font-size:14px;font-weight:500">'+(u.protein_g||0)+'g</span></div>'+mkbar(90)+'</div>'+
-    '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px">'+t("fat")+'</span><span style="font-size:14px;font-weight:500">'+(u.fat_g||0)+'g</span></div>'+mkbar(87,"var(--ora)")+'</div>'+
-    '<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px">'+t("carb")+'</span><span style="font-size:14px;font-weight:500">'+(u.carb_g||0)+'g</span></div>'+mkbar(93,"var(--blu)")+'</div>';
+  document.getElementById("week-chart").innerHTML='';
+  document.getElementById("stats-grid").innerHTML='<div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div>';
+  try{
+    var r=await req("/api/week");
+    var days=r.days||[];
+    var target=u.kcal_target||2000;
+    // Week chart
+    var dayNames=t("days");
+    document.getElementById("week-chart").innerHTML=days.map(function(d,i){
+      var pct=Math.min(100,Math.round(d.kcal/target*100));
+      var isToday=i===6;
+      var color=d.kcal>target*1.1?"var(--ora)":"var(--teal)";
+      return '<div class="bc-c">'+
+        '<div class="bc-w"><div class="bc-f" style="height:'+pct+'%;background:'+color+'"></div></div>'+
+        '<div class="bc-l" style="'+(isToday?'color:var(--teal);font-weight:700':'')+'">'+dayNames[i]+'</div>'+
+      '</div>';
+    }).join("");
+    // Compute stats
+    var total7=days.reduce(function(s,d){return s+d.kcal;},0);
+    var daysWithFood=days.filter(function(d){return d.kcal>0;}).length;
+    var avgKcal=daysWithFood>0?Math.round(total7/daysWithFood):0;
+    var daysHit=days.filter(function(d){return d.kcal>=target*0.8&&d.kcal<=target*1.2;}).length;
+    var isRu=lang==="ru";
+    document.getElementById("stats-grid").innerHTML=
+      '<div class="sc">'+
+        '<div class="sc-l">'+(isRu?"Среднее":"O'rtacha")+'</div>'+
+        '<div class="sc-v">'+fmt(avgKcal)+'<span class="sc-u"> kkal</span></div>'+
+        '<span class="bdg '+(avgKcal>0?"bg":"bo")+'">'+(isRu?"7 день":"7 kun")+'</span>'+
+      '</div>'+
+      '<div class="sc">'+
+        '<div class="sc-l">'+(isRu?"Цель выполнена":"Maqsad bajarildi")+'</div>'+
+        '<div class="sc-v">'+daysHit+'<span class="sc-u">/7</span></div>'+
+        '<span class="bdg bg">'+Math.round(daysHit/7*100)+'%</span>'+
+      '</div>';
+    // Macros from today
+    var td=S.today||{};var tot=td.totals||{};var tar=td.targets||{};
+    document.getElementById("stats-macros").innerHTML=
+      '<div style="margin-bottom:14px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+          '<div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:5px;background:#4CD964"></div><span style="font-size:14px">'+t("prot")+'</span></div>'+
+          '<div style="font-size:14px"><b style="color:#4CD964">'+Math.round(tot.protein||0)+'g</b> / '+(tar.protein||u.protein_g||0)+'g</div>'+
+        '</div>'+
+        '<div style="height:8px;background:var(--sep);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round((tot.protein||0)/(tar.protein||u.protein_g||1)*100))+'%;background:#4CD964;border-radius:4px"></div></div>'+
+      '</div>'+
+      '<div style="margin-bottom:14px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+          '<div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:5px;background:#FF9500"></div><span style="font-size:14px">'+t("fat")+'</span></div>'+
+          '<div style="font-size:14px"><b style="color:#FF9500">'+Math.round(tot.fat||0)+'g</b> / '+(tar.fat||u.fat_g||0)+'g</div>'+
+        '</div>'+
+        '<div style="height:8px;background:var(--sep);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round((tot.fat||0)/(tar.fat||u.fat_g||1)*100))+'%;background:#FF9500;border-radius:4px"></div></div>'+
+      '</div>'+
+      '<div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+          '<div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:5px;background:#5AC8FA"></div><span style="font-size:14px">'+t("carb")+'</span></div>'+
+          '<div style="font-size:14px"><b style="color:#5AC8FA">'+Math.round(tot.carb||0)+'g</b> / '+(tar.carb||u.carb_g||0)+'g</div>'+
+        '</div>'+
+        '<div style="height:8px;background:var(--sep);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round((tot.carb||0)/(tar.carb||u.carb_g||1)*100))+'%;background:#5AC8FA;border-radius:4px"></div></div>'+
+      '</div>';
+  }catch(e){
+    document.getElementById("stats-grid").innerHTML='<div style="padding:12px;color:var(--t2)">Xato</div>';
+  }
 }
 
 function renderProfile(){
@@ -1032,6 +1193,69 @@ async function obSave(){
 }
 
 // ADMIN
+function switchAdminTab(tab){
+  var isUsers=tab==='users';
+  document.getElementById('admin-tab-users').style.display=isUsers?'block':'none';
+  document.getElementById('admin-tab-foods').style.display=isUsers?'none':'block';
+  var bu=document.getElementById('atab-users');var bf=document.getElementById('atab-foods');
+  if(isUsers){bu.style.background='var(--card)';bu.style.color='var(--t1)';bf.style.background='transparent';bf.style.color='var(--t2)';}
+  else{bf.style.background='var(--card)';bf.style.color='var(--t1)';bu.style.background='transparent';bu.style.color='var(--t2)';}
+}
+
+async function openUserProfile(userId,name){
+  document.getElementById('uprofile-title').textContent=name;
+  document.getElementById('uprofile-body').innerHTML='<div style="text-align:center;padding:40px;color:var(--t2)">Yuklanmoqda...</div>';
+  // Switch to user profile screen
+  document.querySelectorAll('.screen.act').forEach(function(s){s.classList.remove('act');});
+  document.getElementById('s-user-profile').classList.add('act');
+  try{
+    // Load user today logs via admin endpoint
+    var today=new Date().toISOString().split('T')[0];
+    var r=await fetch(API+'/api/admin/user/'+userId+'/logs',{headers:{'X-Init-Data':initData}});
+    var data=await r.json();
+    var logs=data.logs||[];var totals=data.totals||{};var user=data.user||{};
+    var isRu=lang==='ru';
+    var html='<div style="padding:0 0 16px">';
+    // User info card
+    html+='<div style="background:var(--teal);border-radius:16px;padding:16px;margin-bottom:14px">'+
+      '<div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px">'+name+'</div>'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap">'+
+        '<span style="font-size:13px;color:rgba(255,255,255,0.8)">'+(user.age||'?')+' '+(isRu?'лет':'yosh')+'</span>'+
+        '<span style="font-size:13px;color:rgba(255,255,255,0.8)">'+(user.weight||'?')+' kg</span>'+
+        '<span style="font-size:13px;color:rgba(255,255,255,0.8)">'+(user.fat_pct||0)+'% '+(isRu?'жир':'yog')+'</span>'+
+        '<span style="font-size:13px;font-weight:700;color:#fff">'+(Math.round(user.kcal_target||0))+' kkal</span>'+
+      '</div>'+
+    '</div>';
+    // Today logs
+    html+='<div style="font-size:13px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">'+(isRu?'Сегодня':'Bugun')+'</div>';
+    if(logs.length===0){
+      html+='<div class="emp"><div class="emp-ic">🍽</div><div class="emp-t">'+(isRu?'Сегодня ничего не ел':'Bugun hech narsa yemagan')+'</div></div>';
+    }else{
+      html+='<div class="card" style="margin-bottom:12px;padding:14px">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px">'+
+          '<b>'+Math.round(totals.kcal||0)+' kkal</b>'+
+          '<span style="color:var(--t2)">/ '+Math.round(user.kcal_target||0)+' kkal</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:12px;font-size:13px">'+
+          '<span style="color:#4CD964">P: '+Math.round(totals.protein||0)+'g</span>'+
+          '<span style="color:#FF9500">Y: '+Math.round(totals.fat||0)+'g</span>'+
+          '<span style="color:#5AC8FA">U: '+Math.round(totals.carb||0)+'g</span>'+
+        '</div>'+
+      '</div>';
+      html+=logs.map(function(l){
+        return '<div class="fi"><div class="fi-ic">🍽</div>'+
+          '<div class="fi-inf"><div class="fi-n">'+l.food_name+'</div>'+
+          '<div class="fi-m">'+l.grams+'g · P:'+l.protein+'g Y:'+l.fat+'g U:'+l.carb+'g</div></div>'+
+          '<div class="fi-k">'+Math.round(l.kcal)+' kkal</div></div>';
+      }).join('');
+    }
+    html+='</div>';
+    document.getElementById('uprofile-body').innerHTML=html;
+  }catch(e){
+    document.getElementById('uprofile-body').innerHTML='<div class="emp"><div class="emp-ic">❌</div><div class="emp-t">Xato: '+e.message+'</div></div>';
+  }
+}
+
 function toggleAdminAdd(){var p=document.getElementById("admin-add");p.style.display=p.style.display==="none"?"block":"none";}
 
 async function loadUsers(){
@@ -1049,15 +1273,21 @@ async function loadUsers(){
       var reg=u.created_at?(new Date(u.created_at)).toLocaleDateString("ru-RU"):"?";
       var lastSeen=u.last_seen?(function(){var d=new Date(u.last_seen);var now=new Date();var diff=Math.floor((now-d)/60000);if(diff<1)return "Hozir online";if(diff<60)return diff+" daqiqa oldin";if(diff<1440)return Math.floor(diff/60)+" soat oldin";return d.toLocaleDateString("ru-RU");})():"Hali kirmagan";
       var isOnline=u.last_seen&&(new Date()-new Date(u.last_seen))<300000;
-      return '<div style="padding:14px 16px;border-bottom:.5px solid var(--sep)">'+
+      var isOnline=u.last_seen&&(new Date()-new Date(u.last_seen))<300000;
+      var rowId='urow_'+u.user_id;
+      return '<div id="'+rowId+'" style="padding:14px 16px;border-bottom:.5px solid var(--sep)" data-uid="'+u.user_id+'" data-nm="'+nm.replace(/"/g,'&quot;')+'">'+
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
-          '<div style="display:flex;align-items:center;gap:8px">'+
+          '<div class="admin-user-row" data-uid="'+u.user_id+'" style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1">'+
             (isOnline?'<div style="width:8px;height:8px;border-radius:4px;background:#34C759;flex-shrink:0"></div>':'<div style="width:8px;height:8px;border-radius:4px;background:var(--sep);flex-shrink:0"></div>')+
-            '<div><div style="font-size:15px;font-weight:600;color:'+(isBlocked?'#C62828':'var(--t1)')+'">'+nm+'</div>'+(un?'<div style="font-size:11px;color:var(--t2)">'+un+'</div>':'')+'</div>'+
+            '<div style="flex:1">'+
+              '<div style="font-size:15px;font-weight:600;color:'+(isBlocked?'#C62828':'var(--t1)')+'">'+nm+'</div>'+
+              (un?'<div style="font-size:11px;color:var(--t2)">'+un+'</div>':'')+
+            '</div>'+
+            '<svg width="6" height="12" viewBox="0 0 6 12" fill="none"><path d="M1 1l4 5-4 5" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/></svg>'+
           '</div>'+
-          '<div style="display:flex;gap:6px">'+
-            '<button onclick="adminBlockUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:'+(isBlocked?'#E8F9F2':'#FFF3E0')+';color:'+(isBlocked?'#0F6E56':'#E65100')+'">'+(isBlocked?'Ochish':'Blok')+'</button>'+
-            '<button onclick="adminDeleteUser('+u.user_id+')" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:#FEEBEB;color:#C62828">✕</button>'+
+          '<div style="display:flex;gap:6px;margin-left:8px">'+
+            '<button class="admin-blk-btn" data-uid="'+u.user_id+'" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:'+(isBlocked?'#E8F9F2':'#FFF3E0')+';color:'+(isBlocked?'#0F6E56':'#E65100')+'">'+(isBlocked?'Ochish':'Blok')+'</button>'+
+            '<button class="admin-del-btn" data-uid="'+u.user_id+'" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:#FEEBEB;color:#C62828">✕</button>'+
           '</div>'+
         '</div>'+
         '<div style="font-size:12px;color:var(--t2);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">'+
@@ -1070,6 +1300,24 @@ async function loadUsers(){
         '</div>'+
       '</div>';
     }).join('')+'</div>';
+  // Attach event listeners via delegation
+  setTimeout(function(){
+    var container=document.getElementById('admin-users');
+    if(!container)return;
+    container.addEventListener('click',function(e){
+      var row=e.target.closest('.admin-user-row');
+      var blk=e.target.closest('.admin-blk-btn');
+      var del=e.target.closest('.admin-del-btn');
+      if(del){e.stopPropagation();adminDeleteUser(parseInt(del.dataset.uid));return;}
+      if(blk){e.stopPropagation();adminBlockUser(parseInt(blk.dataset.uid));return;}
+      if(row){
+        var uid=parseInt(row.dataset.uid);
+        var nm2=row.closest('[data-nm]');
+        var name=nm2?nm2.getAttribute('data-nm'):'User';
+        openUserProfile(uid,name);
+      }
+    });
+  },50);
   }catch(e){
     var el=document.getElementById("admin-users");
     if(el)el.innerHTML='<div style="padding:12px;color:var(--t2);text-align:center">Xato: '+e.message+'</div>';
@@ -1085,6 +1333,7 @@ function adminEdit(id){var f=adminFoods.find(function(x){return x.id===id;});if(
 async function adminSaveEdit(){var id=parseInt(document.getElementById('admin-edit-panel').getAttribute('data-id'));var name=document.getElementById('ae-name').value.trim();var nameRu=document.getElementById('ae-ru').value.trim();var k=parseFloat(document.getElementById('ae-k').value)||0;var p=parseFloat(document.getElementById('ae-p').value)||0;var f=parseFloat(document.getElementById('ae-f').value)||0;var c=parseFloat(document.getElementById('ae-c').value)||0;if(!name){toast('Nom kiriting!');return;}showLoading('Saqlanmoqda...');try{await req('/api/admin/foods/'+id,'PUT',{name:name,name_ru:nameRu,kcal:k,protein:p,fat:f,carb:c});hideLoading();toast('Saqlandi!');document.getElementById('admin-edit-panel').style.display='none';loadAdmin();}catch(e){hideLoading();toast('Xato!');}}
 
 async function loadAdmin(){
+  switchAdminTab('users');
   loadUsers();
   try{var r=await req("/api/admin/foods");var foods=r.foods||[];if(!foods.length){document.getElementById("admin-list").innerHTML='<div class="emp"><div class="emp-ic">📦</div><div class="emp-t">Mahsulotlar yo\'q</div></div>';return;}adminFoods=foods;document.getElementById("admin-list").innerHTML='<div class="card">'+foods.map(function(f){return '<div class="row"><div class="row-t" style="cursor:pointer" onclick="adminEdit('+f.id+')"><div class="row-l">'+f.name+'</div><div class="row-s">'+Math.round(f.kcal)+' kkal · P:'+f.protein+'g Y:'+f.fat+'g U:'+f.carb+'g</div></div><div style="display:flex;gap:6px"><button onclick="event.stopPropagation();adminEdit('+f.id+')" style="background:#E8F9F2;border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:#0F6E56;cursor:pointer">✏️</button><button onclick="event.stopPropagation();adminDel('+f.id+')" style="background:#FEEBEB;border:none;border-radius:8px;padding:6px 10px;font-size:12px;color:#C62828;cursor:pointer">🗑</button></div></div>';}).join("")+'</div>';}catch(e){document.getElementById("admin-list").innerHTML='<div class="emp"><div class="emp-ic">🔒</div><div class="emp-t">Ruxsat yo\'q</div></div>';}
 }
@@ -1290,10 +1539,13 @@ async function addAIPortionToLog(rid,btn){
   var r=_aiResults[rid];if(!r)return;if(btn&&btn.disabled)return;
   var parts=r._parts||1,eaten=r._eaten||1;
   var k=Math.round(r.kcal/parts*eaten*10)/10,p=Math.round(r.protein/parts*eaten*10)/10,f=Math.round(r.fat/parts*eaten*10)/10,c=Math.round(r.carb/parts*eaten*10)/10;
-  var g=Math.round(r.total_g/parts*eaten);
+  // Use portion as grams unit - show "X porsiya" in log
+  var isPortioned=r._isRecipe&&parts>1;
+  var g=isPortioned?eaten:Math.round(r.total_g/parts*eaten);
+  var foodName=isPortioned?r.name+' ('+eaten+'/'+(parts)+' '+(lang==="ru"?"порц.":"porsiya")+')':r.name;
   if(btn)btn.disabled=true;
   showLoading(lang==="uz"?"Qo'shilmoqda...":"Добавление...");
-  try{await req('/api/food-log','POST',{food_name:r.name,grams:g,kcal:k,protein:p,fat:f,carb:c});await loadToday();hideLoading();renderHome();toast(t('added'));if(btn){btn.textContent=lang==="uz"?"✓ Qo'shildi":"✓ Добавлено";btn.style.background="#34C759";btn.style.color="#fff";}}
+  try{await req('/api/food-log','POST',{food_name:foodName,grams:g,kcal:k,protein:p,fat:f,carb:c});await loadToday();hideLoading();renderHome();toast(t('added'));if(btn){btn.textContent=lang==="uz"?"✓ Qo'shildi":"✓ Добавлено";btn.style.background="#34C759";btn.style.color="#fff";}}
   catch(e){hideLoading();toast(t('err'));if(btn)btn.disabled=false;}
 }
 
