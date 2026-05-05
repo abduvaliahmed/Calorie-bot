@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>BARG</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--theme:light;}
@@ -140,8 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     <!-- LOADING -->
     <div class="screen act" id="s-loading" style="background:#000">
       <div style="display:flex;align-items:center;justify-content:center;height:100%">
-        <div id="splash-text" style="font-size:24px;font-weight:400;color:#fff;letter-spacing:0.5px;font-family:'Playfair Display',Georgia,serif;font-style:italic;text-align:center;max-width:280px;line-height:1.4"></div>
-        <div id="splash-cursor" style="width:2px;height:24px;background:#fff;margin-left:2px;animation:cursorBlink 0.8s step-end infinite"></div>
+        <div id="splash-text" style="font-size:17px;font-weight:400;color:#fff;letter-spacing:-0.2px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif"></div>
       </div>
     </div>
 
@@ -1561,12 +1559,12 @@ async function init(){
   (function(){
     var el=document.getElementById("splash-text");
     if(!el)return;
-    var text="Создай свой премиум образ";
+    var text="Создай свой премиум образ!";
     var i=0;
     var timer=setInterval(function(){
       if(i<=text.length){el.textContent=text.slice(0,i);i++;}
       else{clearInterval(timer);}
-    },60);
+    },55);
   })();
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today")]);
