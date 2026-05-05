@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>BARG</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--theme:light;}
@@ -113,6 +114,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .overlay-txt{color:rgba(255,255,255,0.85);font-size:16px;font-weight:500;letter-spacing:0.3px;animation:textPulse 1.5s ease-in-out infinite}
 @keyframes textPulse{0%,100%{opacity:0.4}50%{opacity:1}}
 .lp-dark{fill:none;stroke:#1D9E75;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2000;animation:stroke 2.5s cubic-bezier(0.4,0,0.2,1) infinite}
+@keyframes splashLogo{0%{opacity:0;transform:scale(0.5) translateY(20px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes splashTitle{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes splashSub{0%{opacity:0;transform:translateY(10px)}100%{opacity:0.75;transform:translateY(0)}}
+@keyframes splashBottom{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes splashLine{0%{width:0}100%{width:100%}}
+@keyframes dotPulse{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .sec{font-size:13px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin:18px 0 8px 4px}
@@ -130,12 +138,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   <div class="screens">
 
     <!-- LOADING -->
-    <div class="screen act" id="s-loading">
-      <div class="ld">
-        <svg width="48" height="98" xmlns="http://www.w3.org/2000/svg" viewBox="510 390 220 440">
-          <path class="lp-dark" d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" transform="translate(626,405)"/>
-        </svg>
-        <div style="color:#1D9E75;font-size:16px;font-weight:500;letter-spacing:0.3px;animation:textPulse 1.5s ease-in-out infinite">Yuklanmoqda...</div>
+    <div class="screen act" id="s-loading" style="background:#000">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%">
+        <div id="splash-text" style="font-size:24px;font-weight:400;color:#fff;letter-spacing:0.5px;font-family:'Playfair Display',Georgia,serif;font-style:italic;text-align:center;max-width:280px;line-height:1.4"></div>
+        <div id="splash-cursor" style="width:2px;height:24px;background:#fff;margin-left:2px;animation:cursorBlink 0.8s step-end infinite"></div>
       </div>
     </div>
 
@@ -1551,6 +1557,17 @@ async function addAIPortionToLog(rid,btn){
 
 async function init(){
   var loading=document.getElementById("s-loading");
+  // Typewriter animation
+  (function(){
+    var el=document.getElementById("splash-text");
+    if(!el)return;
+    var text="Создай свой премиум образ";
+    var i=0;
+    var timer=setInterval(function(){
+      if(i<=text.length){el.textContent=text.slice(0,i);i++;}
+      else{clearInterval(timer);}
+    },60);
+  })();
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today")]);
     var r=results[0],td=results[1];
