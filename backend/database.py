@@ -162,6 +162,13 @@ def search_food(uid, query, limit=20, offset=0):
 def add_personal_food(uid, data):
     c = conn(); cur = c.cursor()
     cur.execute(
+        "SELECT id FROM food_personal WHERE user_id=%s AND name=%s AND created_at > NOW() - INTERVAL '5 seconds'",
+        (uid, data["name"])
+    )
+    if cur.fetchone():
+        release(c)
+        return
+    cur.execute(
         "INSERT INTO food_personal (user_id,name,protein,fat,carb,kcal,per_grams) VALUES (%s,%s,%s,%s,%s,%s,%s)",
         (uid,data["name"],data.get("protein",0),data.get("fat",0),data.get("carb",0),data.get("kcal",0),data.get("per_grams",100))
     )

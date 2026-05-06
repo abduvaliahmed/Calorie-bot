@@ -937,9 +937,11 @@ function setNpUnit(v){
 }
 function onNpUnit(){setNpUnit(document.getElementById('np-unit').value);}
 
+var _savingPersFood=false;
 async function savePersFood(){
+  if(_savingPersFood)return;
+  _savingPersFood=true;
   var btn=document.getElementById("pers-save-btn");
-  if(btn&&btn.disabled)return;
   if(btn)btn.disabled=true;
   var name=document.getElementById("np-name").value.trim();
   var kcal=parseFloat(document.getElementById("np-kcal").value)||0;
@@ -955,6 +957,7 @@ async function savePersFood(){
     ["np-name","np-kcal","np-p","np-f","np-c"].forEach(function(id){document.getElementById(id).value="";});
     loadFoods();
   }catch(e){toast(t("err"));}
+  _savingPersFood=false;
   if(btn)btn.disabled=false;
 }
 
