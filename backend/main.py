@@ -352,6 +352,28 @@ def api_delete_user(user_id: int, x_init_data: str = Header(default="")):
     c.commit(); release(c)
     return {"ok": True}
 
+@app.get("/api/admin/user/{user_id}/logs")
+def api_admin_user_logs(user_id: int, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if uid not in ADMIN_IDS and uid != 0:
+        raise HTTPException(403, "Forbidden")
+    from datetime import date
+    user = get_user(user_id)
+    if not user:
+        raise HTTPException(404, "User not found")
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        "SELECT id,food_name,grams,kcal,protein,fat,carb FROM food_log WHERE user_id=%s AND log_date=%s ORDER BY created_at",
+        (user_id, date.today())
+    )
+    logs = [dict(r) for r in cur.fetchall()]
+    totals = {"kcal":0,"protein":0,"fat":0,"carb":0}
+    for l in logs:
+        for k in totals: totals[k] += float(l.get(k,0) or 0)
+    for k in totals: totals[k] = round(totals[k],1)
+    release(c)
+    return {"user": user, "logs": logs, "totals": totals}
+
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
 index_file = os.path.join(frontend_dir, "index.html")
 
