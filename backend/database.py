@@ -60,6 +60,7 @@ def init_db():
     cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT DEFAULT ''")
     cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_food_log_user_date ON food_log(user_id, log_date)")
+    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_food_personal_user_name ON food_personal(user_id, name)")
     cur.execute("SELECT COUNT(*) as cnt FROM food_global")
     row = cur.fetchone()
     if row["cnt"] == 0:
@@ -162,14 +163,7 @@ def search_food(uid, query, limit=20, offset=0):
 def add_personal_food(uid, data):
     c = conn(); cur = c.cursor()
     cur.execute(
-        "SELECT id FROM food_personal WHERE user_id=%s AND name=%s AND created_at > NOW() - INTERVAL '5 seconds'",
-        (uid, data["name"])
-    )
-    if cur.fetchone():
-        release(c)
-        return
-    cur.execute(
-        "INSERT INTO food_personal (user_id,name,protein,fat,carb,kcal,per_grams) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+        "INSERT INTO food_personal (user_id,name,protein,fat,carb,kcal,per_grams) VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
         (uid,data["name"],data.get("protein",0),data.get("fat",0),data.get("carb",0),data.get("kcal",0),data.get("per_grams",100))
     )
     c.commit(); release(c)
