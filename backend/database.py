@@ -59,6 +59,7 @@ def init_db():
         created_at TIMESTAMP DEFAULT NOW())""")
     cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT DEFAULT ''")
     cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_food_log_user_date ON food_log(user_id, log_date)")
     cur.execute("SELECT COUNT(*) as cnt FROM food_global")
     row = cur.fetchone()
     if row["cnt"] == 0:

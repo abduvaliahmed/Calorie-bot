@@ -130,6 +130,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .ai-msg-user{background:var(--teal);color:#fff;border-radius:18px 18px 4px 18px;padding:12px 16px;margin:8px 0;margin-left:40px;font-size:15px;line-height:1.5}
 .ai-msg-bot{background:var(--card);border-radius:18px 18px 18px 4px;padding:12px 16px;margin:8px 0;margin-right:40px;font-size:15px;line-height:1.5;color:var(--t1)}
 .ai-log-btn{background:var(--teal);color:#fff;border:none;border-radius:12px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;width:100%}
+@keyframes skel{0%,100%{opacity:.4}50%{opacity:.85}}
+.skel{background:var(--sep);border-radius:10px;animation:skel 1.2s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -623,6 +625,9 @@ async function req(path,method,body){
   if(!r.ok)throw new Error(r.status);
   return r.json();
 }
+var _cache={};
+async function reqCached(path,ttl){var now=Date.now();if(_cache[path]&&now-_cache[path].t<(ttl||60000))return _cache[path].d;var d=await req(path);_cache[path]={d:d,t:now};return d;}
+function cacheInvalidate(k){delete _cache[k];}
 
 var _theme='light';
 function toggleTheme(){_theme=_theme==='light'?'dark':'light';document.body.classList.toggle('dark',_theme==='dark');var icon=_theme==='dark'?'☀️':'🌙';var b1=document.getElementById('theme-btn');var b2=document.getElementById('theme-btn2');if(b1)b1.textContent=icon;if(b2)b2.textContent=icon;try{localStorage.setItem('barg_theme',_theme);}catch(e){}}
@@ -948,66 +953,60 @@ async function savePersFood(){
   }catch(e){toast(t("err"));}
 }
 
+function _statsDayLabel(dateStr){var dow=new Date(dateStr+"T00:00:00").getDay();var uz=["Ya","Du","Se","Ch","Pa","Sh","Yak"];var ru=["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];return lang==="ru"?ru[dow]:uz[dow];}
+function _macroBar(val,max,col){return '<div style="height:7px;background:var(--sep);border-radius:4px;overflow:hidden;margin-top:6px"><div style="height:100%;width:'+Math.min(100,Math.round((val||0)/(max||1)*100))+'%;background:'+col+';border-radius:4px;transition:width 0.5s ease"></div></div>';}
 async function renderStats(){
   var u=S.user;if(!u)return;
-  document.getElementById("week-chart").innerHTML='';
-  document.getElementById("stats-grid").innerHTML='<div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div>';
+  var isRu=lang==="ru";
+  var skBar='<div class="bc-c"><div class="bc-w"><div class="skel" style="height:55%;width:100%"></div></div><div class="bc-l" style="margin-top:4px"> </div></div>';
+  document.getElementById("week-chart").innerHTML=skBar.repeat(7);
+  document.getElementById("stats-grid").innerHTML='<div class="skel" style="height:82px"></div><div class="skel" style="height:82px"></div>';
+  document.getElementById("stats-macros").innerHTML='<div class="skel" style="height:110px"></div>';
   try{
-    var r=await req("/api/week");
-    var days=r.days||[];
-    var target=u.kcal_target||2000;
-    // Week chart
-    var dayNames=t("days");
+    var r=await reqCached('/api/week',60000);
+    var days=r.days||[];var target=u.kcal_target||2000;
     document.getElementById("week-chart").innerHTML=days.map(function(d,i){
-      var pct=Math.min(100,Math.round(d.kcal/target*100));
-      var isToday=i===6;
-      var color=d.kcal>target*1.1?"var(--ora)":"var(--teal)";
+      var p=Math.min(100,Math.round(d.kcal/target*100));
+      var isToday=i===days.length-1;
+      var over=d.kcal>target*1.1;
       return '<div class="bc-c">'+
-        '<div class="bc-w"><div class="bc-f" style="height:'+pct+'%;background:'+color+'"></div></div>'+
-        '<div class="bc-l" style="'+(isToday?'color:var(--teal);font-weight:700':'')+'">'+dayNames[i]+'</div>'+
+        '<div style="font-size:9px;font-weight:600;color:'+(over?"var(--ora)":"var(--teal)")+';margin-bottom:3px;min-height:13px">'+
+          (d.kcal>0?Math.round(d.kcal/1000*10)/10+'k':'')+'</div>'+
+        '<div class="bc-w"><div class="bc-f" data-h="'+p+'%" style="height:0;background:'+(over?"var(--ora)":"var(--teal)")+'"></div></div>'+
+        '<div class="bc-l" style="margin-top:4px;'+(isToday?'color:var(--teal);font-weight:700':'')+'">'+_statsDayLabel(d.date)+'</div>'+
       '</div>';
     }).join("");
-    // Compute stats
+    requestAnimationFrame(function(){
+      document.querySelectorAll('#week-chart .bc-f').forEach(function(el){
+        el.style.transition='height 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+        el.style.height=el.dataset.h;
+      });
+    });
     var total7=days.reduce(function(s,d){return s+d.kcal;},0);
     var daysWithFood=days.filter(function(d){return d.kcal>0;}).length;
     var avgKcal=daysWithFood>0?Math.round(total7/daysWithFood):0;
     var daysHit=days.filter(function(d){return d.kcal>=target*0.8&&d.kcal<=target*1.2;}).length;
-    var isRu=lang==="ru";
     document.getElementById("stats-grid").innerHTML=
-      '<div class="sc">'+
-        '<div class="sc-l">'+(isRu?"Среднее":"O'rtacha")+'</div>'+
+      '<div class="sc"><div class="sc-l">'+(isRu?"Среднее":"O'rtacha")+'</div>'+
         '<div class="sc-v">'+fmt(avgKcal)+'<span class="sc-u"> kkal</span></div>'+
-        '<span class="bdg '+(avgKcal>0?"bg":"bo")+'">'+(isRu?"7 день":"7 kun")+'</span>'+
-      '</div>'+
-      '<div class="sc">'+
-        '<div class="sc-l">'+(isRu?"Цель выполнена":"Maqsad bajarildi")+'</div>'+
+        '<span class="bdg '+(avgKcal>0?"bg":"bo")+'">'+(isRu?"7 дней":"7 kun")+'</span></div>'+
+      '<div class="sc"><div class="sc-l">'+(isRu?"Мақсад":"Maqsad")+'</div>'+
         '<div class="sc-v">'+daysHit+'<span class="sc-u">/7</span></div>'+
-        '<span class="bdg bg">'+Math.round(daysHit/7*100)+'%</span>'+
-      '</div>';
-    // Macros from today
+        '<span class="bdg bg">'+Math.round(daysHit/7*100)+'%</span></div>';
     var td=S.today||{};var tot=td.totals||{};var tar=td.targets||{};
     document.getElementById("stats-macros").innerHTML=
-      '<div style="margin-bottom:14px">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-          '<div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:5px;background:#4CD964"></div><span style="font-size:14px">'+t("prot")+'</span></div>'+
-          '<div style="font-size:14px"><b style="color:#4CD964">'+Math.round(tot.protein||0)+'g</b> / '+(tar.protein||u.protein_g||0)+'g</div>'+
-        '</div>'+
-        '<div style="height:8px;background:var(--sep);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round((tot.protein||0)/(tar.protein||u.protein_g||1)*100))+'%;background:#4CD964;border-radius:4px"></div></div>'+
-      '</div>'+
-      '<div style="margin-bottom:14px">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-          '<div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:5px;background:#FF9500"></div><span style="font-size:14px">'+t("fat")+'</span></div>'+
-          '<div style="font-size:14px"><b style="color:#FF9500">'+Math.round(tot.fat||0)+'g</b> / '+(tar.fat||u.fat_g||0)+'g</div>'+
-        '</div>'+
-        '<div style="height:8px;background:var(--sep);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round((tot.fat||0)/(tar.fat||u.fat_g||1)*100))+'%;background:#FF9500;border-radius:4px"></div></div>'+
-      '</div>'+
-      '<div>'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-          '<div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:5px;background:#5AC8FA"></div><span style="font-size:14px">'+t("carb")+'</span></div>'+
-          '<div style="font-size:14px"><b style="color:#5AC8FA">'+Math.round(tot.carb||0)+'g</b> / '+(tar.carb||u.carb_g||0)+'g</div>'+
-        '</div>'+
-        '<div style="height:8px;background:var(--sep);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.min(100,Math.round((tot.carb||0)/(tar.carb||u.carb_g||1)*100))+'%;background:#5AC8FA;border-radius:4px"></div></div>'+
-      '</div>';
+      '<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="display:flex;align-items:center;gap:6px"><div style="width:9px;height:9px;border-radius:50%;background:#4CD964"></div><span style="font-size:14px">'+t("prot")+'</span></div>'+
+        '<div style="font-size:14px"><b style="color:#4CD964">'+Math.round(tot.protein||0)+'g</b><span style="color:var(--t2)"> / '+(tar.protein||u.protein_g||0)+'g</span></div></div>'+
+        _macroBar(tot.protein,tar.protein||u.protein_g,"#4CD964")+'</div>'+
+      '<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="display:flex;align-items:center;gap:6px"><div style="width:9px;height:9px;border-radius:50%;background:#FF9500"></div><span style="font-size:14px">'+t("fat")+'</span></div>'+
+        '<div style="font-size:14px"><b style="color:#FF9500">'+Math.round(tot.fat||0)+'g</b><span style="color:var(--t2)"> / '+(tar.fat||u.fat_g||0)+'g</span></div></div>'+
+        _macroBar(tot.fat,tar.fat||u.fat_g,"#FF9500")+'</div>'+
+      '<div><div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="display:flex;align-items:center;gap:6px"><div style="width:9px;height:9px;border-radius:50%;background:#5AC8FA"></div><span style="font-size:14px">'+t("carb")+'</span></div>'+
+        '<div style="font-size:14px"><b style="color:#5AC8FA">'+Math.round(tot.carb||0)+'g</b><span style="color:var(--t2)"> / '+(tar.carb||u.carb_g||0)+'g</span></div></div>'+
+        _macroBar(tot.carb,tar.carb||u.carb_g,"#5AC8FA")+'</div>';
   }catch(e){
     document.getElementById("stats-grid").innerHTML='<div style="padding:12px;color:var(--t2)">Xato</div>';
   }
@@ -1395,6 +1394,7 @@ async function saveLogEdit(){
 
 // CALENDAR
 var calSelectedDate=null;
+var _calWeekData=[];
 function formatDate(d){return d.toISOString().split("T")[0];}
 function formatDateDisplay(dateStr){
   var d=new Date(dateStr+"T00:00:00");var today=formatDate(new Date());var yest=formatDate(new Date(Date.now()-86400000));
@@ -1403,33 +1403,84 @@ function formatDateDisplay(dateStr){
   return d.getDate()+" "+months[d.getMonth()];
 }
 
+function _renderCalDays(){
+  var daysEl=document.getElementById("cal-days");if(!daysEl)return;
+  daysEl.innerHTML=_calWeekData.map(function(d){
+    var isSel=d.date===calSelectedDate;
+    return '<button onclick="selectCalDay(\''+d.date+'\')" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:'+(isSel?'600':'400')+';background:'+(isSel?"var(--teal)":"var(--card)")+';color:'+(isSel?"#fff":"var(--t1)")+';box-shadow:0 1px 4px rgba(0,0,0,0.08);transition:all 0.2s">'+
+      formatDateDisplay(d.date)+(d.kcal>0?'<br><span style="font-size:10px;opacity:0.8">'+Math.round(d.kcal)+' kkal</span>':'<br><span style="font-size:10px;opacity:0.4">—</span>')+
+    '</button>';
+  }).join("");
+}
+
 async function initCalendar(){
-  calSelectedDate=formatDate(new Date());
+  calSelectedDate=calSelectedDate||formatDate(new Date());
+  var skBar='<div class="bc-c"><div class="bc-w"><div class="skel" style="height:55%;width:100%"></div></div><div class="bc-l" style="margin-top:4px"> </div></div>';
+  var chartEl=document.getElementById("cal-week-chart");
+  if(chartEl)chartEl.innerHTML=skBar.repeat(7);
   try{
-    var r=await req("/api/week");var days=r.days||[];var u=S.user||{};var target=u.kcal_target||2000;
-    var chartEl=document.getElementById("cal-week-chart");
-    if(chartEl)chartEl.innerHTML=days.map(function(d){var p=Math.min(100,Math.round(d.kcal/target*100));return '<div class="bc-c"><div class="bc-w"><div class="bc-f" style="height:'+p+'%;background:'+(d.kcal>target*1.1?"var(--ora)":"var(--teal)")+'"></div></div><div class="bc-l">'+formatDateDisplay(d.date).substring(0,3)+'</div></div>';}).join("");
-    var daysEl=document.getElementById("cal-days");
-    if(daysEl){var html="";for(var di=0;di<days.length;di+=1){var d2=days[di];var isSel=d2.date===calSelectedDate;html+='<button onclick="selectCalDay(this.dataset.date)" data-date="'+d2.date+'" style="flex-shrink:0;padding:8px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;background:'+(isSel?"var(--teal)":"var(--card)")+';color:'+(isSel?"#fff":"var(--t1)")+';box-shadow:0 1px 4px rgba(0,0,0,0.08)">'+formatDateDisplay(d2.date)+(d2.kcal>0?'<br><span style="font-size:10px;opacity:0.8">'+Math.round(d2.kcal)+' kkal</span>':'<br><span style="font-size:10px;opacity:0.4">—</span>')+'</button>';}daysEl.innerHTML=html;}
+    var r=await reqCached('/api/week',60000);
+    _calWeekData=r.days||[];var u=S.user||{};var target=u.kcal_target||2000;
+    if(chartEl){
+      chartEl.innerHTML=_calWeekData.map(function(d){
+        var p=Math.min(100,Math.round(d.kcal/target*100));var over=d.kcal>target*1.1;var isSel=d.date===calSelectedDate;
+        return '<div class="bc-c" style="opacity:'+(isSel?'1':'0.65')+'">'+
+          '<div class="bc-w"><div class="bc-f" data-h="'+p+'%" style="height:0;background:'+(over?"var(--ora)":"var(--teal)")+'"></div></div>'+
+          '<div class="bc-l" style="margin-top:4px;'+(isSel?'color:var(--teal);font-weight:700':'')+'">'+formatDateDisplay(d.date).substring(0,3)+'</div>'+
+        '</div>';
+      }).join("");
+      requestAnimationFrame(function(){
+        chartEl.querySelectorAll('.bc-f').forEach(function(el){
+          el.style.transition='height 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+          el.style.height=el.dataset.h;
+        });
+      });
+    }
+    _renderCalDays();
     loadCalDay(calSelectedDate);
   }catch(e){console.error(e);}
 }
 
-async function selectCalDay(date){calSelectedDate=date;initCalendar();}
+function selectCalDay(date){
+  calSelectedDate=date;
+  _renderCalDays();
+  // Re-highlight chart bars
+  var bars=document.querySelectorAll('#cal-week-chart .bc-c');
+  _calWeekData.forEach(function(d,i){if(bars[i])bars[i].style.opacity=d.date===date?'1':'0.65';});
+  loadCalDay(date);
+}
 
 async function loadCalDay(date){
   var el=document.getElementById("cal-logs");if(!el)return;
-  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2)">Yuklanmoqda...</div>';
+  el.innerHTML='<div class="skel" style="height:80px;margin-bottom:12px"></div><div class="skel" style="height:56px;margin-bottom:8px"></div><div class="skel" style="height:56px;margin-bottom:8px"></div><div class="skel" style="height:56px"></div>';
   try{
-    var r=await req("/api/day/"+date);var logs=r.logs||[];var tot=r.totals||{};var u=S.user||{};
+    var r=await reqCached('/api/day/'+date,30000);
+    var logs=r.logs||[];var tot=r.totals||{};var u=S.user||{};
     var dateTitle='<div class="sec">'+formatDateDisplay(date)+'</div>';
     if(!logs.length){el.innerHTML=dateTitle+'<div class="emp"><div class="emp-ic">🍽</div><div class="emp-t">'+(lang==="uz"?"Bu kunda ovqat yo'q":"В этот день ничего нет")+'</div></div>';return;}
-    var totCard='<div class="card" style="padding:14px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:15px;font-weight:700">'+Math.round(tot.kcal)+' kkal</div><div style="font-size:13px;color:var(--t2)">/ '+(u.kcal_target||2000)+' kkal</div></div><div style="display:flex;gap:12px"><span>P: <b>'+Math.round(tot.protein)+'g</b></span><span>Y: <b>'+Math.round(tot.fat)+'g</b></span><span>U: <b>'+Math.round(tot.carb)+'g</b></span></div></div>';
-    el.innerHTML=dateTitle+totCard+logs.map(function(l){return '<div class="fi"><div class="fi-ic">'+fIcon(l.food_name)+'</div><div class="fi-inf"><div class="fi-n">'+l.food_name+'</div><div class="fi-m">'+l.grams+'g · P:'+l.protein+'g Y:'+l.fat+'g U:'+l.carb+'g</div></div><div class="fi-k">'+Math.round(l.kcal)+' kkal</div></div>';}).join("");
+    var kpct=Math.min(100,Math.round((tot.kcal||0)/(u.kcal_target||2000)*100));
+    var totCard='<div class="card" style="padding:16px;margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+        '<div style="font-size:22px;font-weight:800;color:var(--teal)">'+Math.round(tot.kcal)+'<span style="font-size:14px;font-weight:500;color:var(--t2)"> kkal</span></div>'+
+        '<div style="font-size:13px;color:var(--t2)">/ '+(u.kcal_target||2000)+' kkal</div>'+
+      '</div>'+
+      '<div style="height:6px;background:var(--sep);border-radius:3px;overflow:hidden;margin-bottom:12px">'+
+        '<div style="height:100%;width:'+kpct+'%;background:var(--teal);border-radius:3px;transition:width 0.5s ease"></div></div>'+
+      '<div style="display:flex;gap:16px">'+
+        '<span style="font-size:13px">P: <b style="color:#4CD964">'+Math.round(tot.protein)+'g</b></span>'+
+        '<span style="font-size:13px">Y: <b style="color:#FF9500">'+Math.round(tot.fat)+'g</b></span>'+
+        '<span style="font-size:13px">U: <b style="color:#5AC8FA">'+Math.round(tot.carb)+'g</b></span>'+
+      '</div></div>';
+    el.innerHTML=dateTitle+totCard+logs.map(function(l){
+      return '<div class="fi"><div class="fi-ic">'+fIcon(l.food_name)+'</div>'+
+        '<div class="fi-inf"><div class="fi-n">'+l.food_name+'</div>'+
+        '<div class="fi-m">'+l.grams+'g · P:'+Math.round(l.protein)+'g Y:'+Math.round(l.fat)+'g U:'+Math.round(l.carb)+'g</div></div>'+
+        '<div class="fi-k">'+Math.round(l.kcal)+' kkal</div></div>';
+    }).join("");
   }catch(e){el.innerHTML='<div class="emp"><div class="emp-ic">❌</div><div class="emp-t">Xato</div></div>';}
 }
 
-async function loadToday(){try{var r=await req("/api/today");S.today=r;}catch(e){}}
+async function loadToday(){try{var r=await req("/api/today");S.today=r;var today=new Date().toISOString().split("T")[0];cacheInvalidate('/api/day/'+today);cacheInvalidate('/api/week');}catch(e){}}
 
 // AI
 var _aiResults={};
