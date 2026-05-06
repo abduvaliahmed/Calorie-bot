@@ -938,19 +938,24 @@ function setNpUnit(v){
 function onNpUnit(){setNpUnit(document.getElementById('np-unit').value);}
 
 async function savePersFood(){
+  var btn=document.getElementById("pers-save-btn");
+  if(btn&&btn.disabled)return;
+  if(btn)btn.disabled=true;
   var name=document.getElementById("np-name").value.trim();
   var kcal=parseFloat(document.getElementById("np-kcal").value)||0;
   var protein=parseFloat(document.getElementById("np-p").value)||0;
   var fat=parseFloat(document.getElementById("np-f").value)||0;
   var carb=parseFloat(document.getElementById("np-c").value)||0;
   var pg=parseInt(document.getElementById("np-unit").value)||100;
-  if(!name){toast(t("en"));return;}if(!kcal){toast(t("ek"));return;}
+  if(!name){toast(t("en"));if(btn)btn.disabled=false;return;}
+  if(!kcal){toast(t("ek"));if(btn)btn.disabled=false;return;}
   try{
     await req("/api/food/personal","POST",{name:name,kcal:kcal,protein:protein,fat:fat,carb:carb,per_grams:pg});
     toast(t("saved"));document.getElementById("pers-panel").style.display="none";
     ["np-name","np-kcal","np-p","np-f","np-c"].forEach(function(id){document.getElementById(id).value="";});
     loadFoods();
   }catch(e){toast(t("err"));}
+  if(btn)btn.disabled=false;
 }
 
 function _statsDayLabel(dateStr){var dow=new Date(dateStr+"T00:00:00").getDay();var uz=["Ya","Du","Se","Ch","Pa","Sh","Yak"];var ru=["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];return lang==="ru"?ru[dow]:uz[dow];}
@@ -1347,9 +1352,32 @@ async function adminDel(id){if(!confirm("O'chirishni tasdiqlaysizmi?"))return;tr
 async function saveAIToMyFoods(rid,btn){
   var r=(rid&&window._aiResults&&window._aiResults[rid])?window._aiResults[rid]:window._aiLastResult;
   if(!r)return;if(btn&&btn.disabled)return;if(btn)btn.disabled=true;
+  var parts=r._parts||1,eaten=r._eaten||1;
+  var isPortioned=r._isRecipe&&parts>1;
+  var name,kcal,protein,fat,carb,per_grams;
+  if(isPortioned){
+    // Portsiyali retsept — 1 porsiya sifatida saqlash
+    kcal=Math.round(r.kcal/parts*eaten*10)/10;
+    protein=Math.round(r.protein/parts*eaten*10)/10;
+    fat=Math.round(r.fat/parts*eaten*10)/10;
+    carb=Math.round(r.carb/parts*eaten*10)/10;
+    name=r.name+' (1 '+(lang==="ru"?"порц.":"porsiya")+')';
+    per_grams=1;
+  }else{
+    // Oddiy mahsulot — 100g ga saqlash
+    kcal=Math.round(r.per100_kcal*10)/10;
+    protein=Math.round(r.per100_p*10)/10;
+    fat=Math.round(r.per100_f*10)/10;
+    carb=Math.round(r.per100_c*10)/10;
+    name=r.name;
+    per_grams=100;
+  }
   showLoading(lang==="uz"?"Saqlanmoqda...":"Сохранение...");
-  try{await req('/api/food/personal','POST',{name:r.name,kcal:Math.round(r.per100_kcal*10)/10,protein:Math.round(r.per100_p*10)/10,fat:Math.round(r.per100_f*10)/10,carb:Math.round(r.per100_c*10)/10,per_grams:100});hideLoading();toast(lang==="uz"?"Mahsulotlarga qo'shildi!":"Добавлено в продукты!");if(btn){btn.textContent="✓ Saqlandi";btn.style.background="#34C759";btn.style.color="#fff";}}
-  catch(e){hideLoading();toast(t("err"));if(btn)btn.disabled=false;}
+  try{
+    await req('/api/food/personal','POST',{name:name,kcal:kcal,protein:protein,fat:fat,carb:carb,per_grams:per_grams});
+    hideLoading();toast(lang==="uz"?"Mahsulotlarga qo'shildi!":"Добавлено в продукты!");
+    if(btn){btn.textContent="✓ Saqlandi";btn.style.background="#34C759";btn.style.color="#fff";}
+  }catch(e){hideLoading();toast(t("err"));if(btn)btn.disabled=false;}
 }
 
 var editLogId=null,_leOrigGrams=0,_leOrigKcal=0,_leOrigP=0,_leOrigF=0,_leOrigC=0;
