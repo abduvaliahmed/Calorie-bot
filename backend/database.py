@@ -60,6 +60,7 @@ def init_db():
     cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT DEFAULT ''")
     cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT DEFAULT ''")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_food_log_user_date ON food_log(user_id, log_date)")
+    cur.execute("DELETE FROM food_personal WHERE id NOT IN (SELECT MIN(id) FROM food_personal GROUP BY user_id, name)")
     cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_food_personal_user_name ON food_personal(user_id, name)")
     cur.execute("SELECT COUNT(*) as cnt FROM food_global")
     row = cur.fetchone()
