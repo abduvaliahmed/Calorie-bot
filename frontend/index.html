@@ -1128,8 +1128,8 @@ function obHTML(){
         '<div style="font-size:13px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
       '</div>'+
       '<div class="cg">'+
-        '<div class="ch '+(d.gender==="male"?"on":"")+'" onclick="obChoice(\'gender\',\'male\',this)"><div class="ch-ic">👨</div><div class="ch-l">'+t("male")+'</div></div>'+
-        '<div class="ch '+(d.gender==="female"?"on":"")+'" onclick="obChoice(\'gender\',\'female\',this)"><div class="ch-ic">👩</div><div class="ch-l">'+t("female")+'</div></div>'+
+        '<div class="ch '+(d.gender==="male"?"on":"")+'" onclick="obChoice(\'gender\',\'male\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:8px"><svg width="38" height="44" viewBox="0 0 38 44" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="19" cy="10" r="9" fill="#5AC8FA"/><rect x="5" y="21" width="28" height="15" rx="6" fill="#5AC8FA"/><rect x="7" y="34" width="10" height="10" rx="5" fill="#5AC8FA"/><rect x="21" y="34" width="10" height="10" rx="5" fill="#5AC8FA"/></svg></div><div class="ch-l">'+t("male")+'</div></div>'+
+        '<div class="ch '+(d.gender==="female"?"on":"")+'" onclick="obChoice(\'gender\',\'female\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:8px"><svg width="38" height="44" viewBox="0 0 38 44" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="19" cy="10" r="9" fill="#FF2D55"/><path d="M13 21 Q19 18 25 21 L33 44 H5 Z" fill="#FF2D55"/></svg></div><div class="ch-l">'+t("female")+'</div></div>'+
       '</div>'+
       '<div class="ig">'+
         '<div class="ir"><div class="ir-l">'+t("age")+'</div><input type="number" value="'+(d.age||"")+'" placeholder="25" onchange="OB.data.age=+this.value"/></div>'+
