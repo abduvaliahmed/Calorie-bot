@@ -195,7 +195,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     <div class="screen" id="s-add-food">
       <div class="hdr">
         <div class="hdr-row">
-          <div class="back" onclick="go('home')">&#8249; Orqaga</div>
+          <div class="back" id="add-back" onclick="go('home')">&#8249; Orqaga</div>
           <div style="font-size:17px;font-weight:600" id="add-title">Ovqat qo'shish</div>
           <div style="width:60px"></div>
         </div>
@@ -210,12 +210,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
             <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:16px" id="new-food-sec">Yangi mahsulot</div>
             <!-- Name -->
             <div style="margin-bottom:12px">
-              <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Nom</div>
+              <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px" id="np-lbl-name">Nom</div>
               <input type="text" id="np-name" placeholder="Masalan: Somsa" style="width:100%;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;color:var(--t1);background:var(--bg);outline:none;box-sizing:border-box"/>
             </div>
             <!-- Unit -->
             <div style="margin-bottom:16px">
-              <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Birlik</div>
+              <div style="font-size:11px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px" id="np-lbl-unit">Birlik</div>
               <div style="display:flex;gap:8px">
                 <button id="np-unit-100" onclick="setNpUnit('100')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--teal);background:var(--teal);color:#fff;font-size:14px;font-weight:600;cursor:pointer">100g</button>
                 <button id="np-unit-1" onclick="setNpUnit('1')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--sep);background:transparent;color:var(--t2);font-size:14px;font-weight:600;cursor:pointer">1 dona</button>
@@ -246,17 +246,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <button class="btn bg2" id="pers-cancel-btn" onclick="document.getElementById('pers-panel').style.display='none'">Bekor qilish</button>
         </div>
         <div id="pers-edit-panel" style="display:none;margin-bottom:16px">
-          <div class="sec">Mahsulotni tahrirlash</div>
+          <div class="sec" id="pe-sec">Mahsulotni tahrirlash</div>
           <div class="ig">
-            <div class="ir"><div class="ir-l">Nom</div><input type="text" id="pe-name"/></div>
-            <div class="ir"><div class="ir-l">Birlik</div><select id="pe-unit"><option value="100">100g uchun</option><option value="1">1 dona uchun</option></select></div>
-            <div class="ir"><div class="ir-l">Kaloriya</div><input type="number" id="pe-kcal"/></div>
+            <div class="ir"><div class="ir-l" id="pe-lbl-nom">Nom</div><input type="text" id="pe-name"/></div>
+            <div class="ir"><div class="ir-l" id="pe-lbl-birlik">Birlik</div><select id="pe-unit"><option value="100" id="pe-opt-100">100g uchun</option><option value="1" id="pe-opt-1">1 dona uchun</option></select></div>
+            <div class="ir"><div class="ir-l" id="pe-lbl-kcal">Kaloriya</div><input type="number" id="pe-kcal"/></div>
             <div class="ir"><div class="ir-l" id="pe-lbl-p">Oqsil (g)</div><input type="number" id="pe-p"/></div>
             <div class="ir"><div class="ir-l" id="pe-lbl-f">Yog' (g)</div><input type="number" id="pe-f"/></div>
             <div class="ir"><div class="ir-l" id="pe-lbl-c">Uglevod (g)</div><input type="number" id="pe-c"/></div>
           </div>
-          <button class="btn bp" onclick="savePersEdit()">Saqlash</button>
-          <button class="btn bg2" onclick="document.getElementById('pers-edit-panel').style.display='none'">Bekor</button>
+          <button class="btn bp" id="pe-save-btn" onclick="savePersEdit()">Saqlash</button>
+          <button class="btn bg2" id="pe-cancel-btn" onclick="document.getElementById('pers-edit-panel').style.display='none'">Bekor</button>
         </div>
         <div style="text-align:center;margin-bottom:16px">
           <button class="btn bg2" id="pers-btn" style="width:auto;padding:10px 20px;font-size:14px" onclick="togglePers()">+ O'z mahsulotimni qo'shish</button>
@@ -306,7 +306,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
               </div>
             </div>
           </div>
-          <button class="btn bp" onclick="addLog()" style="font-size:16px;font-weight:700">+ Qo'shish</button>
+          <button class="btn bp" id="add-log-btn" onclick="addLog()" style="font-size:16px;font-weight:700">+ Qo'shish</button>
         </div>
       </div>
       <div class="tabs">
@@ -322,10 +322,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     <div class="screen" id="s-stats">
       <div class="hdr"><div class="hdr-row"><div class="hdr-t" id="stats-hdr">Statistika</div></div></div>
       <div class="scroll">
-        <div class="sec">Haftalik kaloriya</div>
+        <div class="sec" id="stats-sec1">Haftalik kaloriya</div>
         <div class="card" style="padding:16px;margin-bottom:14px"><div class="bc" id="week-chart"></div></div>
         <div class="g2" id="stats-grid"></div>
-        <div class="sec">Makronutrientlar</div>
+        <div class="sec" id="stats-sec2">Makronutrientlar</div>
         <div class="card" style="padding:16px" id="stats-macros"></div>
       </div>
       <div class="tabs">
@@ -362,7 +362,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     <div class="screen" id="s-ai">
       <div class="hdr">
         <div class="hdr-row">
-          <div class="back" onclick="go('home')">&#8249; Orqaga</div>
+          <div class="back" id="ai-back" onclick="go('home')">&#8249; Orqaga</div>
           <div style="font-size:17px;font-weight:600">BARG AI</div>
           <div style="width:60px"></div>
         </div>
@@ -374,16 +374,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
             <div style="position:absolute;inset:36px;border-radius:50%;background:rgba(29,158,117,0.15);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(29,158,117,0.5);animation:aiCenter 2.5s ease-in-out infinite"><span style="font-size:11px;color:var(--teal);font-weight:700">AI</span></div>
           </div>
           <div style="font-size:18px;font-weight:700;color:var(--t1)">BARG AI</div>
-          <div style="font-size:14px;color:var(--t2);text-align:center;line-height:1.6">Ovqat pishirdingizmi? Ingredientlarni yozing — men BJU ni hisoblayman</div>
+          <div style="font-size:14px;color:var(--t2);text-align:center;line-height:1.6" id="ai-welcome-txt">Ovqat pishirdingizmi? Ingredientlarni yozing — men BJU ni hisoblayman</div>
           <div class="card" style="width:100%;padding:16px">
-            <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px">MISOL</div>
-            <div style="font-size:14px;color:var(--t1);line-height:1.7">Osh pishirdim: guruch 200g, mol go'shti 150g, sabzi 100g, piyoz 80g, oy yog' 40g</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px" id="ai-example-lbl">MISOL</div>
+            <div style="font-size:14px;color:var(--t1);line-height:1.7" id="ai-example-txt">Osh pishirdim: guruch 200g, mol go'shti 150g, sabzi 100g, piyoz 80g, oy yog' 40g</div>
           </div>
         </div>
         <div id="ai-messages" style="padding-bottom:16px"></div>
       </div>
       <div style="background:var(--card);border-top:.5px solid var(--sep);padding:12px 16px;padding-bottom:calc(12px + var(--sb));display:flex;gap:10px;align-items:flex-end">
-        <textarea id="ai-input" placeholder="Mahsulotlarni grammaj bilan yozing..." rows="1" style="flex:1;border:none;background:rgba(118,118,128,.12);border-radius:12px;padding:10px 14px;font-size:15px;color:var(--t1);outline:none;resize:none;font-family:-apple-system,sans-serif;max-height:100px" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI()}"></textarea>
+        <textarea id="ai-input" placeholder="Mahsulotlarni grammaj bilan yozing..." rows="1" id="ai-input" style="flex:1;border:none;background:rgba(118,118,128,.12);border-radius:12px;padding:10px 14px;font-size:15px;color:var(--t1);outline:none;resize:none;font-family:-apple-system,sans-serif;max-height:100px" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI()}"></textarea>
         <button onclick="sendAI()" id="ai-send-btn" style="width:40px;height:40px;border-radius:20px;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -392,7 +392,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 
     <!-- CALENDAR -->
     <div class="screen" id="s-calendar">
-      <div class="hdr"><div class="hdr-row"><div class="back" onclick="go('home')">&#8249; Orqaga</div><div style="font-size:17px;font-weight:600">Tarix</div><div style="width:60px"></div></div></div>
+      <div class="hdr"><div class="hdr-row"><div class="back" id="cal-back" onclick="go('home')">&#8249; Orqaga</div><div style="font-size:17px;font-weight:600" id="cal-hdr-title">Tarix</div><div style="width:60px"></div></div></div>
       <div class="scroll" id="cal-scroll"></div>
     </div>
 
@@ -645,17 +645,49 @@ function updateTabLabels(){
 }
 function updateUITexts(){
   var isRu=lang==="ru";
+  // Language buttons
   var oblb=document.getElementById("ob-lang-btn");if(oblb)oblb.textContent=isRu?"UZ":"RU";
+  // Add food screen
   var at=document.getElementById("add-title");if(at)at.textContent=t("add_t");
-  var pb=document.getElementById("pers-btn");if(pb)pb.textContent=t("my_f");
-  var psb=document.getElementById("pers-save-btn");if(psb)psb.textContent=t("save");
-  var pcb=document.getElementById("pers-cancel-btn");if(pcb)pcb.textContent=t("cancel");
+  var ab=document.getElementById("add-back");if(ab)ab.textContent="‹ "+(isRu?"Назад":"Orqaga");
+  // Personal food form
+  var nfsec=document.getElementById("new-food-sec");if(nfsec)nfsec.textContent=isRu?"Новый продукт":"Yangi mahsulot";
+  var npN=document.getElementById("np-lbl-name");if(npN)npN.textContent=isRu?"Название":"Nom";
+  var npU=document.getElementById("np-lbl-unit");if(npU)npU.textContent=isRu?"Единица":"Birlik";
+  var nu1=document.getElementById("np-unit-1");if(nu1)nu1.textContent=isRu?"1 шт.":"1 dona";
+  var npKl=document.getElementById("np-kl");if(npKl)npKl.textContent=document.getElementById("np-unit")&&document.getElementById("np-unit").value==="1"?(isRu?"ккал/шт.":"kkal/dona"):(isRu?"ккал/100г":"kkal/100g");
   var npP=document.getElementById("np-lbl-p");if(npP)npP.textContent=isRu?"Белки (г)":"Oqsil (g)";
   var npF=document.getElementById("np-lbl-f");if(npF)npF.textContent=isRu?"Жиры (г)":"Yog' (g)";
   var npC=document.getElementById("np-lbl-c");if(npC)npC.textContent=isRu?"Углев. (г)":"Uglevod (g)";
+  var pb=document.getElementById("pers-btn");if(pb)pb.textContent=t("my_f");
+  var psb=document.getElementById("pers-save-btn");if(psb)psb.textContent=t("save");
+  var pcb=document.getElementById("pers-cancel-btn");if(pcb)pcb.textContent=t("cancel");
+  // Personal food edit form
+  var pesec=document.getElementById("pe-sec");if(pesec)pesec.textContent=isRu?"Редактировать продукт":"Mahsulotni tahrirlash";
+  var penm=document.getElementById("pe-lbl-nom");if(penm)penm.textContent=isRu?"Название":"Nom";
+  var pebr=document.getElementById("pe-lbl-birlik");if(pebr)pebr.textContent=isRu?"Единица":"Birlik";
+  var pekc=document.getElementById("pe-lbl-kcal");if(pekc)pekc.textContent=isRu?"Калории":"Kaloriya";
   var peP=document.getElementById("pe-lbl-p");if(peP)peP.textContent=isRu?"Белки (г)":"Oqsil (g)";
   var peF=document.getElementById("pe-lbl-f");if(peF)peF.textContent=isRu?"Жиры (г)":"Yog' (g)";
   var peC=document.getElementById("pe-lbl-c");if(peC)peC.textContent=isRu?"Углев. (г)":"Uglevod (g)";
+  var pesv=document.getElementById("pe-save-btn");if(pesv)pesv.textContent=t("save");
+  var pecn=document.getElementById("pe-cancel-btn");if(pecn)pecn.textContent=isRu?"Отмена":"Bekor";
+  var peo100=document.getElementById("pe-opt-100");if(peo100)peo100.textContent=isRu?"На 100г":"100g uchun";
+  var peo1=document.getElementById("pe-opt-1");if(peo1)peo1.textContent=isRu?"На 1 шт.":"1 dona uchun";
+  // Gram panel
+  var alb=document.getElementById("add-log-btn");if(alb)alb.textContent="+ "+(isRu?"Добавить":"Qo'shish");
+  // AI screen
+  var aib=document.getElementById("ai-back");if(aib)aib.textContent="‹ "+(isRu?"Назад":"Orqaga");
+  var aiwt=document.getElementById("ai-welcome-txt");if(aiwt)aiwt.textContent=isRu?"Что приготовили? Напишите ингредиенты — я посчитаю БЖУ":"Ovqat pishirdingizmi? Ingredientlarni yozing — men BJU ni hisoblayman";
+  var aiel=document.getElementById("ai-example-lbl");if(aiel)aiel.textContent=isRu?"ПРИМЕР":"MISOL";
+  var aiet=document.getElementById("ai-example-txt");if(aiet)aiet.textContent=isRu?"Приготовил плов: рис 200г, говядина 150г, морковь 100г, лук 80г, масло 40г":"Osh pishirdim: guruch 200g, mol go'shti 150g, sabzi 100g, piyoz 80g, oy yog' 40g";
+  var aiinp=document.getElementById("ai-input");if(aiinp)aiinp.placeholder=isRu?"Напишите продукты с граммовкой...":"Mahsulotlarni grammaj bilan yozing...";
+  // Calendar screen
+  var calb=document.getElementById("cal-back");if(calb)calb.textContent="‹ "+(isRu?"Назад":"Orqaga");
+  var calh=document.getElementById("cal-hdr-title");if(calh)calh.textContent=isRu?"История":"Tarix";
+  // Stats screen
+  var ss1=document.getElementById("stats-sec1");if(ss1)ss1.textContent=isRu?"Недельные калории":"Haftalik kaloriya";
+  var ss2=document.getElementById("stats-sec2");if(ss2)ss2.textContent=isRu?"Макронутриенты":"Makronutrientlar";
   updateTabLabels();
 }
 
@@ -672,6 +704,8 @@ function toggleLang(){
     else if(id==="stats")renderStats();
     else if(id==="add-food")initFood();
     else if(id==="onboard")renderOB();
+    else if(id==="ai")initAI();
+    else if(id==="calendar")initCalendar();
   }
   updateUITexts();
   toast(lang==="uz"?"O'zbekcha":"Русский язык");
@@ -702,7 +736,7 @@ function renderHome(){
   var logs=(td.logs||[]);
   var lhtml=logs.length===0?
     '<div class="emp"><div class="emp-ic">🍽</div><div class="emp-t">'+t("empty")+'</div><div class="emp-s">'+t("empty2")+'</div></div>':
-    logs.map(function(l){return '<div class="fi"><div class="fi-ic">'+fIcon(l.food_name)+'</div><div class="fi-inf"><div class="fi-n">'+l.food_name+'</div><div class="fi-m">'+l.grams+'g · P:'+l.protein+'g Y:'+l.fat+'g U:'+l.carb+'g</div></div><div class="fi-k">'+Math.round(l.kcal)+' kkal</div><button onclick="openLogEdit('+l.id+',\''+l.food_name+'\','+l.grams+','+l.kcal+','+l.protein+','+l.fat+','+l.carb+')" style="width:28px;height:28px;border-radius:14px;background:var(--tl);border:none;cursor:pointer;margin-left:4px;font-size:13px;flex-shrink:0">✏️</button><button class="del" onclick="delLog('+l.id+')">✕</button></div>';}).join("");
+    logs.map(function(l){var _p=lang==="ru"?"Б":"P",_f=lang==="ru"?"Ж":"Y",_c=lang==="ru"?"У":"U";return '<div class="fi"><div class="fi-ic">'+fIcon(l.food_name)+'</div><div class="fi-inf"><div class="fi-n">'+l.food_name+'</div><div class="fi-m">'+l.grams+'g · '+_p+':'+l.protein+'g '+_f+':'+l.fat+'g '+_c+':'+l.carb+'g</div></div><div class="fi-k">'+Math.round(l.kcal)+' kkal</div><button onclick="openLogEdit('+l.id+',\''+l.food_name+'\','+l.grams+','+l.kcal+','+l.protein+','+l.fat+','+l.carb+')" style="width:28px;height:28px;border-radius:14px;background:var(--tl);border:none;cursor:pointer;margin-left:4px;font-size:13px;flex-shrink:0">✏️</button><button class="del" onclick="delLog('+l.id+')">✕</button></div>';}).join("");
   var circ2=2*Math.PI*40;
   var pRatio=Math.min(1,(tot.protein*4)/(tar.protein*4||1));
   var fRatio=Math.min(1,(tot.fat*9)/(tar.fat*9||1));
@@ -828,7 +862,9 @@ async function loadFoods(){
   try{
     var results=await Promise.all([req("/api/food/personal"),req("/api/food/search?q=&limit=200&offset=0")]);
     var pf=(results[0].foods||[]).map(function(f){f.source="personal";return f;});
-    var combined=pf.concat(results[1].results||[]);
+    // Filter out personal foods from search results — they're already in pf
+    var gf=(results[1].results||[]).filter(function(f){return f.source!=="personal";});
+    var combined=pf.concat(gf);
     showFoods(combined);foodAllLoaded=true;
   }catch(e){showFoods([]);}
 }
@@ -943,14 +979,15 @@ function setNpUnit(v){
   document.getElementById('np-unit').value=v;
   var b100=document.getElementById('np-unit-100');
   var b1=document.getElementById('np-unit-1');
+  var isRu=lang==="ru";
   if(v==='100'){
     b100.style.background='var(--teal)';b100.style.color='#fff';b100.style.borderColor='var(--teal)';
     b1.style.background='transparent';b1.style.color='var(--t2)';b1.style.borderColor='var(--sep)';
-    document.getElementById('np-kl').textContent='kkal/100g';
+    document.getElementById('np-kl').textContent=isRu?'ккал/100г':'kkal/100g';
   }else{
     b1.style.background='var(--teal)';b1.style.color='#fff';b1.style.borderColor='var(--teal)';
     b100.style.background='transparent';b100.style.color='var(--t2)';b100.style.borderColor='var(--sep)';
-    document.getElementById('np-kl').textContent='kkal/dona';
+    document.getElementById('np-kl').textContent=isRu?'ккал/шт.':'kkal/dona';
   }
 }
 function onNpUnit(){setNpUnit(document.getElementById('np-unit').value);}
@@ -1016,7 +1053,7 @@ async function renderStats(){
       '<div class="sc"><div class="sc-l">'+(isRu?"Среднее":"O'rtacha")+'</div>'+
         '<div class="sc-v">'+fmt(avgKcal)+'<span class="sc-u"> kkal</span></div>'+
         '<span class="bdg '+(avgKcal>0?"bg":"bo")+'">'+(isRu?"7 дней":"7 kun")+'</span></div>'+
-      '<div class="sc"><div class="sc-l">'+(isRu?"Мақсад":"Maqsad")+'</div>'+
+      '<div class="sc"><div class="sc-l">'+(isRu?"Цель":"Maqsad")+'</div>'+
         '<div class="sc-v">'+daysHit+'<span class="sc-u">/7</span></div>'+
         '<span class="bdg bg">'+Math.round(daysHit/7*100)+'%</span></div>';
     var td=S.today||{};var tot=td.totals||{};var tar=td.targets||{};
@@ -1128,8 +1165,8 @@ function obHTML(){
         '<div style="font-size:13px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
       '</div>'+
       '<div class="cg">'+
-        '<div class="ch '+(d.gender==="male"?"on":"")+'" onclick="obChoice(\'gender\',\'male\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:8px"><svg width="38" height="44" viewBox="0 0 38 44" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="19" cy="10" r="9" fill="#5AC8FA"/><rect x="5" y="21" width="28" height="15" rx="6" fill="#5AC8FA"/><rect x="7" y="34" width="10" height="10" rx="5" fill="#5AC8FA"/><rect x="21" y="34" width="10" height="10" rx="5" fill="#5AC8FA"/></svg></div><div class="ch-l">'+t("male")+'</div></div>'+
-        '<div class="ch '+(d.gender==="female"?"on":"")+'" onclick="obChoice(\'gender\',\'female\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:8px"><svg width="38" height="44" viewBox="0 0 38 44" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="19" cy="10" r="9" fill="#FF2D55"/><path d="M13 21 Q19 18 25 21 L33 44 H5 Z" fill="#FF2D55"/></svg></div><div class="ch-l">'+t("female")+'</div></div>'+
+        '<div class="ch '+(d.gender==="male"?"on":"")+'" onclick="obChoice(\'gender\',\'male\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:10px"><svg width="44" height="56" viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="12" r="11" fill="var(--teal)"/><path d="M22 22C13 22 4 25 3 30L3 41Q3 44 6 44L38 44Q41 44 41 41L41 30C40 25 31 22 22 22Z" fill="var(--teal)"/><rect x="8" y="43" width="12" height="13" rx="6" fill="var(--teal)"/><rect x="24" y="43" width="12" height="13" rx="6" fill="var(--teal)"/></svg></div><div class="ch-l">'+t("male")+'</div></div>'+
+        '<div class="ch '+(d.gender==="female"?"on":"")+'" onclick="obChoice(\'gender\',\'female\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:10px"><svg width="44" height="56" viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="11" r="10" fill="var(--teal)"/><path d="M22 21C17 21 12 23 12 26L14 32C10 35 3 56 3 56L41 56C41 56 34 35 30 32L32 26C32 23 27 21 22 21Z" fill="var(--teal)"/></svg></div><div class="ch-l">'+t("female")+'</div></div>'+
       '</div>'+
       '<div class="ig">'+
         '<div class="ir"><div class="ir-l">'+t("age")+'</div><input type="number" value="'+(d.age||"")+'" placeholder="25" onchange="OB.data.age=+this.value"/></div>'+
@@ -1293,14 +1330,15 @@ async function loadUsers(){
     var users=r.users||[];
     var el=document.getElementById("admin-users");
     if(!users.length){el.innerHTML="<div style='padding:12px;color:var(--t2);text-align:center'>"+(lang==="ru"?"Пользователей нет":"Foydalanuvchilar yoq")+"</div>";return;}
-    el.innerHTML='<div style="font-size:13px;color:var(--t2);margin-bottom:10px">Jami: <b style="color:var(--t1)">'+r.count+' ta</b></div>'+
+    el.innerHTML='<div style="font-size:13px;color:var(--t2);margin-bottom:10px">'+(lang==="ru"?"Всего: ":"Jami: ")+'<b style="color:var(--t1)">'+r.count+(lang==="ru"?" чел.":" ta")+'</b></div>'+
     '<div class="card">'+users.map(function(u){
       var nm=u.first_name||(u.username?'@'+u.username:'ID:'+u.user_id);
       var un=u.username?' @'+u.username:'';
-      var goal={lose:"Ozish",maintain:"Saqlash",muscle:"Massa"}[u.goal]||u.goal||"-";
+      var isRuA=lang==="ru";
+      var goal={lose:isRuA?"Похудение":"Ozish",maintain:isRuA?"Поддержание":"Saqlash",muscle:isRuA?"Набор":"Massa"}[u.goal]||u.goal||"-";
       var isBlocked=u.is_blocked;
       var reg=u.created_at?(new Date(u.created_at)).toLocaleDateString("ru-RU"):"?";
-      var lastSeen=u.last_seen?(function(){var d=new Date(u.last_seen);var now=new Date();var diff=Math.floor((now-d)/60000);if(diff<1)return "Hozir online";if(diff<60)return diff+" daqiqa oldin";if(diff<1440)return Math.floor(diff/60)+" soat oldin";return d.toLocaleDateString("ru-RU");})():"Hali kirmagan";
+      var lastSeen=u.last_seen?(function(){var d=new Date(u.last_seen);var now=new Date();var diff=Math.floor((now-d)/60000);if(diff<1)return isRuA?"Онлайн":"Hozir online";if(diff<60)return diff+(isRuA?" мин. назад":" daqiqa oldin");if(diff<1440)return Math.floor(diff/60)+(isRuA?" ч. назад":" soat oldin");return d.toLocaleDateString("ru-RU");})():(isRuA?"Не заходил":"Hali kirmagan");
       var isOnline=u.last_seen&&(new Date()-new Date(u.last_seen))<300000;
       var isOnline=u.last_seen&&(new Date()-new Date(u.last_seen))<300000;
       var rowId='urow_'+u.user_id;
@@ -1315,7 +1353,7 @@ async function loadUsers(){
             '<svg width="6" height="12" viewBox="0 0 6 12" fill="none"><path d="M1 1l4 5-4 5" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/></svg>'+
           '</div>'+
           '<div style="display:flex;gap:6px;margin-left:8px">'+
-            '<button class="admin-blk-btn" data-uid="'+u.user_id+'" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:'+(isBlocked?'#E8F9F2':'#FFF3E0')+';color:'+(isBlocked?'#0F6E56':'#E65100')+'">'+(isBlocked?'Ochish':'Blok')+'</button>'+
+            '<button class="admin-blk-btn" data-uid="'+u.user_id+'" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:'+(isBlocked?'#E8F9F2':'#FFF3E0')+';color:'+(isBlocked?'#0F6E56':'#E65100')+'">'+(isBlocked?(isRuA?'Разбл.':'Ochish'):(isRuA?'Блок':'Blok'))+'</button>'+
             '<button class="admin-del-btn" data-uid="'+u.user_id+'" style="padding:4px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;background:#FEEBEB;color:#C62828">✕</button>'+
           '</div>'+
         '</div>'+
@@ -1353,8 +1391,8 @@ async function loadUsers(){
   }
 }
 
-async function adminBlockUser(userId){try{var r=await req("/api/admin/users/"+userId+"/block","POST",{});toast(r.is_blocked?"Bloklandi":"Blok ochildi");loadUsers();}catch(e){toast(t("err"));}}
-async function adminDeleteUser(userId){if(!confirm("O'chirishni tasdiqlaysizmi?"))return;showLoading("O'chirilmoqda...");try{await req("/api/admin/users/"+userId,"DELETE");hideLoading();toast("O'chirildi!");loadUsers();}catch(e){hideLoading();toast(t("err"));}}
+async function adminBlockUser(userId){try{var r=await req("/api/admin/users/"+userId+"/block","POST",{});toast(r.is_blocked?(lang==="ru"?"Заблокирован":"Bloklandi"):(lang==="ru"?"Разблокирован":"Blok ochildi"));loadUsers();}catch(e){toast(t("err"));}}
+async function adminDeleteUser(userId){if(!confirm(lang==="ru"?"Удалить пользователя?":"O'chirishni tasdiqlaysizmi?"))return;showLoading(lang==="ru"?"Удаление...":"O'chirilmoqda...");try{await req("/api/admin/users/"+userId,"DELETE");hideLoading();toast(lang==="ru"?"Удалено!":"O'chirildi!");loadUsers();}catch(e){hideLoading();toast(t("err"));}}
 
 var adminFoods=[];
 function adminEdit(id){var f=adminFoods.find(function(x){return x.id===id;});if(!f)return;document.getElementById('ae-name').value=f.name||'';document.getElementById('ae-ru').value=f.name_ru||'';document.getElementById('ae-k').value=f.kcal||0;document.getElementById('ae-p').value=f.protein||0;document.getElementById('ae-f').value=f.fat||0;document.getElementById('ae-c').value=f.carb||0;document.getElementById('admin-edit-panel').setAttribute('data-id',id);document.getElementById('admin-edit-panel').style.display='block';document.getElementById('admin-edit-panel').scrollIntoView({behavior:'smooth'});}
@@ -1397,7 +1435,7 @@ async function saveAIToMyFoods(rid,btn){
   try{
     await req('/api/food/personal','POST',{name:name,kcal:kcal,protein:protein,fat:fat,carb:carb,per_grams:per_grams});
     hideLoading();toast(lang==="uz"?"Mahsulotlarga qo'shildi!":"Добавлено в продукты!");
-    if(btn){btn.textContent="✓ Saqlandi";btn.style.background="#34C759";btn.style.color="#fff";}
+    if(btn){btn.textContent=lang==="ru"?"✓ Сохранено":"✓ Saqlandi";btn.style.background="#34C759";btn.style.color="#fff";}
   }catch(e){hideLoading();toast(t("err"));if(btn)btn.disabled=false;}
 }
 
@@ -1495,7 +1533,7 @@ async function initCalendar(){
     }).join("");
     scroll.innerHTML=
       '<div class="cal-fade">'+
-        '<div class="sec">Haftalik kaloriya</div>'+
+        '<div class="sec">'+(lang==="ru"?"Недельные калории":"Haftalik kaloriya")+'</div>'+
         '<div class="card" style="padding:16px;margin-bottom:14px"><div class="bc" id="cal-week-chart">'+chartBars+'</div></div>'+
         '<div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px" id="cal-days">'+daysBtns+'</div>'+
         '<div id="cal-logs"><div class="skel" style="height:80px;margin-bottom:12px"></div><div class="skel" style="height:56px;margin-bottom:8px"></div><div class="skel" style="height:56px"></div></div>'+
@@ -1538,9 +1576,9 @@ async function loadCalDay(date){
       '<div style="height:6px;background:var(--sep);border-radius:3px;overflow:hidden;margin-bottom:12px">'+
         '<div style="height:100%;width:'+kpct+'%;background:var(--teal);border-radius:3px;transition:width 0.5s ease"></div></div>'+
       '<div style="display:flex;gap:16px">'+
-        '<span style="font-size:13px">P: <b style="color:#4CD964">'+Math.round(tot.protein)+'g</b></span>'+
-        '<span style="font-size:13px">Y: <b style="color:#FF9500">'+Math.round(tot.fat)+'g</b></span>'+
-        '<span style="font-size:13px">U: <b style="color:#5AC8FA">'+Math.round(tot.carb)+'g</b></span>'+
+        '<span style="font-size:13px">'+(lang==="ru"?"Б":"P")+': <b style="color:#4CD964">'+Math.round(tot.protein)+'g</b></span>'+
+        '<span style="font-size:13px">'+(lang==="ru"?"Ж":"Y")+': <b style="color:#FF9500">'+Math.round(tot.fat)+'g</b></span>'+
+        '<span style="font-size:13px">'+(lang==="ru"?"У":"U")+': <b style="color:#5AC8FA">'+Math.round(tot.carb)+'g</b></span>'+
       '</div></div>';
     el.innerHTML=dateTitle+totCard+logs.map(function(l){
       return '<div class="fi"><div class="fi-ic">'+fIcon(l.food_name)+'</div>'+
@@ -1555,7 +1593,13 @@ async function loadToday(){try{var r=await req("/api/today");S.today=r;var today
 
 // AI
 var _aiResults={};
-function initAI(){_aiResults={};document.getElementById('ai-messages').innerHTML='';document.getElementById('ai-welcome').style.display='flex';document.getElementById('ai-input').value='';}
+function initAI(){
+  _aiResults={};
+  document.getElementById('ai-messages').innerHTML='';
+  document.getElementById('ai-welcome').style.display='flex';
+  document.getElementById('ai-input').value='';
+  updateUITexts();
+}
 function addAIMsg(role,html){var el=document.getElementById('ai-messages');var div=document.createElement('div');div.className=role==='user'?'ai-msg-user':'ai-msg-bot';div.innerHTML=html;el.appendChild(div);document.getElementById('ai-scroll').scrollTop=99999;}
 
 async function sendAI(){
