@@ -16,10 +16,10 @@ body.dark{
     radial-gradient(ellipse at 65% 85%,rgba(72,18,108,0.80) 0%,transparent 52%),
     radial-gradient(ellipse at 15% 78%,rgba(90,35,8,0.80) 0%,transparent 52%),
     #050505;
-  --card:rgba(18,18,24,0.76);
+  --card:rgba(18,18,24,0.68);
   --sep:rgba(255,255,255,0.08);
-  --gl-b:rgba(255,255,255,0.12);
-  --gl-s:0 4px 28px rgba(0,0,0,0.50),inset 0 1px 0 rgba(255,255,255,0.08);
+  --gl-b:rgba(255,255,255,0.13);
+  --gl-s:0 4px 28px rgba(0,0,0,0.50),inset 2px 0 10px rgba(255,255,255,0.10),inset -1px 0 6px rgba(255,255,255,0.05),inset 0 1px 0 rgba(255,255,255,0.12);
   --t1:#fff;--t2:#8e8e93;--t3:#636366;
   --tl:rgba(29,158,117,0.18);--td:#1D9E75;
   --teal:#1D9E75;--ora:#ff9f0a;--red:#ff453a;
@@ -33,10 +33,10 @@ body.dark{
     radial-gradient(ellipse at 65% 85%,rgba(185,120,240,0.62) 0%,transparent 52%),
     radial-gradient(ellipse at 15% 78%,rgba(240,155,90,0.62) 0%,transparent 52%),
     #eef2f8;
-  --card:rgba(255,255,255,0.58);
+  --card:rgba(255,255,255,0.50);
   --sep:rgba(0,0,0,0.07);
-  --gl-b:rgba(255,255,255,0.80);
-  --gl-s:0 2px 20px rgba(0,0,0,0.07),inset 0 1px 0 rgba(255,255,255,0.95);
+  --gl-b:rgba(255,255,255,0.82);
+  --gl-s:0 2px 20px rgba(0,0,0,0.07),inset 2px 0 10px rgba(255,255,255,0.55),inset -1px 0 6px rgba(255,255,255,0.30),inset 0 1px 0 rgba(255,255,255,0.98);
   --t1:#1c1c1e;--t2:#6d6d72;
   --ora:#FF9500;--blu:#007AFF;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)
@@ -71,15 +71,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .tab.on span{color:var(--teal)}
 .hero{
   background:linear-gradient(135deg,#22b585 0%,#1D9E75 50%,#15876a 100%);
-  border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;
-  box-shadow:0 8px 32px rgba(29,158,117,0.30),inset 0 1px 0 rgba(255,255,255,0.25)
+  border-radius:26px;padding:20px;margin-bottom:14px;color:#fff;
+  box-shadow:0 8px 32px rgba(29,158,117,0.30),inset 2px 0 12px rgba(255,255,255,0.20),inset 0 1px 0 rgba(255,255,255,0.35)
 }
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .sc{
   background:var(--card);
   -webkit-backdrop-filter:blur(20px) saturate(180%);
   backdrop-filter:blur(20px) saturate(180%);
-  border-radius:14px;padding:14px;
+  border-radius:22px;padding:14px;
   border:.5px solid var(--gl-b);
   box-shadow:var(--gl-s)
 }
@@ -93,7 +93,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   background:var(--card);
   -webkit-backdrop-filter:blur(20px) saturate(180%);
   backdrop-filter:blur(20px) saturate(180%);
-  border-radius:14px;overflow:hidden;margin-bottom:12px;
+  border-radius:22px;overflow:hidden;margin-bottom:12px;
   border:.5px solid var(--gl-b);
   box-shadow:var(--gl-s)
 }
@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   background:var(--card);
   -webkit-backdrop-filter:blur(20px) saturate(180%);
   backdrop-filter:blur(20px) saturate(180%);
-  border-radius:14px;display:flex;align-items:center;padding:12px 14px;margin-bottom:8px;
+  border-radius:20px;display:flex;align-items:center;padding:12px 14px;margin-bottom:8px;
   border:.5px solid var(--gl-b);
   box-shadow:var(--gl-s)
 }
@@ -138,7 +138,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   background:var(--card);
   -webkit-backdrop-filter:blur(20px) saturate(180%);
   backdrop-filter:blur(20px) saturate(180%);
-  border-radius:14px;overflow:hidden;margin-bottom:12px;
+  border-radius:22px;overflow:hidden;margin-bottom:12px;
   border:.5px solid var(--gl-b);
   box-shadow:var(--gl-s)
 }
@@ -157,9 +157,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   background:var(--card);
   -webkit-backdrop-filter:blur(16px);
   backdrop-filter:blur(16px);
-  border-radius:14px;padding:16px;text-align:center;cursor:pointer;
+  border-radius:22px;padding:16px;text-align:center;cursor:pointer;
   border:2px solid transparent;transition:all .2s;
-  box-shadow:0 2px 12px rgba(0,0,0,0.05)
+  box-shadow:var(--gl-s)
 }
 .ch.on{border-color:var(--teal);background:rgba(29,158,117,0.12)}
 .ch-ic{font-size:30px;margin-bottom:6px}
@@ -174,8 +174,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   background:rgba(29,158,117,0.08);
   -webkit-backdrop-filter:blur(16px);
   backdrop-filter:blur(16px);
-  border-radius:14px;padding:16px;margin-bottom:12px;
-  border:.5px solid rgba(29,158,117,0.20)
+  border-radius:22px;padding:16px;margin-bottom:12px;
+  border:.5px solid rgba(29,158,117,0.22);
+  box-shadow:inset 2px 0 8px rgba(29,158,117,0.10),inset 0 1px 0 rgba(255,255,255,0.50)
 }
 .rc-t{font-size:13px;font-weight:600;color:var(--td);margin-bottom:10px}
 .rc-r{display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid rgba(29,158,117,.12)}
