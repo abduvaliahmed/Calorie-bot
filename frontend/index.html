@@ -1716,6 +1716,8 @@ function launchConfetti(){
 }
 
 function checkMilestone(streak){
+  var urlMs=parseInt(new URLSearchParams(location.search).get("test_ms")||"0");
+  if(urlMs&&MS_DATA[urlMs]){setTimeout(function(){showMsModal(urlMs);},400);return;}
   var ms=[7,14,21,30,50,100];
   if(ms.indexOf(streak)===-1)return;
   var key="barg_ms_"+streak;
