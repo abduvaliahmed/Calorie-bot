@@ -10,23 +10,33 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body.dark{
   --bg:#050505;
-  --bg-mesh:linear-gradient(135deg,#0b1a14 0%,#0e0b1c 40%,#1a0b0e 70%,#0b0f1c 100%);
-  --card:rgba(30,30,34,0.82);
+  --bg-mesh:
+    radial-gradient(ellipse at 15% 25%,rgba(20,90,55,0.90) 0%,transparent 52%),
+    radial-gradient(ellipse at 85% 15%,rgba(20,38,110,0.85) 0%,transparent 52%),
+    radial-gradient(ellipse at 65% 85%,rgba(72,18,108,0.80) 0%,transparent 52%),
+    radial-gradient(ellipse at 15% 78%,rgba(90,35,8,0.80) 0%,transparent 52%),
+    #050505;
+  --card:rgba(18,18,24,0.76);
   --sep:rgba(255,255,255,0.08);
-  --gl-b:rgba(255,255,255,0.10);
-  --gl-s:0 4px 28px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.07);
+  --gl-b:rgba(255,255,255,0.12);
+  --gl-s:0 4px 28px rgba(0,0,0,0.50),inset 0 1px 0 rgba(255,255,255,0.08);
   --t1:#fff;--t2:#8e8e93;--t3:#636366;
-  --tl:rgba(29,158,117,0.16);--td:#1D9E75;
+  --tl:rgba(29,158,117,0.18);--td:#1D9E75;
   --teal:#1D9E75;--ora:#ff9f0a;--red:#ff453a;
 }
 :root{
   --teal:#1D9E75;--tl:rgba(29,158,117,0.10);--td:#0F6E56;
-  --bg:#f0f0f5;
-  --bg-mesh:linear-gradient(135deg,#d8efea 0%,#e4edf8 35%,#f0eaf8 65%,#f8ece0 100%);
-  --card:rgba(255,255,255,0.72);
+  --bg:#eef2f8;
+  --bg-mesh:
+    radial-gradient(ellipse at 15% 25%,rgba(82,198,152,0.72) 0%,transparent 52%),
+    radial-gradient(ellipse at 85% 15%,rgba(100,158,240,0.68) 0%,transparent 52%),
+    radial-gradient(ellipse at 65% 85%,rgba(185,120,240,0.62) 0%,transparent 52%),
+    radial-gradient(ellipse at 15% 78%,rgba(240,155,90,0.62) 0%,transparent 52%),
+    #eef2f8;
+  --card:rgba(255,255,255,0.58);
   --sep:rgba(0,0,0,0.07);
-  --gl-b:rgba(255,255,255,0.75);
-  --gl-s:0 2px 20px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.9);
+  --gl-b:rgba(255,255,255,0.80);
+  --gl-s:0 2px 20px rgba(0,0,0,0.07),inset 0 1px 0 rgba(255,255,255,0.95);
   --t1:#1c1c1e;--t2:#6d6d72;
   --ora:#FF9500;--blu:#007AFF;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)
