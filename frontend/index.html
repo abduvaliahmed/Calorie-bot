@@ -10,13 +10,6 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body.dark{
   --bg:#050505;
-  --b1x:15%;--b1y:25%;--b2x:85%;--b2y:15%;--b3x:65%;--b3y:85%;--b4x:15%;--b4y:78%;
-  --bg-mesh:
-    radial-gradient(ellipse at var(--b1x) var(--b1y),rgba(20,90,55,0.72) 0%,transparent 52%),
-    radial-gradient(ellipse at var(--b2x) var(--b2y),rgba(20,38,110,0.68) 0%,transparent 52%),
-    radial-gradient(ellipse at var(--b3x) var(--b3y),rgba(72,18,108,0.62) 0%,transparent 52%),
-    radial-gradient(ellipse at var(--b4x) var(--b4y),rgba(90,35,8,0.62) 0%,transparent 52%),
-    #050505;
   --card:rgba(18,18,24,0.68);
   --sep:rgba(255,255,255,0.08);
   --gl-b:rgba(255,255,255,0.13);
@@ -28,13 +21,7 @@ body.dark{
 :root{
   --teal:#1D9E75;--tl:rgba(29,158,117,0.10);--td:#0F6E56;
   --bg:#eef2f8;
-  --b1x:15%;--b1y:25%;--b2x:85%;--b2y:15%;--b3x:65%;--b3y:85%;--b4x:15%;--b4y:78%;
-  --bg-mesh:
-    radial-gradient(ellipse at var(--b1x) var(--b1y),rgba(82,198,152,0.52) 0%,transparent 52%),
-    radial-gradient(ellipse at var(--b2x) var(--b2y),rgba(100,158,240,0.48) 0%,transparent 52%),
-    radial-gradient(ellipse at var(--b3x) var(--b3y),rgba(185,120,240,0.44) 0%,transparent 52%),
-    radial-gradient(ellipse at var(--b4x) var(--b4y),rgba(240,155,90,0.44) 0%,transparent 52%),
-    #eef2f8;
+  --sx:0px;--sy:0px;
   --card:rgba(255,255,255,0.50);
   --sep:rgba(0,0,0,0.07);
   --gl-b:rgba(255,255,255,0.82);
@@ -45,9 +32,9 @@ body.dark{
 }
 html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
-.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto}
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;z-index:1}
 .screens{flex:1;overflow:hidden;position:relative}
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg-mesh);transform:translateX(100%);overflow:hidden;transition:none}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:transparent;transform:translateX(100%);overflow:hidden;transition:none}
 .screen.act{transform:translateX(0)}
 .hdr{
   background:var(--card);
@@ -299,20 +286,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     background:rgba(28,28,32,0.98)
   }
 }
-:root{--shine-x:50%;--shine-y:32%}
-.card,.sc,.fi,.ig,.ch,.hero{position:relative}
+.card,.sc,.fi,.ig,.ch,.hero{position:relative;overflow:hidden}
 .card::before,.sc::before,.fi::before,.ig::before,.ch::before,.hero::before{
-  content:'';position:absolute;inset:0;border-radius:inherit;
-  background:radial-gradient(ellipse at var(--shine-x) var(--shine-y),rgba(255,255,255,0.26) 0%,transparent 62%);
-  pointer-events:none
+  content:'';position:absolute;
+  width:280%;height:280%;top:-90%;left:-90%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(255,255,255,0.30) 0%,transparent 42%);
+  pointer-events:none;
+  transform:translate(var(--sx),var(--sy));
+  will-change:transform
 }
 body.dark .card::before,body.dark .sc::before,body.dark .fi::before,
 body.dark .ig::before,body.dark .ch::before,body.dark .hero::before{
-  background:radial-gradient(ellipse at var(--shine-x) var(--shine-y),rgba(255,255,255,0.09) 0%,transparent 62%)
+  background:radial-gradient(ellipse at center,rgba(255,255,255,0.11) 0%,transparent 42%)
 }
+.blob-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bl{position:absolute;border-radius:50%;filter:blur(80px);will-change:transform}
+#bl1{width:72vw;height:72vw;background:rgba(72,188,138,0.90);top:-18%;left:-18%}
+#bl2{width:68vw;height:68vw;background:rgba(88,148,235,0.85);top:-12%;right:-18%}
+#bl3{width:64vw;height:64vw;background:rgba(175,110,235,0.82);bottom:-12%;right:-8%}
+#bl4{width:68vw;height:68vw;background:rgba(235,145,80,0.82);bottom:-18%;left:-12%}
+body.dark #bl1{background:rgba(16,80,48,0.95)}
+body.dark #bl2{background:rgba(16,32,100,0.92)}
+body.dark #bl3{background:rgba(64,14,100,0.90)}
+body.dark #bl4{background:rgba(80,30,8,0.90)}
 </style>
 </head>
 <body>
+<div class="blob-bg"><div id="bl1" class="bl"></div><div id="bl2" class="bl"></div><div id="bl3" class="bl"></div><div id="bl4" class="bl"></div></div>
 <canvas id="confetti-cv" style="position:fixed;inset:0;z-index:1002;pointer-events:none;display:none"></canvas>
 <div class="app">
   <div class="screens">
@@ -2135,28 +2136,27 @@ init();
 </div>
 <script>
 (function(){
-  var tx=50,ty=32,cx=50,cy=32,t=0;
-  var r=document.documentElement.style;
+  var bl1=document.getElementById('bl1'),bl2=document.getElementById('bl2'),
+      bl3=document.getElementById('bl3'),bl4=document.getElementById('bl4');
+  var root=document.documentElement.style;
+  var tx=0,ty=0,cx=0,cy=0,t=0;
   function tick(){
     t+=0.0018;
+    /* blob harakati — to'g'ridan transform, CSS variable emas */
+    bl1.style.transform='translate('+( Math.sin(t      )*50).toFixed(1)+'px,'+(Math.cos(t*0.70     )*44).toFixed(1)+'px)';
+    bl2.style.transform='translate('+( Math.sin(t*0.80+1)*46).toFixed(1)+'px,'+(Math.cos(t*0.90+2)*38).toFixed(1)+'px)';
+    bl3.style.transform='translate('+( Math.sin(t*0.60+3)*54).toFixed(1)+'px,'+(Math.cos(t*0.70+1)*38).toFixed(1)+'px)';
+    bl4.style.transform='translate('+( Math.sin(t*0.90+2)*46).toFixed(1)+'px,'+(Math.cos(t*0.80+3)*32).toFixed(1)+'px)';
+    /* shine — CSS transform variablelarda ishlaydi */
     cx+=(tx-cx)*0.07;
     cy+=(ty-cy)*0.07;
-    r.setProperty('--shine-x',cx.toFixed(1)+'%');
-    r.setProperty('--shine-y',cy.toFixed(1)+'%');
-    r.setProperty('--b1x',(15+Math.sin(t)*9).toFixed(1)+'%');
-    r.setProperty('--b1y',(25+Math.cos(t*0.7)*8).toFixed(1)+'%');
-    r.setProperty('--b2x',(85+Math.sin(t*0.8+1)*8).toFixed(1)+'%');
-    r.setProperty('--b2y',(15+Math.cos(t*0.9+2)*7).toFixed(1)+'%');
-    r.setProperty('--b3x',(65+Math.sin(t*0.6+3)*10).toFixed(1)+'%');
-    r.setProperty('--b3y',(85+Math.cos(t*0.7+1)*7).toFixed(1)+'%');
-    r.setProperty('--b4x',(15+Math.sin(t*0.9+2)*8).toFixed(1)+'%');
-    r.setProperty('--b4y',(78+Math.cos(t*0.8+3)*6).toFixed(1)+'%');
+    root.setProperty('--sx',cx.toFixed(1)+'px');
+    root.setProperty('--sy',cy.toFixed(1)+'px');
     requestAnimationFrame(tick);
   }
   function onOri(e){
-    var g=e.gamma||0,b=e.beta||0;
-    tx=Math.max(5,Math.min(95,50+g/60*45));
-    ty=Math.max(5,Math.min(95,50+(b-45)/60*45));
+    tx=(e.gamma||0)*1.1;
+    ty=((e.beta||45)-45)*0.75;
   }
   function start(){
     window.addEventListener('deviceorientation',onOri,true);
