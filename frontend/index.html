@@ -34,7 +34,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;z-index:1}
 .screens{flex:1;overflow:hidden;position:relative}
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:transparent;transform:translateX(100%);overflow:hidden;transition:none}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:transparent;transform:translateX(100%);overflow:hidden;transition:none;z-index:1}
 .screen.act{transform:translateX(0)}
 .hdr{
   background:var(--card);
@@ -300,20 +300,10 @@ body.dark .card::before,body.dark .sc::before,body.dark .fi::before,
 body.dark .ig::before,body.dark .ch::before,body.dark .hero::before{
   background:radial-gradient(ellipse at center,rgba(255,255,255,0.11) 0%,transparent 42%)
 }
-.blob-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.bl{position:absolute;border-radius:50%;filter:blur(80px);will-change:transform}
-#bl1{width:72vw;height:72vw;background:rgba(72,188,138,0.90);top:-18%;left:-18%}
-#bl2{width:68vw;height:68vw;background:rgba(88,148,235,0.85);top:-12%;right:-18%}
-#bl3{width:64vw;height:64vw;background:rgba(175,110,235,0.82);bottom:-12%;right:-8%}
-#bl4{width:68vw;height:68vw;background:rgba(235,145,80,0.82);bottom:-18%;left:-12%}
-body.dark #bl1{background:rgba(16,80,48,0.95)}
-body.dark #bl2{background:rgba(16,32,100,0.92)}
-body.dark #bl3{background:rgba(64,14,100,0.90)}
-body.dark #bl4{background:rgba(80,30,8,0.90)}
+#blob-cv{position:absolute;top:0;left:0;z-index:0;pointer-events:none;display:block}
 </style>
 </head>
 <body>
-<div class="blob-bg"><div id="bl1" class="bl"></div><div id="bl2" class="bl"></div><div id="bl3" class="bl"></div><div id="bl4" class="bl"></div></div>
 <canvas id="confetti-cv" style="position:fixed;inset:0;z-index:1002;pointer-events:none;display:none"></canvas>
 <div class="app">
   <div class="screens">
@@ -2136,40 +2126,80 @@ init();
 </div>
 <script>
 (function(){
-  var bl1=document.getElementById('bl1'),bl2=document.getElementById('bl2'),
-      bl3=document.getElementById('bl3'),bl4=document.getElementById('bl4');
+  /* ── CANVAS BLOB FONI ── */
+  var cv=document.createElement('canvas');
+  cv.id='blob-cv';
+  var sc=document.querySelector('.screens');
+  sc.insertBefore(cv,sc.firstChild);
+  var ctx=cv.getContext('2d');
+  var W=0,H=0;
+  function resize(){
+    W=sc.offsetWidth||window.innerWidth;
+    H=sc.offsetHeight||window.innerHeight;
+    cv.width=W; cv.height=H;
+    cv.style.width=W+'px'; cv.style.height=H+'px';
+  }
+  setTimeout(resize,0);
+  window.addEventListener('resize',resize);
+
+  var L=[
+    {x:.15,y:.22,r:.62,c:[72,188,138]},
+    {x:.85,y:.18,r:.58,c:[88,148,235]},
+    {x:.72,y:.82,r:.54,c:[175,110,235]},
+    {x:.18,y:.80,r:.58,c:[235,145,80]}
+  ];
+  var D=[
+    {x:.15,y:.22,r:.62,c:[18,88,52]},
+    {x:.85,y:.18,r:.58,c:[18,38,108]},
+    {x:.72,y:.82,r:.54,c:[68,16,108]},
+    {x:.18,y:.80,r:.58,c:[85,32,10]}
+  ];
+
+  function drawBlob(bx,by,br,c,a){
+    var g=ctx.createRadialGradient(bx,by,0,bx,by,br);
+    g.addColorStop(0,'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')');
+    g.addColorStop(.45,'rgba('+c[0]+','+c[1]+','+c[2]+','+(a*.38)+')');
+    g.addColorStop(1,'rgba('+c[0]+','+c[1]+','+c[2]+',0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(bx,by,br,0,6.2832);ctx.fill();
+  }
+
+  /* ── GYROSCOPE ── */
+  var tx=0,ty=0,cx=0,cy=0;
   var root=document.documentElement.style;
-  var tx=0,ty=0,cx=0,cy=0,t=0;
+  function onOri(e){tx=(e.gamma||0)*1.1;ty=((e.beta||45)-45)*.75;}
+
+  /* ── ANIMATION LOOP ── */
+  var t=0;
+  var OX=[0,0,0,0],OY=[0,0,0,0];
   function tick(){
-    t+=0.0018;
-    /* blob harakati — to'g'ridan transform, CSS variable emas */
-    bl1.style.transform='translate('+( Math.sin(t      )*50).toFixed(1)+'px,'+(Math.cos(t*0.70     )*44).toFixed(1)+'px)';
-    bl2.style.transform='translate('+( Math.sin(t*0.80+1)*46).toFixed(1)+'px,'+(Math.cos(t*0.90+2)*38).toFixed(1)+'px)';
-    bl3.style.transform='translate('+( Math.sin(t*0.60+3)*54).toFixed(1)+'px,'+(Math.cos(t*0.70+1)*38).toFixed(1)+'px)';
-    bl4.style.transform='translate('+( Math.sin(t*0.90+2)*46).toFixed(1)+'px,'+(Math.cos(t*0.80+3)*32).toFixed(1)+'px)';
-    /* shine — CSS transform variablelarda ishlaydi */
-    cx+=(tx-cx)*0.07;
-    cy+=(ty-cy)*0.07;
+    t+=.0018;
+    var dark=document.body.classList.contains('dark');
+    var B=dark?D:L, a=dark?.90:.70;
+
+    OX[0]=Math.sin(t      )*55; OY[0]=Math.cos(t*.70   )*48;
+    OX[1]=Math.sin(t*.80+1)*50; OY[1]=Math.cos(t*.90+2 )*42;
+    OX[2]=Math.sin(t*.60+3)*58; OY[2]=Math.cos(t*.70+1 )*44;
+    OX[3]=Math.sin(t*.90+2)*50; OY[3]=Math.cos(t*.80+3 )*36;
+
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<4;i++){
+      drawBlob(B[i].x*W+OX[i], B[i].y*H+OY[i], B[i].r*Math.max(W,H), B[i].c, a);
+    }
+
+    cx+=(tx-cx)*.07; cy+=(ty-cy)*.07;
     root.setProperty('--sx',cx.toFixed(1)+'px');
     root.setProperty('--sy',cy.toFixed(1)+'px');
     requestAnimationFrame(tick);
   }
-  function onOri(e){
-    tx=(e.gamma||0)*1.1;
-    ty=((e.beta||45)-45)*0.75;
-  }
-  function start(){
-    window.addEventListener('deviceorientation',onOri,true);
-    tick();
-  }
+
+  function start(){window.addEventListener('deviceorientation',onOri,true);tick();}
   if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
     document.addEventListener('touchstart',function req(){
       DeviceOrientationEvent.requestPermission().then(function(s){if(s==='granted')start();}).catch(function(){});
       document.removeEventListener('touchstart',req);
     },{once:true});
-  }else{
-    start();
-  }
+  }else{start();}
 })();
 </script>
 </body>
