@@ -9,7 +9,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body.dark{
-  --bg:#050505;
+  --bg:#0a0a0f;
+  --bg-mesh:linear-gradient(135deg,#0d1f17 0%,#0f0c20 40%,#1c0c12 70%,#0c1020 100%);
   --card:rgba(18,18,24,0.68);
   --sep:rgba(255,255,255,0.08);
   --gl-b:rgba(255,255,255,0.13);
@@ -21,6 +22,7 @@ body.dark{
 :root{
   --teal:#1D9E75;--tl:rgba(29,158,117,0.10);--td:#0F6E56;
   --bg:#eef2f8;
+  --bg-mesh:linear-gradient(135deg,#cce8de 0%,#dae5f6 35%,#ece0f8 65%,#f8e8da 100%);
   --sx:0px;--sy:0px;
   --card:rgba(255,255,255,0.50);
   --sep:rgba(0,0,0,0.07);
@@ -33,7 +35,7 @@ body.dark{
 html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;z-index:1}
-.screens{flex:1;overflow:hidden;position:relative}
+.screens{flex:1;overflow:hidden;position:relative;background:var(--bg-mesh)}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:transparent;transform:translateX(100%);overflow:hidden;transition:none;z-index:1}
 .screen.act{transform:translateX(0)}
 .hdr{
@@ -2149,10 +2151,10 @@ init();
     {x:.18,y:.80,r:.58,c:[235,145,80]}
   ];
   var D=[
-    {x:.15,y:.22,r:.62,c:[18,88,52]},
-    {x:.85,y:.18,r:.58,c:[18,38,108]},
-    {x:.72,y:.82,r:.54,c:[68,16,108]},
-    {x:.18,y:.80,r:.58,c:[85,32,10]}
+    {x:.15,y:.22,r:.62,c:[29,158,117]},
+    {x:.85,y:.18,r:.58,c:[55,100,220]},
+    {x:.72,y:.82,r:.54,c:[110,50,200]},
+    {x:.18,y:.80,r:.58,c:[200,90,30]}
   ];
 
   function drawBlob(bx,by,br,c,a){
@@ -2175,7 +2177,7 @@ init();
   function tick(){
     t+=.0018;
     var dark=document.body.classList.contains('dark');
-    var B=dark?D:L, a=dark?.90:.70;
+    var B=dark?D:L, a=dark?.38:.55;
 
     OX[0]=Math.sin(t      )*55; OY[0]=Math.cos(t*.70   )*48;
     OX[1]=Math.sin(t*.80+1)*50; OY[1]=Math.cos(t*.90+2 )*42;
