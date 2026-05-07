@@ -12,7 +12,7 @@ from urllib.parse import unquote
 
 from database import init_db, get_user, upsert_user, add_food_log, delete_food_log, save_bot_user
 from database import get_today_log, get_today_totals, search_food, add_personal_food, conn, release
-from database import get_personal_foods, add_global_food, delete_global_food, get_global_foods
+from database import get_personal_foods, add_global_food, delete_global_food, get_global_foods, get_streak
 from calc import full_calc, calc_macros
 
 logging.basicConfig(level=logging.INFO)
@@ -92,6 +92,18 @@ def api_get_user(x_init_data: str = Header(default="")):
     if not user.get("gender") or not user.get("weight") or not user.get("height"):
         return {"exists": False}
     user["is_admin"] = uid in ADMIN_IDS
+    updated = user.get("updated_at")
+    if updated:
+        import datetime as dt
+        if isinstance(updated, str):
+            try: updated = dt.datetime.fromisoformat(updated)
+            except: updated = None
+        if updated:
+            user["needs_profile_update"] = (dt.datetime.now() - updated.replace(tzinfo=None)).days >= 14
+        else:
+            user["needs_profile_update"] = False
+    else:
+        user["needs_profile_update"] = False
     return {"exists": True, "user": user}
 
 @app.post("/api/profile")
@@ -310,6 +322,11 @@ async def api_ai_calc(data: dict, x_init_data: str = Header(default="")):
         import json
         parsed = json.loads(text)
         return {"ok": True, "result": parsed}
+
+@app.get("/api/streak")
+def api_streak(x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    return {"streak": get_streak(uid)}
 
 @app.post("/api/bot/save-user")
 def api_save_bot_user(data: dict):

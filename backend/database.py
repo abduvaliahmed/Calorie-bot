@@ -220,3 +220,37 @@ def edit_global_food(food_id, data):
         (data["name"], data.get("name_ru",""), data.get("kcal",0), data.get("protein",0), data.get("fat",0), data.get("carb",0), food_id)
     )
     c.commit(); release(c)
+
+def get_users_needing_profile_update():
+    c = conn(); cur = c.cursor()
+    two_weeks_ago = datetime.datetime.now() - datetime.timedelta(days=14)
+    cur.execute(
+        "SELECT user_id, first_name FROM users WHERE updated_at < %s AND gender IS NOT NULL AND weight IS NOT NULL AND COALESCE(is_blocked, false) = false",
+        (two_weeks_ago,)
+    )
+    rows = cur.fetchall(); release(c)
+    return [dict(r) for r in rows]
+
+def get_streak(uid):
+    c = conn(); cur = c.cursor()
+    cur.execute(
+        "SELECT DISTINCT log_date FROM food_log WHERE user_id=%s ORDER BY log_date DESC",
+        (uid,)
+    )
+    rows = cur.fetchall(); release(c)
+    if not rows:
+        return 0
+    today = datetime.date.today()
+    yesterday = today - datetime.timedelta(days=1)
+    dates = [row["log_date"] for row in rows]
+    if dates[0] not in (today, yesterday):
+        return 0
+    streak = 0
+    expected = dates[0]
+    for d in dates:
+        if d == expected:
+            streak += 1
+            expected = expected - datetime.timedelta(days=1)
+        else:
+            break
+    return streak
