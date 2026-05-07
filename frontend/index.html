@@ -134,11 +134,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .skel{background:var(--sep);border-radius:10px;animation:skel 1.2s ease-in-out infinite}
 @keyframes calFadeIn{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
 .cal-fade{animation:calFadeIn 0.35s cubic-bezier(0.34,1.2,0.64,1) both}
+.streak-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;display:none;align-items:flex-end;justify-content:center}
+.streak-modal-bg.show{display:flex}
+.streak-modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(0.34,1.1,0.64,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="screens">
+
+    <!-- STREAK MODAL -->
+    <div class="streak-modal-bg" id="streak-modal-bg" onclick="closeStreakModal(event)">
+      <div class="streak-modal">
+        <div style="width:40px;height:4px;background:var(--sep);border-radius:2px;margin:0 auto 20px"></div>
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:52px;margin-bottom:8px">🔥</div>
+          <div style="font-size:20px;font-weight:700;color:var(--t1)" id="streak-modal-title">3 kunlik streak!</div>
+        </div>
+        <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:16px">
+          <div style="font-size:14px;color:var(--t2);line-height:1.7" id="streak-modal-desc">
+            Streak — bu siz ketma-ket necha kun ovqatingizni yozganingiz hisobi.<br><br>
+            Har kuni kamida 1 ta ovqat qo'shsangiz — streak davom etadi.<br>
+            Bir kun qoldirsangiz — noldan boshlanadi.
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+          <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:center">
+            <div style="font-size:22px;margin-bottom:4px">📅</div>
+            <div style="font-size:11px;color:var(--t2)" id="sm-l1">Har kuni yoz</div>
+          </div>
+          <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:center">
+            <div style="font-size:22px;margin-bottom:4px">🔥</div>
+            <div style="font-size:11px;color:var(--t2)" id="sm-l2">Streakni saqlа</div>
+          </div>
+          <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:center">
+            <div style="font-size:22px;margin-bottom:4px">🏆</div>
+            <div style="font-size:11px;color:var(--t2)" id="sm-l3">Rekord qo'y</div>
+          </div>
+        </div>
+        <button onclick="closeStreakModal()" style="width:100%;padding:15px;background:var(--teal);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer" id="streak-modal-btn">Tushunarli!</button>
+      </div>
+    </div>
 
     <!-- LOADING -->
     <div class="screen act" id="s-loading" style="background:#000">
@@ -173,7 +210,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
           <div style="display:flex;align-items:center;gap:8px">
             <svg width="20" height="40" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>
             <div id="home-greet" style="font-size:16px;font-weight:500;color:var(--t1)">Salom!</div>
-            <span id="streak-badge" style="display:none;background:rgba(255,149,0,0.12);color:#FF9500;border-radius:20px;padding:3px 10px;font-size:13px;font-weight:600"></span>
+            <span id="streak-badge" onclick="openStreakModal()" style="display:none;background:rgba(255,149,0,0.12);color:#FF9500;border-radius:20px;padding:3px 10px;font-size:13px;font-weight:600;cursor:pointer"></span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <button onclick="toggleLang()" id="lang-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer">RU</button>
@@ -1604,6 +1641,24 @@ async function loadCalDay(date){
 
 async function loadToday(){try{var r=await req("/api/today");S.today=r;var today=new Date().toISOString().split("T")[0];cacheInvalidate('/api/day/'+today);cacheInvalidate('/api/week');}catch(e){}}
 async function loadStreak(){try{var r=await req("/api/streak");S.streak=r.streak||0;}catch(e){S.streak=0;}}
+
+function openStreakModal(){
+  var n=S.streak||0;
+  var isRu=lang==="ru";
+  document.getElementById("streak-modal-title").textContent=isRu?(n+" дней подряд! 🔥"):(n+" kunlik streak! 🔥");
+  document.getElementById("streak-modal-desc").innerHTML=isRu?
+    "Streak — это сколько дней подряд вы записывали еду.<br><br>Добавляйте хотя бы 1 блюдо каждый день — streak продолжается.<br>Пропустите один день — начнётся с нуля.":
+    "Streak — bu siz ketma-ket necha kun ovqatingizni yozganingiz hisobi.<br><br>Har kuni kamida 1 ta ovqat qo'shsangiz — streak davom etadi.<br>Bir kun yozmасangiz — noldan boshlanadi.";
+  document.getElementById("sm-l1").textContent=isRu?"Каждый день":"Har kuni yoz";
+  document.getElementById("sm-l2").textContent=isRu?"Не прерывай":"Uzma";
+  document.getElementById("sm-l3").textContent=isRu?"Бей рекорд":"Rekord qo'y";
+  document.getElementById("streak-modal-btn").textContent=isRu?"Понятно!":"Tushunarli!";
+  document.getElementById("streak-modal-bg").classList.add("show");
+}
+function closeStreakModal(e){
+  if(e&&e.target!==document.getElementById("streak-modal-bg"))return;
+  document.getElementById("streak-modal-bg").classList.remove("show");
+}
 
 // AI
 var _aiResults={};
