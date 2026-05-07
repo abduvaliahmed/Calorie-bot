@@ -328,6 +328,35 @@ def api_streak(x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
     return {"streak": get_streak(uid)}
 
+MS_TEXTS = {
+    7:  "🔥 <b>7 kun ketma-ket!</b>\n\nBirinchi hafta — eng qiyin hafta. Ko'pchilik 2-3 kunda tashlab ketadi, siz esa 7 kun davom ettirdingiz.\n\nBu kichik ko'rinadi, lekin aslida katta qadam. Ozgina intizom — katta natija beradi. Davom eting! 💪",
+    14: "⚡ <b>2 hafta — 14 kun!</b>\n\nEndi bu sizga odat bo'la boshladi. Har kuni ovqatingizni yozish endi majburiyat emas — hayotingizning bir qismi.\n\nTadqiqotlar ko'rsatadi: 2 hafta biror narsani qilgan odam uni tashlab ketish ehtimoli keskin kamayadi. Siz o'sha odamlardansiz! 🎯",
+    21: "💎 <b>21 kun! Odat shakllandi!</b>\n\nIlm bo'yicha yangi odat shakllanishi uchun kamida 21 kun kerak. Siz bugun o'sha chegaradan o'tdingiz.\n\nEndi miyangiz ovqat nazoratini 'normal hayot' deb qabul qildi. Eng qiyin bosqich ortda qoldi — oldinda faqat natijalar! 🧠",
+    30: "🏆 <b>1 oy to'ldi — 30 kun!</b>\n\nBir oy davomida o'zingizni nazorat qildingiz. Bu oddiy narsa emas — ko'pchilik bunga umrida erisha olmaydi.\n\nBir oy ichida yozgan ovqatlaringiz, hisoblagan kaloringiz — bularning barchasi tanangizga qilgan eng yaxshi investitsiya. Natijalar ko'zga ko'rina boshlaydi! 📈",
+    50: "🚀 <b>50 kun! Yarim yuz!</b>\n\n50 kun — bu tasodif emas, bu xarakter. Siz har kuni uyg'onib, o'zingiz haqida o'ylashni tanladingiz.\n\nKo'pchilik 'motivatsiya bo'lsa qilaman' deydi. Siz esa motivatsiya bo'lmasa ham qildingiz — va bu sizni farqli qiladi. Bu intizom, bu kuch! 🦁",
+    100:"👑 <b>100 KUN! Yuz kun!</b>\n\nBu raqamga ko'pchilik umrida yetmaydi. Siz yetdingiz.\n\n100 kun oldin siz biror narsani boshlashga qaror qildingiz — va bugun o'sha qarorning natijasini ko'ryapsiz. Tana o'zgardi, odat o'zgardi, fikrlash o'zgardi.\n\nSiz endi boshqa odamsiz. Davom eting — bu faqat boshlanish! 🌟",
+}
+
+@app.post("/api/streak/milestone")
+async def api_streak_milestone(data: dict, x_init_data: str = Header(default="")):
+    uid = get_uid(x_init_data)
+    if not uid or not BOT_TOKEN:
+        return {"ok": False}
+    days = data.get("days", 0)
+    text = MS_TEXTS.get(days)
+    if not text:
+        return {"ok": False}
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                json={"chat_id": uid, "text": text, "parse_mode": "HTML"},
+                timeout=10.0
+            )
+    except Exception as e:
+        logger.warning(f"Milestone notify failed: {e}")
+    return {"ok": True}
+
 @app.post("/api/bot/save-user")
 def api_save_bot_user(data: dict):
     try:

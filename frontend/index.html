@@ -138,11 +138,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .streak-modal-bg.show{display:flex}
 .streak-modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(0.34,1.1,0.64,1)}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.ms-modal{background:var(--card);border-radius:24px 24px 0 0;padding:28px 20px 36px;width:100%;max-width:480px;animation:slideUp .35s cubic-bezier(0.34,1.1,0.64,1);text-align:center}
 </style>
 </head>
 <body>
+<canvas id="confetti-cv" style="position:fixed;inset:0;z-index:1002;pointer-events:none;display:none"></canvas>
 <div class="app">
   <div class="screens">
+
+    <!-- MILESTONE MODAL -->
+    <div class="streak-modal-bg" id="ms-modal-bg" onclick="closeMsModal(event)">
+      <div class="ms-modal">
+        <div style="width:40px;height:4px;background:var(--sep);border-radius:2px;margin:0 auto 20px"></div>
+        <div id="ms-emoji" style="font-size:64px;margin-bottom:10px">🏆</div>
+        <div id="ms-title" style="font-size:22px;font-weight:800;color:var(--t1);margin-bottom:16px"></div>
+        <div id="ms-body" style="font-size:14px;color:var(--t2);line-height:1.75;text-align:left;background:var(--bg);border-radius:14px;padding:16px;margin-bottom:20px"></div>
+        <button onclick="closeMsModal()" style="width:100%;padding:15px;background:var(--teal);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer">Davom etaman! 💪</button>
+      </div>
+    </div>
 
     <!-- STREAK MODAL -->
     <div class="streak-modal-bg" id="streak-modal-bg" onclick="closeStreakModal(event)">
@@ -1642,6 +1655,91 @@ async function loadCalDay(date){
 async function loadToday(){try{var r=await req("/api/today");S.today=r;var today=new Date().toISOString().split("T")[0];cacheInvalidate('/api/day/'+today);cacheInvalidate('/api/week');}catch(e){}}
 async function loadStreak(){try{var r=await req("/api/streak");S.streak=r.streak||0;}catch(e){S.streak=0;}}
 
+var MS_DATA={
+  7:{e:"🔥",t:"7 kun ketma-ket!",tr:"7 дней подряд!",
+    b:"Birinchi hafta — eng qiyin hafta. Ko'pchilik 2-3 kunda tashlab ketadi, siz esa 7 kun davom ettirdingiz.<br><br>Bu kichik ko'rinadi, lekin aslida katta qadam. Ozgina intizom — katta natija beradi. Davom eting!",
+    br:"Первая неделя — самая сложная. Большинство бросает на 2-3 день, а вы продержались 7.<br><br>Это кажется маленьким, но на самом деле — большой шаг. Немного дисциплины — большой результат!"},
+  14:{e:"⚡",t:"2 hafta — 14 kun!",tr:"2 недели — 14 дней!",
+    b:"Endi bu sizga odat bo'la boshladi. Har kuni ovqatingizni yozish endi majburiyat emas — hayotingizning bir qismi.<br><br>Tadqiqotlar ko'rsatadi: 2 hafta biror narsani qilgan odam uni tashlab ketish ehtimoli keskin kamayadi. Siz o'sha odamlardansiz!",
+    br:"Теперь это становится вашей привычкой. Записывать еду каждый день — уже не обязанность, а часть жизни.<br><br>Исследования показывают: тот, кто делает что-то 2 недели подряд, с гораздо меньшей вероятностью бросит это. Вы из таких людей!"},
+  21:{e:"💎",t:"21 kun! Odat shakllandi!",tr:"21 день! Привычка сформирована!",
+    b:"Ilm bo'yicha yangi odat shakllanishi uchun kamida 21 kun kerak. Siz bugun o'sha chegaradan o'tdingiz.<br><br>Endi miyangiz ovqat nazoratini 'normal hayot' deb qabul qildi. Eng qiyin bosqich ortda qoldi — oldinda faqat natijalar!",
+    br:"По науке, для формирования новой привычки нужно минимум 21 день. Сегодня вы перешли эту черту.<br><br>Теперь ваш мозг воспринимает контроль питания как 'нормальную жизнь'. Самый трудный этап позади — впереди только результаты!"},
+  30:{e:"🏆",t:"1 oy to'ldi — 30 kun!",tr:"1 месяц — 30 дней!",
+    b:"Bir oy davomida o'zingizni nazorat qildingiz. Bu oddiy narsa emas — ko'pchilik bunga umrida erisha olmaydi.<br><br>Bir oy ichida yozgan ovqatlaringiz, hisoblagan kaloringiз — bularning barchasi tanangizga qilgan eng yaxshi investitsiya. Natijalar ko'zga ko'rina boshlaydi!",
+    br:"Целый месяц вы контролировали себя. Это не обычное дело — многие не достигают этого никогда.<br><br>Всё, что вы записали за месяц — это лучшая инвестиция в своё тело. Результаты уже начинают проявляться!"},
+  50:{e:"🚀",t:"50 kun! Yarim yuz!",tr:"50 дней! Полсотни!",
+    b:"50 kun — bu tasodif emas, bu xarakter. Siz har kuni uyg'onib, o'zingiz haqida o'ylashni tanladingiz.<br><br>Ko'pchilik 'motivatsiya bo'lsa qilaman' deydi. Siz esa motivatsiya bo'lmasa ham qildingiz — va bu sizni farqli qiladi. Bu intizom, bu kuch!",
+    br:"50 дней — это не случайность, это характер. Каждый день вы просыпались и выбирали думать о себе.<br><br>Большинство говорит 'сделаю, когда будет мотивация'. Вы делали даже без неё — и это делает вас особенным. Это дисциплина, это сила!"},
+  100:{e:"👑",t:"100 KUN! Yuz kun!",tr:"100 ДНЕЙ! Сто дней!",
+    b:"Bu raqamga ko'pchilik umrida yetmaydi. Siz yetdingiz.<br><br>100 kun oldin siz biror narsani boshlashga qaror qildingiz — va bugun o'sha qarorning natijasini ko'ryapsiz. Tana o'zgardi, odat o'zgardi, fikrlash o'zgardi.<br><br>Siz endi boshqa odamsiz. Davom eting — bu faqat boshlanish!",
+    br:"До этой цифры большинство не доходит никогда. Вы дошли.<br><br>100 дней назад вы решили что-то начать — и сегодня видите результат этого решения. Тело изменилось, привычки изменились, мышление изменилось.<br><br>Вы теперь другой человек. Продолжайте — это только начало!"}
+};
+
+function launchConfetti(){
+  var cv=document.getElementById("confetti-cv");
+  if(!cv)return;
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  cv.style.display="block";
+  var ctx=cv.getContext("2d");
+  var cols=["#1D9E75","#FF9500","#FF453A","#5AC8FA","#4CD964","#FFD60A","#BF5AF2","#FF2D55","#fff","#FF6B6B"];
+  var pts=[];
+  var xs=[cv.width*0.15,cv.width*0.35,cv.width*0.5,cv.width*0.65,cv.width*0.85];
+  xs.forEach(function(x){
+    for(var i=0;i<35;i++){
+      var a=(Math.random()*120-60)*Math.PI/180;
+      var sp=Math.random()*14+8;
+      pts.push({x:x,y:cv.height+10,vx:Math.sin(a)*sp,vy:-Math.cos(a)*sp,
+        col:cols[Math.floor(Math.random()*cols.length)],
+        w:Math.random()*9+4,h:Math.random()*5+3,
+        rot:Math.random()*360,vr:Math.random()*12-6,alpha:1});
+    }
+  });
+  var t0=Date.now();
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    var el=Date.now()-t0;
+    var alive=false;
+    pts.forEach(function(p){
+      p.vy+=0.35;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;
+      p.alpha=Math.max(0,1-el/3500);
+      if(p.alpha>0.01&&p.y<cv.height+30)alive=true;
+      ctx.save();ctx.globalAlpha=p.alpha;
+      ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.col;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if(alive&&el<4000)requestAnimationFrame(draw);
+    else{cv.style.display="none";ctx.clearRect(0,0,cv.width,cv.height);}
+  }
+  draw();
+}
+
+function checkMilestone(streak){
+  var ms=[7,14,21,30,50,100];
+  if(ms.indexOf(streak)===-1)return;
+  var key="barg_ms_"+streak;
+  if(localStorage.getItem(key))return;
+  localStorage.setItem(key,"1");
+  setTimeout(function(){showMsModal(streak);},400);
+  req("/api/streak/milestone","POST",{days:streak}).catch(function(){});
+}
+
+function showMsModal(days){
+  var d=MS_DATA[days];if(!d)return;
+  var isRu=lang==="ru";
+  document.getElementById("ms-emoji").textContent=d.e;
+  document.getElementById("ms-title").textContent=isRu?d.tr:d.t;
+  document.getElementById("ms-body").innerHTML=isRu?d.br:d.b;
+  document.getElementById("ms-modal-bg").classList.add("show");
+  setTimeout(launchConfetti,200);
+}
+
+function closeMsModal(e){
+  if(e&&e.target!==document.getElementById("ms-modal-bg"))return;
+  document.getElementById("ms-modal-bg").classList.remove("show");
+}
+
 function openStreakModal(){
   var n=S.streak||0;
   var isRu=lang==="ru";
@@ -1807,6 +1905,7 @@ async function init(){
     if(loading)loading.classList.remove("act");
     if(r&&r.exists&&r.user){
       S.user=r.user;S.today=td;S.streak=sr?sr.streak||0:0;
+      checkMilestone(S.streak);
       if(r.user.lang)lang=r.user.lang;
       updateUITexts();
       var lbl=lang==="uz"?"RU":"UZ";
