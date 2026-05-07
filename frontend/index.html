@@ -2145,16 +2145,16 @@ init();
   window.addEventListener('resize',resize);
 
   var L=[
-    {x:.15,y:.22,r:.62,c:[72,188,138]},
-    {x:.85,y:.18,r:.58,c:[88,148,235]},
-    {x:.72,y:.82,r:.54,c:[175,110,235]},
-    {x:.18,y:.80,r:.58,c:[235,145,80]}
+    {x:.20,y:.25,r:.80,c:[80,210,165]},
+    {x:.80,y:.20,r:.75,c:[90,155,255]},
+    {x:.75,y:.78,r:.78,c:[170,115,255]},
+    {x:.22,y:.75,r:.72,c:[255,140,185]}
   ];
   var D=[
-    {x:.15,y:.22,r:.62,c:[38,195,140]},
-    {x:.85,y:.18,r:.58,c:[65,125,255]},
-    {x:.72,y:.82,r:.54,c:[135,65,240]},
-    {x:.18,y:.80,r:.58,c:[230,110,45]}
+    {x:.20,y:.25,r:.80,c:[35,185,135]},
+    {x:.80,y:.20,r:.75,c:[55,115,240]},
+    {x:.75,y:.78,r:.78,c:[125,60,230]},
+    {x:.22,y:.75,r:.72,c:[220,80,145]}
   ];
 
   function drawBlob(bx,by,br,c,a){
@@ -2175,14 +2175,14 @@ init();
   var t=0;
   var OX=[0,0,0,0],OY=[0,0,0,0];
   function tick(){
-    t+=.0018;
+    t+=.0042;
     var dark=document.body.classList.contains('dark');
-    var B=dark?D:L, a=dark?.50:.68;
+    var B=dark?D:L, a=dark?.45:.60;
 
-    OX[0]=Math.sin(t      )*55; OY[0]=Math.cos(t*.70   )*48;
-    OX[1]=Math.sin(t*.80+1)*50; OY[1]=Math.cos(t*.90+2 )*42;
-    OX[2]=Math.sin(t*.60+3)*58; OY[2]=Math.cos(t*.70+1 )*44;
-    OX[3]=Math.sin(t*.90+2)*50; OY[3]=Math.cos(t*.80+3 )*36;
+    OX[0]=Math.sin(t      )*80; OY[0]=Math.cos(t*.70   )*70;
+    OX[1]=Math.sin(t*.80+1)*75; OY[1]=Math.cos(t*.90+2 )*65;
+    OX[2]=Math.sin(t*.60+3)*85; OY[2]=Math.cos(t*.70+1 )*72;
+    OX[3]=Math.sin(t*.90+2)*72; OY[3]=Math.cos(t*.80+3 )*60;
 
     ctx.clearRect(0,0,W,H);
     for(var i=0;i<4;i++){
