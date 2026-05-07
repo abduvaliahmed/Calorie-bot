@@ -8,6 +8,16 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body.premium{
+  --bg:#060400;
+  --bg-mesh:linear-gradient(135deg,#120900 0%,#0a0600 35%,#100400 65%,#0e0a00 100%);
+  --card:rgba(28,16,4,0.80);
+  --sep:rgba(205,127,50,0.15);
+  --gl-b:rgba(205,127,50,0.32);
+  --gl-s:0 4px 32px rgba(0,0,0,0.80),inset 2px 0 14px rgba(210,130,50,0.22),inset -1px 0 8px rgba(255,200,60,0.12),inset 0 1px 0 rgba(255,215,0,0.28);
+  --t1:#f0ddb0;--t2:#9a7a50;
+  --tl:rgba(205,127,50,0.15);--td:#CD7F32;--teal:#CD7F32;
+}
 body.dark{
   --bg:#0a0a0f;
   --bg-mesh:linear-gradient(135deg,#102818 0%,#121030 40%,#261016 70%,#101830 100%);
@@ -392,6 +402,7 @@ body.dark .ig::before,body.dark .ch::before,body.dark .hero::before{
           <div style="display:flex;align-items:center;gap:8px">
             <button onclick="toggleLang()" id="lang-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer">RU</button>
             <button onclick="toggleTheme()" id="theme-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">&#127769;</button>
+            <button onclick="togglePremium()" id="prem-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">✦</button>
           </div>
         </div>
       </div>
@@ -560,6 +571,7 @@ body.dark .ig::before,body.dark .ch::before,body.dark .hero::before{
           <div style="display:flex;gap:8px">
             <button onclick="toggleLang()" id="lang-btn2" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer">RU</button>
             <button onclick="toggleTheme()" id="theme-btn2" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">&#127769;</button>
+            <button onclick="togglePremium()" id="prem-btn2" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">✦</button>
           </div>
         </div>
       </div>
@@ -844,6 +856,13 @@ function cacheInvalidate(k){delete _cache[k];}
 var _theme='light';
 function toggleTheme(){_theme=_theme==='light'?'dark':'light';document.body.classList.toggle('dark',_theme==='dark');var icon=_theme==='dark'?'☀️':'🌙';var b1=document.getElementById('theme-btn');var b2=document.getElementById('theme-btn2');if(b1)b1.textContent=icon;if(b2)b2.textContent=icon;try{localStorage.setItem('barg_theme',_theme);}catch(e){}}
 function initTheme(){try{var saved=localStorage.getItem('barg_theme');if(saved==='dark')toggleTheme();}catch(e){}}
+function togglePremium(){
+  var on=document.body.classList.toggle('premium');
+  var gold='rgba(205,127,50,0.28)';var def='var(--tl)';
+  ['prem-btn','prem-btn2'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.background=on?gold:def;b.style.color=on?'#FFD700':'var(--td)';}});
+  try{localStorage.setItem('barg_prem',on?'1':'0');}catch(e){}
+}
+function initPremium(){try{if(localStorage.getItem('barg_prem')==='1'){document.body.classList.add('premium');['prem-btn','prem-btn2'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.background='rgba(205,127,50,0.28)';b.style.color='#FFD700';}});}}catch(e){}}
 
 function updateTabLabels(){
   var isRu=lang==="ru";
@@ -2116,6 +2135,7 @@ function closeInfo(){
 }
 
 initTheme();
+initPremium();
 init();
 </script>
 <div id="info-overlay" onclick="closeInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:998"></div>
@@ -2156,6 +2176,12 @@ init();
     {x:.75,y:.78,r:.78,c:[125,60,230]},
     {x:.22,y:.75,r:.72,c:[220,80,145]}
   ];
+  var P=[
+    {x:.20,y:.25,r:.84,c:[210,130,50]},
+    {x:.80,y:.20,r:.78,c:[255,195,40]},
+    {x:.75,y:.78,r:.82,c:[190,80,15]},
+    {x:.22,y:.75,r:.76,c:[255,115,30]}
+  ];
 
   function drawBlob(bx,by,br,c,a){
     var g=ctx.createRadialGradient(bx,by,0,bx,by,br);
@@ -2177,7 +2203,8 @@ init();
   function tick(){
     t+=.0042;
     var dark=document.body.classList.contains('dark');
-    var B=dark?D:L, a=dark?.45:.60;
+    var prem=document.body.classList.contains('premium');
+    var B=prem?P:(dark?D:L), a=prem?.58:(dark?.45:.60);
 
     OX[0]=Math.sin(t      )*80; OY[0]=Math.cos(t*.70   )*70;
     OX[1]=Math.sin(t*.80+1)*75; OY[1]=Math.cos(t*.90+2 )*65;
