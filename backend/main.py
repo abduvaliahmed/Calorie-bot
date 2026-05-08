@@ -423,17 +423,19 @@ def api_admin_user_logs(user_id: int, x_init_data: str = Header(default="")):
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
 index_file = os.path.join(frontend_dir, "index.html")
 
+_NC = {"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}
+
 @app.get("/")
 def serve_index():
     if os.path.exists(index_file):
-        return FileResponse(index_file)
+        return FileResponse(index_file, headers=_NC)
     return JSONResponse({"status": "NutriBot API running"})
 
 @app.get("/{path:path}")
 def serve_static(path: str):
     f = os.path.join(frontend_dir, path)
     if os.path.exists(f) and os.path.isfile(f):
-        return FileResponse(f)
+        return FileResponse(f, headers=_NC)
     if os.path.exists(index_file):
-        return FileResponse(index_file)
+        return FileResponse(index_file, headers=_NC)
     return JSONResponse({"error": "not found"}, status_code=404)
