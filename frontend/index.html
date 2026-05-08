@@ -862,7 +862,12 @@ var API = window.location.origin;
 var tg = window.Telegram && window.Telegram.WebApp;
 var initData = tg ? tg.initData : "";
 var tgU = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : {};
-if (tg) { tg.ready(); tg.expand(); }
+if (tg) {
+  tg.ready();
+  tg.expand();
+  if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+  if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+}
 var lang = (tgU && tgU.language_code && tgU.language_code.startsWith("ru")) ? "ru" : "uz";
 var S = { user: null, today: null, foods: [], sel: null };
 
