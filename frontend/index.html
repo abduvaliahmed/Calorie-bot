@@ -868,6 +868,14 @@ if (tg) {
   if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
   if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
 }
+function haptic(type, style) {
+  if (!tg || !tg.HapticFeedback) return;
+  try {
+    if (type === 'selection') tg.HapticFeedback.selectionChanged();
+    else if (type === 'impact') tg.HapticFeedback.impactOccurred(style || 'light');
+    else if (type === 'notification') tg.HapticFeedback.notificationOccurred(style || 'success');
+  } catch(e) {}
+}
 var lang = (tgU && tgU.language_code && tgU.language_code.startsWith("ru")) ? "ru" : "uz";
 var S = { user: null, today: null, foods: [], sel: null };
 
@@ -1597,6 +1605,7 @@ function obSpin2(k,d){
   var raw=(OB.data[k]||lm[0])+d*step;
   var v=k==='weight'?Math.round(raw*10)/10:Math.round(raw);
   v=Math.max(lm[0],Math.min(lm[1],v));
+  if(v!==OB.data[k])haptic('selection');
   OB.data[k]=v;
   var el=document.getElementById('s2v-'+k);
   var disp=k==='weight'?v.toFixed(1):v;
@@ -1890,7 +1899,7 @@ function initRuler(k,min,max,cur){
     initOff=so+(e.clientY-sy);
     track.style.transform='translateY('+initOff+'px)';
     var v=getVal(initOff);
-    if(v!==OB.data[k]){OB.data[k]=v;numEl.style.transform='scale(1.06)';numEl.textContent=v;setTimeout(function(){numEl.style.transform='';},80);}
+    if(v!==OB.data[k]){OB.data[k]=v;haptic('selection');numEl.style.transform='scale(1.06)';numEl.textContent=v;setTimeout(function(){numEl.style.transform='';},80);}
     e.preventDefault();
   },{passive:false});
   function end(){
@@ -1981,7 +1990,7 @@ function initTape(k,min,max,cur){
     offset=clampOff(so+dx);
     inner.style.transform='translateX('+offset+'px)';
     var v=valFor(offset);
-    if(v!==OB.data[k]){OB.data[k]=v;numEl.textContent=v;numEl.style.transform='scale(1.05)';setTimeout(function(){numEl.style.transform='';},80);updateTape(k,v,min);}
+    if(v!==OB.data[k]){OB.data[k]=v;haptic('selection');numEl.textContent=v;numEl.style.transform='scale(1.05)';setTimeout(function(){numEl.style.transform='';},80);updateTape(k,v,min);}
     e.preventDefault();
   },{passive:false});
   function endDrag(){
@@ -2624,11 +2633,15 @@ async function addAIPortionToLog(rid,btn){
 }
 
 async function init(){
+  haptic('impact','soft');
+  var _logoEl=document.querySelector('.lp-dark');
+  if(_logoEl)_logoEl.addEventListener('animationiteration',function(){haptic('impact','soft');},{once:false});
   var loading=document.getElementById("s-loading");
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today"),req("/api/streak")]);
     var r=results[0],td=results[1],sr=results[2];
     if(loading)loading.classList.remove("act");
+    haptic('notification','success');
     if(r&&r.exists&&r.user){
       S.user=r.user;S.today=td;S.streak=sr?sr.streak||0:0;
       checkMilestone(S.streak);
