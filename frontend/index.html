@@ -156,6 +156,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .ch.on{border-color:var(--teal);background:rgba(29,158,117,0.12)}
 .ch-ic{font-size:30px;margin-bottom:6px}
 .ch-l{font-size:14px;font-weight:500}
+.ob-spin{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:.5px solid var(--sep)}
+.ob-spin:last-child{border:none}
+.ob-spin-l{font-size:15px;color:var(--t1)}
+.ob-spin-c{display:flex;align-items:center;gap:10px}
+.ob-v{font-size:22px;font-weight:700;color:var(--t1);min-width:52px;text-align:center;transition:transform .1s}
+.ob-sb{width:34px;height:34px;border-radius:17px;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;transition:all .15s;flex-shrink:0}
+.ob-sb.mi{background:var(--sep);color:var(--t2)}
+.ob-sb.pl{background:var(--tl);color:var(--teal)}
+.ob-sb:active{opacity:.65}
 .ob-h{text-align:center;padding:10px 0 16px}
 .ob-n{width:34px;height:34px;border-radius:17px;background:var(--teal);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
 .ob-t{font-size:20px;font-weight:700;margin-bottom:6px}
@@ -1388,6 +1397,18 @@ function renderOB(){
 }
 
 function obChoice(key,val,el){OB.data[key]=val;el.closest(".cg").querySelectorAll(".ch").forEach(function(c){c.classList.remove("on");});el.classList.add("on");}
+var _obHT=null,_obHI=null;
+var _obLims={age:[14,90],weight:[30,200],height:[120,220],waist:[50,150],neck:[25,60],hip:[60,160],steps:[500,30000]};
+function obSpin(k,d){
+  var step=k==='steps'?500:1;
+  var lm=_obLims[k]||[0,9999];
+  var v=Math.max(lm[0],Math.min(lm[1],(OB.data[k]||lm[0])+d*step));
+  OB.data[k]=v;
+  var el=document.getElementById('obs-'+k);
+  if(el){el.style.transform='scale(1.15)';el.textContent=v;setTimeout(function(){el.style.transform='';},100);}
+}
+function obHoldStart(k,d){obSpin(k,d);_obHT=setTimeout(function(){_obHI=setInterval(function(){obSpin(k,d);},80);},350);}
+function obHoldStop(){clearTimeout(_obHT);clearInterval(_obHI);_obHT=null;_obHI=null;}
 
 function obHTML(){
   var d=OB.data;
@@ -1398,25 +1419,25 @@ function obHTML(){
         '<div style="font-size:13px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
       '</div>'+
       '<div class="cg">'+
-        '<div class="ch '+(d.gender==="male"?"on":"")+'" onclick="obChoice(\'gender\',\'male\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:10px"><svg width="44" height="56" viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="12" r="11" fill="var(--teal)"/><path d="M22 22C13 22 4 25 3 30L3 41Q3 44 6 44L38 44Q41 44 41 41L41 30C40 25 31 22 22 22Z" fill="var(--teal)"/><rect x="8" y="43" width="12" height="13" rx="6" fill="var(--teal)"/><rect x="24" y="43" width="12" height="13" rx="6" fill="var(--teal)"/></svg></div><div class="ch-l">'+t("male")+'</div></div>'+
-        '<div class="ch '+(d.gender==="female"?"on":"")+'" onclick="obChoice(\'gender\',\'female\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:10px"><svg width="44" height="56" viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="11" r="10" fill="var(--teal)"/><path d="M22 21C17 21 12 23 12 26L14 32C10 35 3 56 3 56L41 56C41 56 34 35 30 32L32 26C32 23 27 21 22 21Z" fill="var(--teal)"/></svg></div><div class="ch-l">'+t("female")+'</div></div>'+
+        '<div class="ch '+(d.gender==="male"?"on":"")+'" onclick="obChoice(\'gender\',\'male\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:8px"><svg width="46" height="46" viewBox="0 0 46 46" fill="none"><circle cx="18" cy="29" r="13" stroke="var(--teal)" stroke-width="3" fill="rgba(29,158,117,0.12)"/><path d="M27 20 L41 6" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/><path d="M31 6 H41 V16" stroke="var(--teal)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ch-l">'+t("male")+'</div></div>'+
+        '<div class="ch '+(d.gender==="female"?"on":"")+'" onclick="obChoice(\'gender\',\'female\',this)"><div class="ch-ic" style="line-height:0;margin-bottom:8px"><svg width="46" height="46" viewBox="0 0 46 46" fill="none"><circle cx="23" cy="17" r="13" stroke="var(--teal)" stroke-width="3" fill="rgba(29,158,117,0.12)"/><line x1="23" y1="30" x2="23" y2="42" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/><line x1="15" y1="37" x2="31" y2="37" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/></svg></div><div class="ch-l">'+t("female")+'</div></div>'+
       '</div>'+
       '<div class="ig">'+
-        '<div class="ir"><div class="ir-l">'+t("age")+'</div><input type="number" value="'+(d.age||"")+'" placeholder="25" onchange="OB.data.age=+this.value"/></div>'+
-        '<div class="ir"><div class="ir-l">'+t("weight")+'</div><input type="number" value="'+(d.weight||"")+'" placeholder="80" onchange="OB.data.weight=+this.value"/></div>'+
-        '<div class="ir"><div class="ir-l">'+t("height")+'</div><input type="number" value="'+(d.height||"")+'" placeholder="175" onchange="OB.data.height=+this.value"/></div>'+
+        '<div class="ob-spin"><div class="ob-spin-l">'+t("age")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'age\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-age">'+(d.age||25)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'age\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div>'+
+        '<div class="ob-spin"><div class="ob-spin-l">'+t("weight")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'weight\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-weight">'+(d.weight||75)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'weight\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div>'+
+        '<div class="ob-spin"><div class="ob-spin-l">'+t("height")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'height\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-height">'+(d.height||175)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'height\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div>'+
       '</div>';
   }
   if(OB.step===2){
     return '<div class="ig">'+
-      '<div class="ir"><div class="ir-l">'+t("waist")+'</div><input type="number" value="'+(d.waist||"")+'" placeholder="90" onchange="OB.data.waist=+this.value"/></div>'+
-      '<div class="ir"><div class="ir-l">'+t("neck")+'</div><input type="number" value="'+(d.neck||"")+'" placeholder="38" onchange="OB.data.neck=+this.value"/></div>'+
-      (d.gender==="female"?'<div class="ir"><div class="ir-l">'+t("hip")+'</div><input type="number" value="'+(d.hip||"")+'" placeholder="95" onchange="OB.data.hip=+this.value"/></div>':"")+
+      '<div class="ob-spin"><div class="ob-spin-l">'+t("waist")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'waist\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-waist">'+(d.waist||88)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'waist\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div>'+
+      '<div class="ob-spin"><div class="ob-spin-l">'+t("neck")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'neck\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-neck">'+(d.neck||38)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'neck\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div>'+
+      (d.gender==="female"?'<div class="ob-spin"><div class="ob-spin-l">'+t("hip")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'hip\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-hip">'+(d.hip||95)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'hip\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div>':"")+
       '</div>'+
       '<div class="rc" style="font-size:13px;color:var(--td);line-height:1.7">'+(lang==="uz"?"Qorin — kindik darajasida<br>Bo\'yin — eng tor qismidan":"Талия — на уровне пупка<br>Шея — в самом узком месте")+'</div>';
   }
   if(OB.step===3){
-    return '<div class="ig"><div class="ir"><div class="ir-l">'+t("steps")+'</div><input type="number" value="'+(d.steps||"")+'" placeholder="8000" onchange="OB.data.steps=+this.value"/></div></div>'+
+    return '<div class="ig"><div class="ob-spin"><div class="ob-spin-l">'+t("steps")+'</div><div class="ob-spin-c"><button class="ob-sb mi" onpointerdown="obHoldStart(\'steps\',-1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">−</button><span class="ob-v" id="obs-steps">'+(d.steps||8000)+'</span><button class="ob-sb pl" onpointerdown="obHoldStart(\'steps\',1)" onpointerup="obHoldStop()" onpointerleave="obHoldStop()">+</button></div></div></div>'+
       '<div class="card" style="padding:14px">'+
       [["3 000 dan kam","x1.20"],["5 000 – 10 000","x1.35"],["10 000 – 15 000","x1.50"],["15 000+","x1.65"]].map(function(r){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--sep)"><span style="font-size:13px;color:var(--t2)">'+r[0]+'</span><span style="font-size:13px;font-weight:600;color:var(--teal)">'+r[1]+'</span></div>';}).join("")+
       '</div>';
