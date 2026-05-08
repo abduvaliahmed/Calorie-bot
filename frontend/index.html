@@ -156,30 +156,55 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .ch.on{border-color:var(--teal);background:rgba(29,158,117,0.12)}
 .ch-ic{font-size:30px;margin-bottom:6px}
 .ch-l{font-size:14px;font-weight:500}
-/* iOS picker */
-.ipc{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:20px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--gl-s);transition:box-shadow .2s}
-.ipc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.ipc-lbl{font-size:13px;font-weight:600;color:var(--t2);letter-spacing:.1px}
-.ipc-unit{font-size:11px;color:var(--t2);opacity:.55}
-.ipc-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.ipc-btn{width:50px;height:50px;border-radius:25px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,opacity .12s;user-select:none;-webkit-user-select:none;flex-shrink:0}
-.ipc-btn.mi{background:rgba(120,120,128,0.14);color:var(--t1)}
-.ipc-btn.pl{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
-.ipc-btn:active{transform:scale(0.88);opacity:.75}
-.ipc-center{flex:1;text-align:center;cursor:pointer;min-height:58px;display:flex;align-items:center;justify-content:center;position:relative}
-.ipc-num{font-size:44px;font-weight:700;color:var(--t1);line-height:1;transition:transform .12s,opacity .12s;display:block}
-.ipc-inp{position:absolute;inset:0;font-size:40px;font-weight:700;color:var(--teal);text-align:center;border:none;background:transparent;outline:none;display:none;-webkit-appearance:none;appearance:none;width:100%}
-/* iOS gender cards */
-.ios-gc{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
-.ios-gcard{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:24px;padding:22px 12px 18px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .28s cubic-bezier(.34,1.2,.64,1);box-shadow:var(--gl-s)}
-.ios-gcard.on{border-color:var(--teal);background:rgba(29,158,117,0.08)}
-.ios-gcard:active{transform:scale(0.95)}
-.ios-gcard-ico{width:68px;height:68px;border-radius:34px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;transition:all .28s}
-.ios-gcard.male .ios-gcard-ico{background:rgba(0,122,255,0.10);border:1.5px solid rgba(0,122,255,0.18)}
-.ios-gcard.female .ios-gcard-ico{background:rgba(255,45,85,0.10);border:1.5px solid rgba(255,45,85,0.18)}
-.ios-gcard.on.male .ios-gcard-ico{background:rgba(0,122,255,0.16);border-color:rgba(0,122,255,0.30);box-shadow:0 0 18px rgba(0,122,255,0.18)}
-.ios-gcard.on.female .ios-gcard-ico{background:rgba(255,45,85,0.16);border-color:rgba(255,45,85,0.30);box-shadow:0 0 18px rgba(255,45,85,0.18)}
-.ios-gcard-lbl{font-size:15px;font-weight:600;color:var(--t1)}
+/* ── OB gender cards ── */
+.ob-gc{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+.ob-gcard{background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:26px;padding:28px 12px 22px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .3s cubic-bezier(.34,1.2,.64,1);box-shadow:var(--gl-s)}
+.ob-gcard.on{border-color:var(--teal);background:rgba(29,158,117,0.09)}
+.ob-gcard:active{transform:scale(0.94)}
+.ob-gcard-ico{width:72px;height:72px;border-radius:36px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.ob-gcard.male .ob-gcard-ico{background:rgba(0,122,255,0.10);border:1.5px solid rgba(0,122,255,0.16)}
+.ob-gcard.female .ob-gcard-ico{background:rgba(255,45,85,0.10);border:1.5px solid rgba(255,45,85,0.16)}
+.ob-gcard.on.male .ob-gcard-ico{background:rgba(0,122,255,0.18);border-color:rgba(0,122,255,0.32);box-shadow:0 0 22px rgba(0,122,255,0.20)}
+.ob-gcard.on.female .ob-gcard-ico{background:rgba(255,45,85,0.18);border-color:rgba(255,45,85,0.32);box-shadow:0 0 22px rgba(255,45,85,0.20)}
+.ob-gcard-lbl{font-size:16px;font-weight:600;color:var(--t1)}
+/* ── Drum picker ── */
+.drum-outer{height:270px;position:relative;overflow:hidden;cursor:ns-resize;touch-action:none;user-select:none;-webkit-user-select:none}
+.drum-fg-top{position:absolute;top:0;left:0;right:0;height:90px;background:linear-gradient(to bottom,var(--bg) 20%,transparent);pointer-events:none;z-index:2}
+.drum-fg-bot{position:absolute;bottom:0;left:0;right:0;height:90px;background:linear-gradient(to top,var(--bg) 20%,transparent);pointer-events:none;z-index:2}
+.drum-line{position:absolute;left:20%;right:20%;height:1.5px;background:var(--teal);opacity:.45;pointer-events:none;z-index:3}
+.drum-inner{display:flex;flex-direction:column;align-items:center;will-change:transform}
+.drum-cell{height:54px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:600;color:var(--t2);opacity:.28;transition:font-size .18s,opacity .18s,color .18s;width:100%}
+.drum-cell.sel{font-size:46px;font-weight:800;color:var(--t1);opacity:1}
+.drum-cell.near{font-size:36px;opacity:.55}
+/* ── Ruler (height) ── */
+.ruler-page{display:flex;align-items:center;gap:24px;padding:8px 20px;height:320px}
+.ruler-left{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.ruler-bignum{font-size:80px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-2px;transition:transform .1s}
+.ruler-unit-lbl{font-size:16px;color:var(--t2)}
+.ruler-right{width:72px;height:300px;position:relative;overflow:hidden;cursor:ns-resize;touch-action:none;user-select:none;-webkit-user-select:none}
+.ruler-track{position:absolute;left:0;right:0;top:0;will-change:transform}
+.ruler-ind{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--teal);transform:translateY(-1px);z-index:3;pointer-events:none}
+.ruler-ind::before{content:'◀';position:absolute;right:100%;top:-8px;font-size:14px;color:var(--teal);margin-right:2px}
+/* ── Scale (weight) ── */
+.scale-page{display:flex;flex-direction:column;align-items:center;padding:10px 20px}
+.scale-numbox{font-size:76px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-2px;text-align:center;transition:transform .1s}
+.scale-unit-lbl{font-size:16px;color:var(--t2);margin:4px 0 16px}
+.scale-svg-wrap{width:280px;height:150px;position:relative}
+.scale-btns{display:flex;gap:16px;margin-top:20px}
+.scbtn{width:58px;height:58px;border-radius:29px;border:none;cursor:pointer;font-size:26px;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;transition:transform .12s,box-shadow .12s}
+.scbtn.mi{background:rgba(120,120,128,0.14);color:var(--t1)}
+.scbtn.pl{background:var(--teal);color:#fff;box-shadow:0 5px 18px rgba(29,158,117,0.38)}
+.scbtn:active{transform:scale(0.87)}
+/* ── Waist+neck spinners ── */
+.ob-spin2{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--sep)}
+.ob-spin2:last-child{border:none}
+.ob-s2l{font-size:15px;color:var(--t1)}
+.ob-s2c{display:flex;align-items:center;gap:12px}
+.ob-s2v{font-size:28px;font-weight:700;color:var(--t1);min-width:54px;text-align:center;cursor:pointer;transition:transform .1s}
+.ob-s2b{width:38px;height:38px;border-radius:19px;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .14s;user-select:none;-webkit-user-select:none}
+.ob-s2b.mi{background:rgba(120,120,128,0.14);color:var(--t2)}
+.ob-s2b.pl{background:var(--teal);color:#fff;box-shadow:0 3px 12px rgba(29,158,117,0.30)}
+.ob-s2b:active{transform:scale(0.88)}
 .ob-h{text-align:center;padding:10px 0 16px}
 .ob-n{width:34px;height:34px;border-radius:17px;background:var(--teal);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
 .ob-t{font-size:20px;font-weight:700;margin-bottom:6px}
@@ -807,8 +832,8 @@ var TX = {
     age:"Yosh", weight:"Vazn (kg)", height:"Bo'y (sm)", steps:"Qadamlar/kun",
     gl:"Vazn yo'qotish", gm:"Vaznni saqlash", gg:"Massa nabor",
     setup:"Sozlash", next:"Keyingi",
-    ob_t:["Jins va yoshingiz","O'lchamlar","Faollik","Maqsadingiz","Ovqatlanish rejasi"],
-    ob_s:["Aniq hisob-kitob uchun kerak","Yog' foizini hisoblash uchun","Kunlik qadamlar soni","Nima uchun ovqatlanishni nazorat qilasiz?","Kaloriya maqsadini belgilang"],
+    ob_t:["Jins","Yosh","Bo'y","Vazn","Bel va bo'yin","Faollik","Maqsad","Reja"],
+    ob_s:["Erkak yoki Ayol?","Nechi yoshdasiz?","Bo'yingiz necha sm?","Vazniz necha kg?","O'lchamlar (yog' foizi uchun)","Kunlik qadamlar soni","Nima uchun ovqatlanishni nazorat qilasiz?","Kaloriya maqsadini belgilang"],
     waist:"Qorin (sm)", neck:"Bo'yin (sm)", hip:"Tos (sm)",
     auto:"Avtomatik", manual:"Manual",
     empty:"Hali hech narsa yo'q", empty2:"Ovqat qo'shish uchun + bosing",
@@ -834,8 +859,8 @@ var TX = {
     age:"Возраст", weight:"Вес (кг)", height:"Рост (см)", steps:"Шагов/день",
     gl:"Похудение", gm:"Поддержание", gg:"Набор массы",
     setup:"Настройка", next:"Далее",
-    ob_t:["Пол и возраст","Размеры","Активность","Ваша цель","План питания"],
-    ob_s:["Для точного расчёта","Для расчёта % жира","Среднее количество шагов","Зачем следить за питанием?","Установите цель калорий"],
+    ob_t:["Пол","Возраст","Рост","Вес","Талия и шея","Активность","Цель","План"],
+    ob_s:["Мужчина или Женщина?","Сколько вам лет?","Ваш рост в см?","Ваш вес в кг?","Для расчёта % жира","Среднее количество шагов","Зачем следить за питанием?","Установите цель калорий"],
     waist:"Талия (см)", neck:"Шея (см)", hip:"Бёдра (см)",
     auto:"Автоматически", manual:"Вручную",
     empty:"Ещё ничего нет", empty2:"Нажмите + чтобы добавить",
@@ -1393,22 +1418,26 @@ function startOB(){
 function obBack(){if(OB.step>1){OB.step--;renderOB();}else{go("home");}}
 
 async function obNext(){
-  if(OB.step<5){if(OB.step===4)fetchPreview();OB.step++;renderOB();}
+  if(OB.step<8){if(OB.step===7)fetchPreview();OB.step++;renderOB();}
   else{obSave();}
 }
 
 function renderOB(){
-  document.getElementById("ob-step").textContent=OB.step+" / 5";
-  document.getElementById("ob-prog").style.width=(OB.step/5*100)+"%";
-  document.getElementById("ob-next-btn").textContent=OB.step<5?t("next"):t("save");
+  var S=OB.step,TOTAL=8;
+  document.getElementById("ob-step").textContent=S+" / "+TOTAL;
+  document.getElementById("ob-prog").style.width=(S/TOTAL*100)+"%";
+  var nextBtn=document.getElementById("ob-next-btn");
+  nextBtn.style.display=S===1?"none":"";
+  nextBtn.textContent=S<TOTAL?t("next"):t("save");
   document.getElementById("ob-title").textContent=t("setup");
   var bk=document.getElementById("ob-back");
-  if(OB.step===1){bk.textContent="✕ "+t("close_t");bk.onclick=function(){go("home");};}
+  if(S===1){bk.textContent="✕ "+t("close_t");bk.onclick=function(){go("home");};}
   else{bk.textContent="‹ "+t("back_t");bk.onclick=obBack;}
-  var tl=(t("ob_t")||[])[OB.step-1]||"";
-  var sb=(t("ob_s")||[])[OB.step-1]||"";
-  document.getElementById("ob-body").innerHTML='<div style="padding:16px"><div class="ob-h"><div class="ob-n">'+OB.step+'</div><div class="ob-t">'+tl+'</div><div class="ob-s">'+sb+'</div></div>'+obHTML()+'</div>';
-  if(OB.step===5&&(!OB.data._calc||!OB.data._calc.bmr))fetchPreview();
+  var tl=(t("ob_t")||[])[S-1]||"";
+  var sb=(t("ob_s")||[])[S-1]||"";
+  document.getElementById("ob-body").innerHTML='<div style="padding:16px"><div class="ob-h"><div class="ob-n">'+S+'</div><div class="ob-t">'+tl+'</div><div class="ob-s">'+sb+'</div></div>'+obHTML()+'</div>';
+  if(S===8&&(!OB.data._calc||!OB.data._calc.bmr))fetchPreview();
+  requestAnimationFrame(function(){initObStep(S);});
 }
 
 function obChoice(key,val,el){OB.data[key]=val;el.closest(".cg").querySelectorAll(".ch").forEach(function(c){c.classList.remove("on");});el.classList.add("on");}
@@ -1434,99 +1463,152 @@ function ipcHTML(k,val,lbl,unit){
   '</div>';
 }
 
-function obGender(g,el){
+/* ── OB helpers ── */
+function obGender(g){
   OB.data.gender=g;
-  el.closest('.ios-gc').querySelectorAll('.ios-gcard').forEach(function(c){c.classList.remove('on');});
-  el.classList.add('on');
+  document.querySelectorAll('.ob-gcard').forEach(function(c){c.classList.remove('on');});
+  var el=document.getElementById('gc-'+g);
+  if(el){
+    el.classList.add('on');
+    setTimeout(obNext,380);
+  }
 }
 
-function obSpin(k,d){
-  var lm=_obLims[k]||[0,9999],step=_obSteps[k]||1;
+var _obHT=null,_obHI=null;
+var _obLims={age:[14,90],weight:[30,200],height:[120,220],waist:[50,150],neck:[25,60],hip:[60,160],steps:[500,30000]};
+
+function obSpin2(k,d){
+  var lm=_obLims[k],step=k==='steps'?500:1;
   var v=Math.max(lm[0],Math.min(lm[1],(OB.data[k]||lm[0])+d*step));
   OB.data[k]=v;
-  var num=document.getElementById('obs-'+k);
-  if(num){num.style.transform='scale(1.18)';num.style.opacity='.7';num.textContent=v;setTimeout(function(){num.style.transform='';num.style.opacity='';},120);}
+  var el=document.getElementById('s2v-'+k);
+  if(el){el.style.transform='scale(1.18)';el.textContent=v;setTimeout(function(){el.style.transform='';},110);}
 }
-function obHoldStart(k,d){obSpin(k,d);_obHT=setTimeout(function(){_obHI=setInterval(function(){obSpin(k,d);},75);},320);}
-function obHoldStop(){clearTimeout(_obHT);clearInterval(_obHI);_obHT=null;_obHI=null;}
+function obHoldStart2(k,d){obSpin2(k,d);_obHT=setTimeout(function(){_obHI=setInterval(function(){obSpin2(k,d);},75);},300);}
+function obHoldStop2(){clearTimeout(_obHT);clearInterval(_obHI);_obHT=null;_obHI=null;}
+function obTapVal(k){
+  var disp=document.getElementById('s2v-'+k),inp=document.getElementById('s2i-'+k);
+  if(!disp||!inp)return;
+  inp.value=OB.data[k]||0;disp.style.display='none';inp.style.display='block';
+  setTimeout(function(){inp.focus();inp.select();},20);
+}
+function obValBlur(k){
+  var disp=document.getElementById('s2v-'+k),inp=document.getElementById('s2i-'+k);
+  if(!disp||!inp)return;
+  var lm=_obLims[k];
+  var v=parseInt(inp.value);
+  if(!isNaN(v)){OB.data[k]=Math.max(lm[0],Math.min(lm[1],v));disp.textContent=OB.data[k];}
+  inp.style.display='none';disp.style.display='block';
+}
 
-function obTapEdit(k){
-  var num=document.getElementById('obs-'+k);
-  var inp=document.getElementById('obs-'+k+'-inp');
-  if(!num||!inp)return;
-  inp.value=OB.data[k]||0;
-  num.style.display='none';
-  inp.style.display='block';
-  setTimeout(function(){inp.focus();inp.select();},30);
+function spinRowHTML(k,lbl,unit){
+  var v=OB.data[k]||_obLims[k][0];
+  return '<div class="ob-spin2">'+
+    '<div class="ob-s2l">'+lbl+'<span style="font-size:11px;color:var(--t2);margin-left:4px">'+unit+'</span></div>'+
+    '<div class="ob-s2c">'+
+      '<button class="ob-s2b mi" onpointerdown="obHoldStart2(\''+k+'\',-1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">−</button>'+
+      '<span class="ob-s2v" id="s2v-'+k+'" onclick="obTapVal(\''+k+'\')">'+v+'</span>'+
+      '<input style="display:none;width:60px;font-size:26px;font-weight:700;border:none;background:transparent;color:var(--teal);text-align:center;outline:none;-webkit-appearance:none" id="s2i-'+k+'" type="number" onblur="obValBlur(\''+k+'\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
+      '<button class="ob-s2b pl" onpointerdown="obHoldStart2(\''+k+'\',1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">+</button>'+
+    '</div>'+
+  '</div>';
 }
-function obInputBlur(k){
-  var num=document.getElementById('obs-'+k);
-  var inp=document.getElementById('obs-'+k+'-inp');
-  if(!num||!inp)return;
-  var lm=_obLims[k]||[0,9999];
-  var v=parseFloat(inp.value);
-  if(!isNaN(v)){
-    v=Math.max(lm[0],Math.min(lm[1],Math.round(v)));
-    OB.data[k]=v;
-    num.textContent=v;
-  }
-  inp.style.display='none';
-  num.style.display='block';
+
+function drumHTML(k,min,max,val){
+  var items='';
+  for(var i=min;i<=max;i++){items+='<div class="drum-cell" id="dc-'+k+'-'+i+'">'+i+'</div>';}
+  return '<div class="drum-outer" id="drum-'+k+'">'+
+    '<div class="drum-fg-top"></div>'+
+    '<div class="drum-line" style="top:calc(50% - 27px)"></div>'+
+    '<div class="drum-line" style="top:calc(50% + 27px)"></div>'+
+    '<div class="drum-inner" id="drum-inner-'+k+'">'+items+'</div>'+
+    '<div class="drum-fg-bot"></div>'+
+  '</div>';
+}
+
+function rulerHTML(k,min,max,val){
+  return '<div class="ruler-page" id="ruler-page-'+k+'">'+
+    '<div class="ruler-left">'+
+      '<div class="ruler-bignum" id="ruler-num-'+k+'">'+val+'</div>'+
+      '<div class="ruler-unit-lbl">sm</div>'+
+    '</div>'+
+    '<div class="ruler-right" id="ruler-'+k+'">'+
+      '<div class="ruler-track" id="ruler-track-'+k+'"></div>'+
+      '<div class="ruler-ind"></div>'+
+    '</div>'+
+  '</div>';
+}
+
+function scaleHTML(k,min,max,val){
+  return '<div class="scale-page">'+
+    '<div class="scale-numbox" id="sc-num-'+k+'" onclick="obTapVal(\''+k+'\')">'+val+'</div>'+
+    '<div class="scale-unit-lbl">kg</div>'+
+    '<div class="scale-svg-wrap"><svg id="sc-svg-'+k+'" width="280" height="150" viewBox="0 0 280 150"></svg></div>'+
+    '<div style="font-size:11px;color:var(--t2);margin-top:6px">'+(lang==="uz"?"Raqamga bosib yozishingiz mumkin":"Нажмите на число для ввода")+'</div>'+
+    '<input style="display:none" id="s2i-'+k+'" type="number" onblur="obValBlur(\''+k+'\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
+    '<div class="scale-btns">'+
+      '<button class="scbtn mi" onpointerdown="obHoldStart2(\''+k+'\',-1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">−</button>'+
+      '<button class="scbtn pl" onpointerdown="obHoldStart2(\''+k+'\',1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">+</button>'+
+    '</div>'+
+  '</div>';
 }
 
 function obHTML(){
   var d=OB.data;
+  /* Step 1: Gender */
   if(OB.step===1){
-    return '<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px">'+
-        '<svg width="36" height="74" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>'+
-        '<div style="font-size:22px;font-weight:800;color:var(--teal);margin-top:8px;letter-spacing:-0.5px">BARG</div>'+
-        '<div style="font-size:13px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
+    return '<div class="ob-gc">'+
+      '<div class="ob-gcard male '+(d.gender==="male"?"on":"")+'" id="gc-male" onclick="obGender(\'male\')">'+
+        '<div class="ob-gcard-ico"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="16" cy="26" r="12" stroke="#007AFF" stroke-width="3" fill="rgba(0,122,255,0.14)"/><path d="M24 18 L36 6" stroke="#007AFF" stroke-width="3" stroke-linecap="round"/><path d="M27.5 6 H36 V14.5" stroke="#007AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
+        '<div class="ob-gcard-lbl">'+t("male")+'</div>'+
       '</div>'+
-      '<div class="cg">'+
-        '<div class="ios-gcard male '+(d.gender==="male"?"on":"")+'" onclick="obGender(\'male\',this)">'+
-          '<div class="ios-gcard-ico"><svg width="38" height="38" viewBox="0 0 38 38" fill="none"><circle cx="15" cy="24" r="11" stroke="#007AFF" stroke-width="2.8" fill="rgba(0,122,255,0.12)"/><path d="M22 17 L33 6" stroke="#007AFF" stroke-width="2.8" stroke-linecap="round"/><path d="M25.5 6 H33 V13.5" stroke="#007AFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
-          '<div class="ios-gcard-lbl">'+t("male")+'</div>'+
-        '</div>'+
-        '<div class="ios-gcard female '+(d.gender==="female"?"on":"")+'" onclick="obGender(\'female\',this)">'+
-          '<div class="ios-gcard-ico"><svg width="38" height="38" viewBox="0 0 38 38" fill="none"><circle cx="19" cy="15" r="11" stroke="#FF2D55" stroke-width="2.8" fill="rgba(255,45,85,0.12)"/><line x1="19" y1="26" x2="19" y2="35" stroke="#FF2D55" stroke-width="2.8" stroke-linecap="round"/><line x1="13" y1="31" x2="25" y2="31" stroke="#FF2D55" stroke-width="2.8" stroke-linecap="round"/></svg></div>'+
-          '<div class="ios-gcard-lbl">'+t("female")+'</div>'+
-        '</div>'+
+      '<div class="ob-gcard female '+(d.gender==="female"?"on":"")+'" id="gc-female" onclick="obGender(\'female\')">'+
+        '<div class="ob-gcard-ico"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="12" stroke="#FF2D55" stroke-width="3" fill="rgba(255,45,85,0.14)"/><line x1="20" y1="28" x2="20" y2="38" stroke="#FF2D55" stroke-width="3" stroke-linecap="round"/><line x1="13" y1="34" x2="27" y2="34" stroke="#FF2D55" stroke-width="3" stroke-linecap="round"/></svg></div>'+
+        '<div class="ob-gcard-lbl">'+t("female")+'</div>'+
       '</div>'+
-      ipcHTML('age',d.age||25,t("age"),'yil')+
-      ipcHTML('weight',d.weight||75,t("weight"),'kg')+
-      ipcHTML('height',d.height||175,t("height"),'sm');
+    '</div>';
   }
-  if(OB.step===2){
-    return ipcHTML('waist',d.waist||88,t("waist"),'sm')+
-      ipcHTML('neck',d.neck||38,t("neck"),'sm')+
-      (d.gender==="female"?ipcHTML('hip',d.hip||95,t("hip"),'sm'):"")+
-      '<div class="rc" style="font-size:13px;color:var(--td);line-height:1.7">'+(lang==="uz"?"Qorin — kindik darajasida<br>Bo\'yin — eng tor qismidan":"Талия — на уровне пупка<br>Шея — в самом узком месте")+'</div>'+
-      '<div class="rc" style="font-size:13px;color:var(--td);line-height:1.7">'+(lang==="uz"?"Qorin — kindik darajasida<br>Bo\'yin — eng tor qismidan":"Талия — на уровне пупка<br>Шея — в самом узком месте")+'</div>';
+  /* Step 2: Age drum */
+  if(OB.step===2){return drumHTML('age',14,90,d.age||25);}
+  /* Step 3: Height ruler */
+  if(OB.step===3){return rulerHTML('height',120,220,d.height||175);}
+  /* Step 4: Weight scale */
+  if(OB.step===4){return scaleHTML('weight',30,200,d.weight||75);}
+  /* Step 5: Waist + Neck */
+  if(OB.step===5){
+    return '<div class="ig">'+
+      spinRowHTML('waist',t("waist"),'sm')+
+      spinRowHTML('neck',t("neck"),'sm')+
+      (d.gender==="female"?spinRowHTML('hip',t("hip"),'sm'):"")+
+    '</div>'+
+    '<div class="rc" style="font-size:12px;color:var(--td);line-height:1.7;margin-top:12px">'+(lang==="uz"?"Qorin — kindik darajasida · Bo\'yin — eng tor qismidan":"Талия — на уровне пупка · Шея — в самом узком месте")+'</div>';
   }
-  if(OB.step===3){
-    return ipcHTML('steps',d.steps||8000,t("steps"),'qadam')+
-      '<div class="card" style="padding:14px">'+
-      [["3 000 dan kam","x1.20"],["5 000 – 10 000","x1.35"],["10 000 – 15 000","x1.50"],["15 000+","x1.65"]].map(function(r){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--sep)"><span style="font-size:13px;color:var(--t2)">'+r[0]+'</span><span style="font-size:13px;font-weight:600;color:var(--teal)">'+r[1]+'</span></div>';}).join("")+
-      '</div>';
+  /* Step 6: Steps */
+  if(OB.step===6){
+    return '<div class="ig">'+spinRowHTML('steps',t("steps"),'q')+'</div>'+
+      '<div class="card" style="padding:14px;margin-top:10px">'+
+      [["3 000 dan kam","x1.20"],["5 000 – 10 000","x1.35"],["10 000 – 15 000","x1.50"],["15 000+","x1.65"]].map(function(r){
+        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--sep)"><span style="font-size:13px;color:var(--t2)">'+r[0]+'</span><span style="font-size:13px;font-weight:600;color:var(--teal)">'+r[1]+'</span></div>';
+      }).join("")+'</div>';
   }
-  if(OB.step===4){
+  /* Step 7: Goal */
+  if(OB.step===7){
     return '<div class="cg" style="grid-template-columns:1fr">'+
       '<div class="ch '+(d.goal==="lose"?"on":"")+'" onclick="obChoice(\'goal\',\'lose\',this)" style="display:flex;align-items:center;gap:12px;text-align:left"><div class="ch-ic" style="font-size:24px">🔻</div><div><div class="ch-l">'+t("gl")+'</div></div></div>'+
       '<div class="ch '+(d.goal==="maintain"?"on":"")+'" onclick="obChoice(\'goal\',\'maintain\',this)" style="display:flex;align-items:center;gap:12px;text-align:left"><div class="ch-ic" style="font-size:24px">⚖️</div><div><div class="ch-l">'+t("gm")+'</div></div></div>'+
       '<div class="ch '+(d.goal==="muscle"?"on":"")+'" onclick="obChoice(\'goal\',\'muscle\',this)" style="display:flex;align-items:center;gap:12px;text-align:left"><div class="ch-ic" style="font-size:24px">💪</div><div><div class="ch-l">'+t("gg")+'</div></div></div>'+
-      '</div>';
+    '</div>';
   }
-  if(OB.step===5){
+  /* Step 8: Plan */
+  if(OB.step===8){
     var c=d._calc||{};
     var fp=c.fat_pct||0,bmr=c.bmr||0,tdee=c.tdee||0,act=c.activity||1,gk=c.kcal_target||0;
     var statsCard=(fp>0||bmr>0)?
-      '<div class="rc" style="margin-bottom:14px">'+
-        '<div class="rc-t">'+t("yst")+'</div>'+
-        '<div class="rc-r"><span class="rc-l">'+t("fat_p")+'</span><span class="rc-v">'+fp+'% '+(c.fat_zone||"")+'</span></div>'+
-        '<div class="rc-r"><span class="rc-l">BMR</span><span class="rc-v">'+fmt(bmr)+' kkal</span></div>'+
-        '<div class="rc-r"><span class="rc-l">TDEE (x'+act+')</span><span class="rc-v">'+fmt(tdee)+' kkal</span></div>'+
-        '<div class="rc-r"><span class="rc-l">'+t("auto_k")+'</span><span class="rc-v" style="color:var(--teal);font-weight:700">'+fmt(gk)+' kkal</span></div>'+
-      '</div>':
+      '<div class="rc" style="margin-bottom:14px"><div class="rc-t">'+t("yst")+'</div>'+
+      '<div class="rc-r"><span class="rc-l">'+t("fat_p")+'</span><span class="rc-v">'+fp+'% '+(c.fat_zone||"")+'</span></div>'+
+      '<div class="rc-r"><span class="rc-l">BMR</span><span class="rc-v">'+fmt(bmr)+' kkal</span></div>'+
+      '<div class="rc-r"><span class="rc-l">TDEE (x'+act+')</span><span class="rc-v">'+fmt(tdee)+' kkal</span></div>'+
+      '<div class="rc-r"><span class="rc-l">'+t("auto_k")+'</span><span class="rc-v" style="color:var(--teal);font-weight:700">'+fmt(gk)+' kkal</span></div></div>':
       '<div style="text-align:center;padding:16px;color:var(--t2)">'+t("calc_w")+'</div>';
     var isM=d.plan_type==="manual";
     var mFields=isM?'<div class="ig">'+
@@ -1535,19 +1617,150 @@ function obHTML(){
       '<div class="ir"><div class="ir-l">'+(lang==="uz"?"Yog (g/kg)":"Жир (г/кг)")+'</div><input type="number" step="0.1" value="'+(d.fat_ratio||"")+'" placeholder="1.0" onchange="OB.data.fat_ratio=+this.value"/></div>'+
       '</div>':"";
     return statsCard+
-      '<div class="seg">'+
-        '<button class="'+(isM?"":"on")+'" onclick="OB.data.plan_type=\'auto\';renderOB()">'+t("auto")+'</button>'+
-        '<button class="'+(isM?"on":"")+'" onclick="OB.data.plan_type=\'manual\';renderOB()">'+t("manual")+'</button>'+
-      '</div>'+mFields+
-      '<button class="btn bp" onclick="obSave()">'+t("save")+' ✓</button>';
+      '<div class="seg"><button class="'+(isM?"":"on")+'" onclick="OB.data.plan_type=\'auto\';renderOB()">'+t("auto")+'</button>'+
+      '<button class="'+(isM?"on":"")+'" onclick="OB.data.plan_type=\'manual\';renderOB()">'+t("manual")+'</button></div>'+
+      mFields+'<button class="btn bp" onclick="obSave()">'+t("save")+' ✓</button>';
   }
   return "";
+}
+
+/* ── Init step interactions ── */
+function initObStep(s){
+  if(s===2)initDrum('age',14,90,OB.data.age||25);
+  if(s===3)initRuler('height',120,220,OB.data.height||175);
+  if(s===4)initScale('weight',30,200,OB.data.weight||75);
+}
+
+function initDrum(k,min,max,cur){
+  var outer=document.getElementById('drum-'+k);
+  var inner=document.getElementById('drum-inner-'+k);
+  if(!outer||!inner)return;
+  var IH=54,WH=270,PAD=Math.floor(WH/2/IH)*IH;
+  inner.style.paddingTop=PAD+'px';inner.style.paddingBottom=PAD+'px';
+  var offset=-(cur-min)*IH;
+  inner.style.transition='none';
+  inner.style.transform='translateY('+offset+'px)';
+  updateDrum(k,cur,min);
+  var sy=0,so=offset,drag=false;
+  function clamp(o){return Math.min(0,Math.max(-(max-min)*IH,o));}
+  function val(o){return Math.max(min,Math.min(max,min+Math.round(-o/IH)));}
+  outer.addEventListener('pointerdown',function(e){
+    sy=e.clientY;so=offset;drag=true;
+    inner.style.transition='none';
+    outer.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  },{passive:false});
+  outer.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    offset=clamp(so+(e.clientY-sy));
+    inner.style.transform='translateY('+offset+'px)';
+    updateDrum(k,val(offset),min);
+    e.preventDefault();
+  },{passive:false});
+  function end(){
+    if(!drag)return;drag=false;
+    var v=val(offset);OB.data[k]=v;
+    offset=-(v-min)*IH;
+    inner.style.transition='transform .3s cubic-bezier(.34,1.1,.64,1)';
+    inner.style.transform='translateY('+offset+'px)';
+    updateDrum(k,v,min);
+  }
+  outer.addEventListener('pointerup',end);
+  outer.addEventListener('pointercancel',end);
+}
+
+function updateDrum(k,v,min){
+  document.querySelectorAll('#drum-inner-'+k+' .drum-cell').forEach(function(el,i){
+    var diff=Math.abs(i+min-v);
+    el.classList.toggle('sel',diff===0);
+    el.classList.toggle('near',diff===1||diff===2);
+  });
+}
+
+function initRuler(k,min,max,cur){
+  var wrap=document.getElementById('ruler-'+k);
+  var track=document.getElementById('ruler-track-'+k);
+  var numEl=document.getElementById('ruler-num-'+k);
+  if(!wrap||!track||!numEl)return;
+  var PPU=4,WH=300;
+  /* Draw SVG ruler */
+  var svgH=(max-min+20)*PPU,svg='';
+  for(var i=max+5;i>=min-5;i--){
+    var y=(max+5-i)*PPU;
+    var major=i%10===0,mid=i%5===0;
+    var w=major?44:mid?32:20;
+    svg+='<line x1="'+(72-w)+'" y1="'+y+'" x2="72" y2="'+y+'" stroke="'+(major?"var(--t1)":"var(--sep)")+'" stroke-width="'+(major?1.5:1)+'"/>';
+    if(major)svg+='<text x="'+(72-w-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="var(--t2)">'+i+'</text>';
+  }
+  track.innerHTML='<svg width="72" height="'+svgH+'" viewBox="0 0 72 '+svgH+'">'+svg+'</svg>';
+  var initOff=-(max+5-cur)*PPU+(WH/2);
+  track.style.transition='none';
+  track.style.transform='translateY('+initOff+'px)';
+  var sy=0,so=initOff,drag=false;
+  function getVal(off){return Math.max(min,Math.min(max,Math.round(max+5-(WH/2-off)/PPU)));}
+  wrap.addEventListener('pointerdown',function(e){
+    sy=e.clientY;so=initOff;drag=true;
+    track.style.transition='none';
+    wrap.setPointerCapture(e.pointerId);e.preventDefault();
+  },{passive:false});
+  wrap.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    initOff=so+(e.clientY-sy);
+    track.style.transform='translateY('+initOff+'px)';
+    var v=getVal(initOff);
+    if(v!==OB.data[k]){OB.data[k]=v;numEl.style.transform='scale(1.06)';numEl.textContent=v;setTimeout(function(){numEl.style.transform='';},80);}
+    e.preventDefault();
+  },{passive:false});
+  function end(){
+    if(!drag)return;drag=false;
+    var v=getVal(initOff);OB.data[k]=v;
+    initOff=-(max+5-v)*PPU+(WH/2);
+    track.style.transition='transform .25s cubic-bezier(.34,1.1,.64,1)';
+    track.style.transform='translateY('+initOff+'px)';
+    numEl.textContent=v;
+  }
+  wrap.addEventListener('pointerup',end);wrap.addEventListener('pointercancel',end);
+}
+
+function initScale(k,min,max,cur){
+  var svg=document.getElementById('sc-svg-'+k);
+  var numEl=document.getElementById('sc-num-'+k);
+  if(!svg||!numEl)return;
+  function draw(v){
+    var cx=140,cy=145,r=115,arcStart=Math.PI,arcEnd=2*Math.PI;
+    var pct=(v-min)/(max-min);
+    var ang=arcStart+pct*(arcEnd-arcStart);
+    var ticks='';
+    for(var i=0;i<=20;i++){
+      var a=arcStart+(i/20)*(arcEnd-arcStart);
+      var major=i%5===0;
+      var r1=major?r-14:r-8;
+      var x1=cx+r*Math.cos(a),y1=cy+r*Math.sin(a);
+      var x2=cx+r1*Math.cos(a),y2=cy+r1*Math.sin(a);
+      ticks+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="var(--sep)" stroke-width="'+(major?2:1)+'" stroke-linecap="round"/>';
+      if(major){var lv=Math.round(min+(i/20)*(max-min));var lx=cx+(r-22)*Math.cos(a),ly=cy+(r-22)*Math.sin(a);ticks+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="middle" font-size="9" fill="var(--t2)">'+lv+'</text>';}
+    }
+    var nx=cx+(r-28)*Math.cos(ang),ny=cy+(r-28)*Math.sin(ang);
+    svg.innerHTML=
+      '<path d="M '+(cx-r)+' '+cy+' A '+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" stroke="var(--sep)" stroke-width="6" fill="none" stroke-linecap="round"/>'+
+      '<path d="M '+(cx-r)+' '+cy+' A '+r+' '+r+' 0 0 1 '+nx.toFixed(1)+' '+ny.toFixed(1)+'" stroke="var(--teal)" stroke-width="6" fill="none" stroke-linecap="round"/>'+
+      ticks+
+      '<line x1="'+cx+'" y1="'+cy+'" x2="'+nx.toFixed(1)+'" y2="'+ny.toFixed(1)+'" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/>'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="var(--teal)"/>';
+  }
+  draw(cur);
+  /* Override obSpin2 to also redraw */
+  var _orig=obHoldStart2;
+  var _origSpin=obSpin2;
+  window._obSpinHook=function(kk){if(kk===k){draw(OB.data[kk]||cur);var n=document.getElementById('sc-num-'+kk);if(n)n.textContent=OB.data[kk]||cur;}};
+  var _realSpin=obSpin2;
+  obSpin2=function(kk,d){_realSpin(kk,d);if(kk===k){draw(OB.data[kk]);var n=document.getElementById('sc-num-'+kk);if(n)n.textContent=OB.data[kk];}};
 }
 
 async function fetchPreview(){
   var d=OB.data;
   if(!d.gender||!d.weight||!d.height||!d.waist||!d.neck||!d.steps)return;
-  try{var r=await req("/api/calc-preview","POST",{gender:d.gender,age:d.age||25,weight:d.weight,height:d.height,waist:d.waist,neck:d.neck,hip:d.hip||0,steps:d.steps,goal:d.goal||"maintain"});if(r&&r.calc){OB.data._calc=r.calc;if(OB.step===5)renderOB();}}catch(e){}
+  try{var r=await req("/api/calc-preview","POST",{gender:d.gender,age:d.age||25,weight:d.weight,height:d.height,waist:d.waist,neck:d.neck,hip:d.hip||0,steps:d.steps,goal:d.goal||"maintain"});if(r&&r.calc){OB.data._calc=r.calc;if(OB.step===8)renderOB();}}catch(e){}
 }
 
 async function obSave(){
