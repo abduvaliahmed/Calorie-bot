@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>BARG Onboarding</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Inter:wght@400;500;600&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+body{
+  background:#080c10;
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+  font-family:'Inter',sans-serif;
+  overflow:hidden;
+}
+
+.phone{
+  width:320px;height:620px;
+  background:#0c1016;
+  border-radius:44px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 40px 120px rgba(0,0,0,0.8),0 0 80px rgba(29,158,117,0.12);
+}
+
+#bgc{position:absolute;inset:0;z-index:0;}
+
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:90px;height:24px;background:#0c1016;
+  border-radius:0 0 16px 16px;z-index:30;
+}
+
+.par{
+  position:absolute;border-radius:50%;background:rgba(29,158,117,0.55);
+  pointer-events:none;animation:parUp linear infinite;z-index:1;
+}
+@keyframes parUp{
+  0%{opacity:0;transform:translateY(640px) scale(0.5)}
+  10%{opacity:0.8}85%{opacity:0.4}100%{opacity:0;transform:translateY(-30px) scale(1.2)}
+}
+
+.sw{position:absolute;inset:0;z-index:5;overflow:hidden;}
+
+.stp{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transform:translateX(100%);
+  transition:transform 0.42s cubic-bezier(0.34,1.1,0.64,1),opacity 0.42s cubic-bezier(0.34,1.1,0.64,1);
+  will-change:transform,opacity;
+}
+.stp.show{opacity:1;pointer-events:all;transform:translateX(0);}
+.stp.gone-left{opacity:0;pointer-events:none;transform:translateX(-60px);transition:transform 0.28s ease,opacity 0.28s ease;}
+.stp.gone-right{opacity:0;pointer-events:none;transform:translateX(60px);transition:transform 0.28s ease,opacity 0.28s ease;}
+
+.tbar{
+  flex-shrink:0;padding:36px 20px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:2;
+}
+.back-btn{
+  width:34px;height:34px;border-radius:17px;
+  background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.55);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background 0.2s;
+  line-height:1;font-family:sans-serif;
+}
+.back-btn:hover{background:rgba(255,255,255,0.12);}
+.skip-btn{
+  font-size:12px;color:rgba(255,255,255,0.3);background:none;border:none;
+  cursor:pointer;font-family:'Inter',sans-serif;padding:4px 6px;transition:color 0.2s;
+}
+.skip-btn:hover{color:rgba(255,255,255,0.55);}
+.sn{font-size:10px;font-weight:700;color:rgba(255,255,255,0.2);font-family:'Syne',sans-serif;}
+
+.dots{display:flex;gap:5px;align-items:center;}
+.dot{height:3px;border-radius:2px;background:rgba(255,255,255,0.12);transition:all 0.45s cubic-bezier(0.34,1.4,0.64,1);}
+.dot.on{width:22px!important;background:#1D9E75;box-shadow:0 0 8px rgba(29,158,117,0.7);}
+.dot:not(.on){width:4px;}
+
+.ilz{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:visible;}
+
+.bcon{flex-shrink:0;padding:0 22px 26px;position:relative;z-index:2;}
+
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:9px;font-weight:700;letter-spacing:1.8px;color:#1D9E75;text-transform:uppercase;
+  background:rgba(29,158,117,0.1);border:0.5px solid rgba(29,158,117,0.3);
+  border-radius:20px;padding:4px 10px;margin-bottom:10px;
+}
+.ttl{font-family:'Syne',sans-serif;font-size:23px;font-weight:800;color:#fff;line-height:1.2;letter-spacing:-0.5px;margin-bottom:7px;}
+.sub{font-size:12px;color:rgba(255,255,255,0.38);line-height:1.65;margin-bottom:18px;}
+
+.nbtn{
+  width:100%;padding:15px;border-radius:16px;border:none;
+  background:linear-gradient(135deg,#22b585,#1D9E75);color:#fff;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 6px 24px rgba(29,158,117,0.38),inset 0 1px 0 rgba(255,255,255,0.18);
+  position:relative;overflow:hidden;transition:transform 0.14s,box-shadow 0.14s;letter-spacing:0.2px;
+}
+.nbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.14),transparent 55%);pointer-events:none;}
+.nbtn:active{transform:scale(0.97);box-shadow:0 3px 10px rgba(29,158,117,0.28);}
+.arr{font-size:18px;transition:transform 0.3s cubic-bezier(0.34,1.5,0.64,1);}
+.nbtn:hover .arr{transform:translateX(5px);}
+
+/* STEP 1 */
+.logo-leaf{animation:leaff 3.5s ease-in-out infinite;}
+@keyframes leaff{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+.rings .r{position:absolute;border-radius:50%;border:1px solid rgba(29,158,117,0.25);animation:rp 3.5s ease-in-out infinite;}
+.r:nth-child(1){inset:0;animation-delay:0s;}.r:nth-child(2){inset:-18px;border-color:rgba(29,158,117,0.14);animation-delay:-1.2s;}.r:nth-child(3){inset:-38px;border-color:rgba(29,158,117,0.07);animation-delay:-2.4s;}
+@keyframes rp{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.05);opacity:1}}
+.fcard{position:absolute;background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px 12px;animation:fcf 4s ease-in-out infinite;z-index:5;}
+@keyframes fcf{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.fv{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#1D9E75;}
+.fl{font-size:8px;color:rgba(255,255,255,0.35);margin-top:1px;letter-spacing:0.5px;}
+
+/* STEP 2 — gender cards */
+.genders{display:flex;gap:14px;padding:0 30px;width:100%;flex-shrink:0;justify-content:center;}
+.gcard{
+  width:120px;height:130px;border-radius:28px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  cursor:pointer;transition:all 0.28s cubic-bezier(0.34,1.2,0.64,1);position:relative;
+}
+.gcard.male{background:rgba(100,160,255,0.07);border:1.5px solid rgba(100,160,255,0.18);}
+.gcard.female{background:rgba(255,100,150,0.07);border:1.5px solid rgba(255,100,150,0.18);}
+.gcard.on{background:rgba(29,158,117,0.12);border-color:rgba(29,158,117,0.5);box-shadow:0 0 28px rgba(29,158,117,0.18);}
+.gcard:active{transform:scale(0.95);}
+.glbl{font-size:12px;font-weight:600;color:rgba(255,255,255,0.28);letter-spacing:0.3px;transition:color 0.25s;}
+.gcard.on .glbl{color:#1D9E75;}
+
+.mrow{display:flex;gap:8px;padding:0 22px;width:100%;flex-shrink:0;margin-top:14px;}
+.mc{flex:1;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.07);border-radius:14px;padding:10px 8px;text-align:center;}
+.mv{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;}
+.ml{font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px;letter-spacing:0.5px;}
+
+/* STEP 3 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 22px;width:100%;flex-shrink:0;}
+.gc2{background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px;}
+.gc2.hl{background:rgba(29,158,117,0.08);border-color:rgba(29,158,117,0.2);}
+.gc2-l{font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:4px;letter-spacing:0.5px;}
+.gc2.hl .gc2-l{color:#1D9E75;}
+.gc2-v{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.gc2.hl .gc2-v{color:#1D9E75;}
+
+/* STEP 4 */
+.goals{display:flex;flex-direction:column;gap:8px;padding:0 22px;width:100%;flex-shrink:0;}
+.gi{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.06);cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.2,0.64,1);}
+.gi.on{background:rgba(29,158,117,0.1);border-color:rgba(29,158,117,0.4);}
+.gico{font-size:22px;width:34px;text-align:center;}
+.gnm{font-size:14px;font-weight:600;color:rgba(255,255,255,0.45);transition:color 0.3s;flex:1;}
+.gi.on .gnm{color:#fff;}
+.gd{font-size:10px;color:rgba(255,255,255,0.22);}
+.grad{width:18px;height:18px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;transition:all 0.3s;}
+.gi.on .grad{background:#1D9E75;border-color:#1D9E75;}
+.grad::after{content:'';width:6px;height:6px;border-radius:3px;background:#fff;opacity:0;transition:opacity 0.2s;}
+.gi.on .grad::after{opacity:1;}
+
+/* STEP 5 */
+.scard{margin:0 22px;background:rgba(29,158,117,0.08);border:0.5px solid rgba(29,158,117,0.2);border-radius:18px;padding:14px 16px;position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;top:-30px;right:-20px;width:90px;height:90px;border-radius:50%;background:rgba(29,158,117,0.15);filter:blur(20px);}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);}
+.sr:last-child{border:none;}
+.slbl{font-size:12px;color:rgba(255,255,255,0.38);}
+.sval{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1D9E75;}
+.bigchk{width:72px;height:72px;border-radius:36px;background:linear-gradient(135deg,#22b585,#1D9E75);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 8px 30px rgba(29,158,117,0.5);animation:leaff 3s ease-in-out infinite;}
+
+.cf{position:absolute;border-radius:50%;pointer-events:none;z-index:20;animation:cfpop 0.9s cubic-bezier(0.34,1.4,0.64,1) both;}
+@keyframes cfpop{0%{opacity:1;transform:translate(0,0) scale(0)}60%{opacity:1}100%{opacity:0;transform:var(--to) scale(1)}}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <canvas id="bgc"></canvas>
+  <div class="notch"></div>
+  <div id="ptc"></div>
+
+  <div class="sw">
+
+    <!-- STEP 1 -->
+    <div class="stp show" id="s1">
+      <div class="tbar">
+        <div class="sn">01 / 05</div>
+        <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <button class="skip-btn" onclick="goTo(5)">O'tkazish</button>
+      </div>
+      <div class="ilz">
+        <div style="position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center">
+          <div class="rings" style="position:absolute;inset:0"><div class="r"></div><div class="r"></div><div class="r"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:2">
+            <div class="logo-leaf">
+              <svg width="46" height="92" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>
+            </div>
+            <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:-1px">BARG</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px">NUTRITION TRACKER</div>
+          </div>
+          <div class="fcard" style="top:8px;right:-14px;animation-delay:-0.5s"><div class="fv">2,150</div><div class="fl">KKAL / KUN</div></div>
+          <div class="fcard" style="bottom:16px;left:-18px;animation-delay:-2s">
+            <div style="display:flex;gap:10px">
+              <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#4CD964">B 142g</div><div style="font-size:8px;color:rgba(255,255,255,0.3)">OQSIL</div></div>
+              <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#FF9500">Y 68g</div><div style="font-size:8px;color:rgba(255,255,255,0.3)">YOG'</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bcon">
+        <div class="tag">● BARG v4.1</div>
+        <div class="ttl">Ilmiy ovqatlanish<br>nazorati</div>
+        <div class="sub">BMR, TDEE va yog' foizingizni avtomatik hisoblang. 2 daqiqada sozlang.</div>
+        <button class="nbtn" onclick="goTo(2)"><span>Boshlash</span><span class="arr">→</span></button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="stp" id="s2">
+      <div class="tbar">
+        <button class="back-btn" onclick="goTo(1)">‹</button>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="sn">02 / 05</div>
+      </div>
+
+      <div class="ilz" style="flex:0;padding:22px 0 0;"></div>
+
+      <!-- Yangi gender kartalar -->
+      <div class="genders">
+        <div class="gcard male on" id="gcm" onclick="pickG('m')">
+          <svg width="58" height="58" viewBox="0 0 62 62" fill="none">
+            <circle cx="26" cy="36" r="18" stroke="#4A90E2" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <line x1="39" y1="23" x2="56" y2="7" stroke="#4A90E2" stroke-width="3.5" stroke-linecap="round"/>
+            <polyline points="44,7 56,7 56,19" stroke="#4A90E2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <div class="glbl">Erkak</div>
+        </div>
+        <div class="gcard female" id="gcf" onclick="pickG('f')">
+          <svg width="58" height="58" viewBox="0 0 62 62" fill="none">
+            <circle cx="31" cy="22" r="17" stroke="#E24A7A" stroke-width="3.5" fill="none"/>
+            <line x1="31" y1="39" x2="31" y2="56" stroke="#E24A7A" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="20" y1="50" x2="42" y2="50" stroke="#E24A7A" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+          <div class="glbl">Ayol</div>
+        </div>
+      </div>
+
+      <div class="mrow">
+        <div class="mc"><div class="mv">25</div><div class="ml">YOSH</div></div>
+        <div class="mc"><div class="mv" style="color:#1D9E75">78</div><div class="ml">KG</div></div>
+        <div class="mc"><div class="mv">178</div><div class="ml">SM</div></div>
+      </div>
+
+      <div class="bcon" style="padding-top:18px">
+        <div class="tag">● JINS VA O'LCHAMLAR</div>
+        <div class="ttl">Siz haqingizda<br>nimalar bilaylik?</div>
+        <div class="sub">Aniq natija olish uchun barcha maydonlarni to'ldiring.</div>
+        <button class="nbtn" onclick="goTo(3)"><span>Keyingi</span><span class="arr">→</span></button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="stp" id="s3">
+      <div class="tbar">
+        <button class="back-btn" onclick="goTo(2)">‹</button>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="sn">03 / 05</div>
+      </div>
+      <div class="ilz" style="flex:0.45">
+        <div style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center">
+          <svg width="120" height="120" viewBox="0 0 120 120" style="position:absolute;inset:0;transform:rotate(-90deg)">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+            <circle id="ap" cx="60" cy="60" r="48" fill="none" stroke="#4CD964" stroke-width="8" stroke-linecap="round" stroke-dasharray="0 302"/>
+            <circle id="af" cx="60" cy="60" r="48" fill="none" stroke="#FF9500" stroke-width="8" stroke-linecap="round" stroke-dasharray="0 302" stroke-dashoffset="0"/>
+            <circle id="ac" cx="60" cy="60" r="48" fill="none" stroke="#5AC8FA" stroke-width="8" stroke-linecap="round" stroke-dasharray="0 302" stroke-dashoffset="0"/>
+          </svg>
+          <div style="text-align:center;z-index:2">
+            <div style="font-size:10px;color:rgba(255,255,255,0.4)">YOG'</div>
+            <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:#fff">18.4%</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="gc2"><div class="gc2-l">QORIN (SM)</div><div class="gc2-v">90</div></div>
+        <div class="gc2"><div class="gc2-l">BO'YIN (SM)</div><div class="gc2-v">38</div></div>
+        <div class="gc2"><div class="gc2-l">QADAMLAR/KUN</div><div class="gc2-v" style="color:#1D9E75">8,000</div></div>
+        <div class="gc2 hl"><div class="gc2-l">AKTIVLIK</div><div class="gc2-v">× 1.35</div></div>
+      </div>
+      <div class="bcon" style="padding-top:14px">
+        <button class="nbtn" onclick="goTo(4)"><span>Keyingi</span><span class="arr">→</span></button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="stp" id="s4">
+      <div class="tbar">
+        <button class="back-btn" onclick="goTo(3)">‹</button>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div></div>
+        <div class="sn">04 / 05</div>
+      </div>
+      <div class="ilz" style="flex:0.22">
+        <div style="font-family:'Syne',sans-serif;font-size:38px;font-weight:900;color:rgba(255,255,255,0.04);letter-spacing:-2px;text-align:center">MAQSAD</div>
+      </div>
+      <div class="goals">
+        <div class="gi on" id="gkl" onclick="pickGoal('l')">
+          <div class="gico">🔻</div>
+          <div style="flex:1"><div class="gnm">Vazn yo'qotish</div><div class="gd">Kaloriya kamomadi · −500 kkal/kun</div></div>
+          <div class="grad"></div>
+        </div>
+        <div class="gi" id="gkm" onclick="pickGoal('m')">
+          <div class="gico">⚖️</div>
+          <div style="flex:1"><div class="gnm">Vaznni saqlash</div><div class="gd">Balans rejimi · TDEE</div></div>
+          <div class="grad"></div>
+        </div>
+        <div class="gi" id="gkg" onclick="pickGoal('g')">
+          <div class="gico">💪</div>
+          <div style="flex:1"><div class="gnm">Massa olish</div><div class="gd">Kaloriya ortiqcha · +300 kkal/kun</div></div>
+          <div class="grad"></div>
+        </div>
+      </div>
+      <div class="bcon" style="padding-top:16px">
+        <button class="nbtn" onclick="goTo(5)"><span>Keyingi</span><span class="arr">→</span></button>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="stp" id="s5">
+      <div class="tbar">
+        <button class="back-btn" onclick="goTo(4)">‹</button>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>
+        <div class="sn">05 / 05</div>
+      </div>
+      <div class="ilz" style="flex:0.38">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div class="bigchk">✓</div>
+          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1px">HISOBOT TAYYOR</div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="sr"><span class="slbl">Kunlik kaloriya</span><span class="sval">2,150 kkal</span></div>
+        <div class="sr"><span class="slbl">Oqsil (B)</span><span class="sval" style="color:#4CD964">142 g</span></div>
+        <div class="sr"><span class="slbl">Yog' (Y)</span><span class="sval" style="color:#FF9500">68 g</span></div>
+        <div class="sr"><span class="slbl">Uglevod (U)</span><span class="sval" style="color:#5AC8FA">225 g</span></div>
+        <div class="sr"><span class="slbl">Yog' foizi · BMR</span><span class="sval">18.4% · 1,847</span></div>
+      </div>
+      <div class="bcon" style="padding-top:14px">
+        <button class="nbtn" id="fbtn" onclick="finish()"><span>Ilovani boshlash 🚀</span></button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* BG CANVAS */
+!function(){
+  var cv=document.getElementById('bgc'),ctx=cv.getContext('2d');
+  cv.width=320;cv.height=620;
+  var blobs=[{x:.2,y:.25,c:[29,158,117],ph:0},{x:.82,y:.18,c:[80,140,255],ph:1.6},{x:.75,y:.8,c:[160,90,255],ph:3.2},{x:.18,y:.78,c:[255,100,155],ph:4.8}];
+  var t=0;
+  (function tick(){
+    t+=0.004;ctx.clearRect(0,0,320,620);
+    blobs.forEach(function(b){
+      var bx=b.x*320+Math.sin(t+b.ph)*55,by=b.y*620+Math.cos(t*.8+b.ph)*45;
+      var g=ctx.createRadialGradient(bx,by,0,bx,by,280);
+      g.addColorStop(0,'rgba('+b.c+',0.20)');g.addColorStop(.45,'rgba('+b.c+',0.07)');g.addColorStop(1,'rgba('+b.c+',0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by,280,0,6.28);ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  })();
+}();
+
+/* PARTICLES */
+!function(){
+  var c=document.getElementById('ptc');
+  c.style.cssText='position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden';
+  for(var i=0;i<12;i++){
+    var d=document.createElement('div');d.className='par';
+    var sz=1.5+Math.random()*2.5;
+    d.style.cssText='left:'+(Math.random()*100)+'%;width:'+sz+'px;height:'+sz+'px;animation-duration:'+(5+Math.random()*7)+'s;animation-delay:-'+(Math.random()*10)+'s';
+    c.appendChild(d);
+  }
+}();
+
+/* NAVIGATION — inline style bug fixed */
+var cur=1;
+function goTo(n){
+  if(n===cur)return;
+  var dir=n>cur?1:-1;
+  var oldEl=document.getElementById('s'+cur);
+  var newEl=document.getElementById('s'+n);
+
+  // inline style tozalash — CSS class bilan konflikt bo'lmasin
+  oldEl.style.cssText='';
+  newEl.style.cssText='';
+
+  oldEl.classList.remove('show','gone-left','gone-right');
+  oldEl.classList.add(dir>0?'gone-left':'gone-right');
+
+  newEl.classList.remove('show','gone-left','gone-right');
+  // transition yo'q holda boshlang'ich pozitsiya
+  newEl.style.transition='none';
+  newEl.style.transform=dir>0?'translateX(100%)':'translateX(-100%)';
+  newEl.style.opacity='0';
+  void newEl.offsetWidth;
+  // animatsiya
+  newEl.style.transition='transform 0.42s cubic-bezier(0.34,1.1,0.64,1),opacity 0.42s cubic-bezier(0.34,1.1,0.64,1)';
+  newEl.style.transform='translateX(0)';
+  newEl.style.opacity='1';
+  newEl.style.pointerEvents='all';
+
+  cur=n;
+  if(n===3)setTimeout(animArc,300);
+}
+
+/* GENDER */
+function pickG(g){
+  document.getElementById('gcm').classList.toggle('on',g==='m');
+  document.getElementById('gcf').classList.toggle('on',g==='f');
+}
+
+/* GOAL */
+function pickGoal(g){
+  ['l','m','g'].forEach(function(k){document.getElementById('gk'+k).classList.toggle('on',k===g);});
+}
+
+/* ARC */
+function animArc(){
+  var circ=2*Math.PI*48;
+  var p=0.40,f=0.28,c=0.32;
+  var pl=circ*p,fl=circ*f,cl=circ*c;
+  var ap=document.getElementById('ap'),af=document.getElementById('af'),ac=document.getElementById('ac');
+  if(!ap)return;
+  [ap,af,ac].forEach(function(el){el.style.transition='stroke-dasharray 0.9s ease,stroke-dashoffset 0.9s ease';});
+  ap.setAttribute('stroke-dasharray',pl+' '+(circ-pl));ap.setAttribute('stroke-dashoffset','0');
+  af.setAttribute('stroke-dasharray',fl+' '+(circ-fl));af.setAttribute('stroke-dashoffset',(-pl)+'');
+  ac.setAttribute('stroke-dasharray',cl+' '+(circ-cl));ac.setAttribute('stroke-dashoffset',(-(pl+fl))+'');
+}
+
+/* FINISH */
+function finish(){
+  var btn=document.getElementById('fbtn');
+  btn.innerHTML='<span>✓ Bajarildi!</span>';
+  btn.style.background='linear-gradient(135deg,#4CD964,#1D9E75)';
+  var phone=document.querySelector('.phone');
+  var cols=['#1D9E75','#4CD964','#FF9500','#5AC8FA','#FFD60A','#FF453A','#fff'];
+  for(var i=0;i<22;i++){
+    var el=document.createElement('div');el.className='cf';
+    var sz=4+Math.random()*7;
+    var tx=(Math.random()*200-100)+'px,'+(Math.random()*-220-40)+'px';
+    el.style.cssText=['width:'+sz+'px','height:'+sz+'px','background:'+cols[Math.floor(Math.random()*cols.length)],'left:'+(90+Math.random()*140)+'px','top:'+(150+Math.random()*180)+'px','--to:translate('+tx+')','animation-delay:'+Math.random()*0.25+'s'].join(';');
+    phone.appendChild(el);
+    setTimeout(function(e){if(e.parentNode)e.parentNode.removeChild(e);},1100,el);
+  }
+  setTimeout(function(){btn.innerHTML='<span>Ilovani boshlash 🚀</span>';btn.style.background='';goTo(1);},2400);
+}
+</script>
+</body>
+</html>
