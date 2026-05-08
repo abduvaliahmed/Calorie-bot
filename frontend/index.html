@@ -48,7 +48,7 @@ body.dark{
 html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;z-index:1}
-.screens{flex:1;overflow:hidden;position:relative;background:var(--bg-mesh)}
+.screens{flex:1;overflow:hidden;position:relative;background:transparent}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:transparent;transform:translateX(100%);overflow:hidden;transition:none;z-index:1}
 .screen.act{transform:translateX(0)}
 .hdr{
@@ -315,7 +315,9 @@ body.dark .card::before,body.dark .sc::before,body.dark .fi::before,
 body.dark .ig::before,body.dark .ch::before,body.dark .hero::before{
   background:radial-gradient(ellipse at center,rgba(255,255,255,0.11) 0%,transparent 42%)
 }
-#blob-cv{position:absolute;top:0;left:0;z-index:0;pointer-events:none;display:block}
+#blob-cv{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+.app{position:relative;z-index:1}
+html,body{background:var(--bg-mesh)!important}
 </style>
 </head>
 <body>
@@ -2154,17 +2156,15 @@ init();
   /* ── CANVAS BLOB FONI ── */
   var cv=document.createElement('canvas');
   cv.id='blob-cv';
-  var sc=document.querySelector('.screens');
-  sc.insertBefore(cv,sc.firstChild);
+  document.body.appendChild(cv);
   var ctx=cv.getContext('2d');
   var W=0,H=0;
   function resize(){
-    W=sc.offsetWidth||window.innerWidth;
-    H=sc.offsetHeight||window.innerHeight;
+    W=window.innerWidth;
+    H=window.innerHeight;
     cv.width=W; cv.height=H;
-    cv.style.width=W+'px'; cv.style.height=H+'px';
   }
-  setTimeout(resize,0);
+  resize();
   window.addEventListener('resize',resize);
 
   var L=[
@@ -2207,7 +2207,7 @@ init();
     t+=.0042;
     var dark=document.body.classList.contains('dark');
     var prem=document.body.classList.contains('premium');
-    var B=prem?P:(dark?D:L), a=prem?.58:(dark?.45:.60);
+    var B=prem?P:(dark?D:L), a=prem?.68:(dark?.65:.78);
 
     OX[0]=Math.sin(t      )*80; OY[0]=Math.cos(t*.70   )*70;
     OX[1]=Math.sin(t*.80+1)*75; OY[1]=Math.cos(t*.90+2 )*65;
