@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BARG v4.5 -->
+<!-- BARG v4.6 -->
 <html lang="uz">
 <head>
 <meta charset="UTF-8"/>
@@ -195,6 +195,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .scbtn.mi{background:rgba(120,120,128,0.14);color:var(--t1)}
 .scbtn.pl{background:var(--teal);color:#fff;box-shadow:0 5px 18px rgba(29,158,117,0.38)}
 .scbtn:active{transform:scale(0.87)}
+/* ── Scale v2 (weight) ── */
+.scale2-page{display:flex;flex-direction:column;align-items:center;padding:6px 0;position:relative}
+.scale2-display{display:flex;align-items:baseline;gap:6px;margin-bottom:2px}
+.scale2-num{font-size:78px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-3px;cursor:pointer;transition:transform .1s}
+.scale2-kg{font-size:18px;color:var(--t2)}
+.scale2-g{font-size:15px;color:var(--teal);font-weight:600;margin-bottom:12px;min-height:20px}
+.scale2-body{width:300px;background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:24px;border:.5px solid var(--gl-b);box-shadow:var(--gl-s);overflow:hidden}
+.scale2-btns{display:flex;align-items:center;gap:14px;margin-top:14px}
 /* ── Tape picker (weight) ── */
 .tape-page{display:flex;flex-direction:column;align-items:center;padding:10px 0}
 .tape-val-row{display:flex;align-items:baseline;gap:8px;margin-bottom:18px}
@@ -216,24 +224,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
   width:68px;height:68px
 }
 .tape-hint{font-size:12px;color:var(--t2);margin-top:10px}
-/* ── Activity coefficient cards ── */
-.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.act-card{
-  background:var(--card);
-  -webkit-backdrop-filter:blur(20px);
-  backdrop-filter:blur(20px);
-  border-radius:18px;padding:12px 10px;
-  border:2px solid transparent;
-  cursor:pointer;
-  transition:all .2s cubic-bezier(.34,1.2,.64,1);
-  box-shadow:var(--gl-s);
-  text-align:left
-}
-.act-card.on{border-color:var(--teal);background:rgba(29,158,117,0.09)}
-.act-card-ico{font-size:22px;margin-bottom:4px}
-.act-coef{font-size:18px;font-weight:800;color:var(--teal)}
-.act-lbl{font-size:12px;font-weight:600;color:var(--t1);margin-top:2px}
-.act-desc{font-size:10px;color:var(--t2);margin-top:2px;line-height:1.3}
+/* ── Activity list ── */
+.act-steps-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:16px;border:.5px solid var(--gl-b);box-shadow:var(--gl-s);margin-bottom:4px}
+.act-steps-val{font-size:18px;font-weight:700;color:var(--teal);min-width:70px;cursor:pointer;text-align:right;flex:1}
+.act-list{overflow:hidden;padding:0}
+.act-row{display:flex;align-items:center;gap:0;padding:11px 14px;border-bottom:.5px solid var(--sep);cursor:pointer;transition:background .15s;position:relative}
+.act-row:last-child{border-bottom:none}
+.act-row.on{background:rgba(29,158,117,0.09)}
+.act-row-coef{font-size:15px;font-weight:800;color:var(--teal);width:42px;flex-shrink:0}
+.act-row-lbl{font-size:14px;color:var(--t1);flex:1}
+.act-row-steps{font-size:12px;color:var(--t2);margin-right:10px}
+.act-row-dot{width:18px;height:18px;border-radius:9px;border:2px solid var(--sep);flex-shrink:0;transition:all .15s}
+.act-row.on .act-row-dot{background:var(--teal);border-color:var(--teal);box-shadow:0 0 8px rgba(29,158,117,0.4)}
 /* ── Waist+neck spinners ── */
 .ob-spin2{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--sep)}
 .ob-spin2:last-child{border:none}
@@ -1474,28 +1476,27 @@ function renderOB(){
   else{bk.textContent="‹ "+t("back_t");bk.onclick=obBack;}
   var tl=(t("ob_t")||[])[S-1]||"";
   var sb=(t("ob_s")||[])[S-1]||"";
-  document.getElementById("ob-body").innerHTML='<div style="padding:16px"><div class="ob-h"><div class="ob-n">'+S+'</div><div class="ob-t">'+tl+'</div><div class="ob-s">'+sb+'</div></div>'+obHTML()+'</div>';
+  var logoTop=S===1?'<div style="display:flex;flex-direction:column;align-items:center;padding:18px 0 8px">'+
+    '<svg width="28" height="56" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>'+
+    '<div style="font-size:19px;font-weight:800;color:var(--teal);margin-top:5px;letter-spacing:-0.5px">BARG</div>'+
+    '<div style="font-size:12px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
+  '</div>':'';
+  document.getElementById("ob-body").innerHTML='<div style="padding:16px">'+logoTop+'<div class="ob-h"><div class="ob-n">'+S+'</div><div class="ob-t">'+tl+'</div><div class="ob-s">'+sb+'</div></div>'+obHTML()+'</div>';
   if(S===8&&(!OB.data._calc||!OB.data._calc.bmr))fetchPreview();
   requestAnimationFrame(function(){initObStep(S);});
 }
 
 function obChoice(key,val,el){OB.data[key]=val;el.closest(".cg").querySelectorAll(".ch").forEach(function(c){c.classList.remove("on");});el.classList.add("on");}
-var _actStepMap={1.2:2000,1.375:5500,1.55:10000,1.725:15000};
+var _actStepMap={1.2:3000,1.3:5000,1.35:7000,1.4:10000,1.45:12000,1.5:15000,1.55:17000,1.6:20000,1.7:25000};
 function obActCoef(c,el){
   OB.data.activity_coef=c;
   if(_actStepMap[c]){OB.data.steps=_actStepMap[c];var sv=document.getElementById('s2v-steps');if(sv)sv.textContent=_actStepMap[c];}
-  document.querySelectorAll('.act-card').forEach(function(x){x.classList.remove('on');});
+  document.querySelectorAll('.act-row').forEach(function(x){x.classList.remove('on');});
   el.classList.add('on');
 }
-function obActCoefCustom(c){
-  if(isNaN(c)||c<1||c>2.5)return;
-  OB.data.activity_coef=c;
-  document.querySelectorAll('.act-card').forEach(function(x){x.classList.remove('on');});
-  var cc=document.getElementById('act-custom-wrap');if(cc)cc.classList.add('on');
-}
 var _obHT=null,_obHI=null;
-var _obLims={age:[14,90],weight:[30,200],height:[120,220],waist:[50,150],neck:[25,60],hip:[60,160],steps:[500,30000]};
-var _obSteps={steps:500,age:1,weight:1,height:1,waist:1,neck:1,hip:1};
+var _obLims={age:[14,90],weight:[30,220],height:[120,220],waist:[50,150],neck:[25,60],hip:[60,160],steps:[500,50000]};
+var _obSteps={steps:500,age:1,weight:0.1,height:1,waist:1,neck:1,hip:1};
 
 function ipcHTML(k,val,lbl,unit){
   return '<div class="ipc">'+
@@ -1526,15 +1527,20 @@ function obGender(g){
   }
 }
 
-var _obHT=null,_obHI=null;
-var _obLims={age:[14,90],weight:[30,200],height:[120,220],waist:[50,150],neck:[25,60],hip:[60,160],steps:[500,30000]};
 
 function obSpin2(k,d){
-  var lm=_obLims[k],step=k==='steps'?500:1;
-  var v=Math.max(lm[0],Math.min(lm[1],(OB.data[k]||lm[0])+d*step));
+  var lm=_obLims[k],step=k==='steps'?500:k==='weight'?0.1:1;
+  var raw=(OB.data[k]||lm[0])+d*step;
+  var v=k==='weight'?Math.round(raw*10)/10:Math.round(raw);
+  v=Math.max(lm[0],Math.min(lm[1],v));
   OB.data[k]=v;
   var el=document.getElementById('s2v-'+k);
-  if(el){el.style.transform='scale(1.18)';el.textContent=v;setTimeout(function(){el.style.transform='';},110);}
+  var disp=k==='weight'?v.toFixed(1):v;
+  if(el){el.style.transform='scale(1.18)';el.textContent=disp;setTimeout(function(){el.style.transform='';},110);}
+  /* update gram display */
+  if(k==='weight'){var gEl=document.getElementById('sc-g-weight');if(gEl)gEl.textContent=Math.round((v*10)%10)*100+' g';}
+  /* update scale gauge */
+  if(k==='weight'&&window._scaleRedraw)window._scaleRedraw(v);
 }
 function obHoldStart2(k,d){obSpin2(k,d);_obHT=setTimeout(function(){_obHI=setInterval(function(){obSpin2(k,d);},75);},300);}
 function obHoldStop2(){clearTimeout(_obHT);clearInterval(_obHI);_obHT=null;_obHI=null;}
@@ -1548,8 +1554,13 @@ function obValBlur(k){
   var disp=document.getElementById('s2v-'+k),inp=document.getElementById('s2i-'+k);
   if(!disp||!inp)return;
   var lm=_obLims[k];
-  var v=parseInt(inp.value);
-  if(!isNaN(v)){OB.data[k]=Math.max(lm[0],Math.min(lm[1],v));disp.textContent=OB.data[k];}
+  var raw=k==='weight'?parseFloat(inp.value):parseInt(inp.value);
+  if(!isNaN(raw)){
+    var v=k==='weight'?Math.round(raw*10)/10:raw;
+    OB.data[k]=Math.max(lm[0],Math.min(lm[1],v));
+    disp.textContent=k==='weight'?OB.data[k].toFixed(1):OB.data[k];
+    if(k==='weight'){var gEl=document.getElementById('sc-g-weight');if(gEl)gEl.textContent=Math.round((OB.data[k]*10)%10)*100+' g';if(window._scaleRedraw)window._scaleRedraw(OB.data[k]);}
+  }
   inp.style.display='none';disp.style.display='block';
   if(window['_tapeSnap_'+k])window['_tapeSnap_'+k](OB.data[k]);
 }
@@ -1592,7 +1603,27 @@ function rulerHTML(k,min,max,val){
   '</div>';
 }
 
-function tapeHTML(k,min,max,val){
+function scaleHTML(k,min,max,val){
+  var kg=Math.floor(val),g=Math.round((val*10)%10)*100;
+  return '<div class="scale2-page">'+
+    '<div class="scale2-display">'+
+      '<span class="scale2-num" id="s2v-'+k+'" onclick="obTapVal(\''+k+'\')">'+val.toFixed(1)+'</span>'+
+      '<span class="scale2-kg">kg</span>'+
+    '</div>'+
+    '<div class="scale2-g" id="sc-g-'+k+'">'+g+' g</div>'+
+    '<input style="display:none;font-size:60px;font-weight:800;width:150px;border:none;background:transparent;color:var(--teal);text-align:center;outline:none;-webkit-appearance:none;position:absolute;left:50%;transform:translateX(-50%);top:24px" id="s2i-'+k+'" type="number" step="0.1" onblur="obValBlur(\''+k+'\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
+    '<div class="scale2-body">'+
+      '<svg id="sc-svg-'+k+'" width="300" height="180" viewBox="0 0 300 180" style="display:block;margin:0 auto"></svg>'+
+    '</div>'+
+    '<div class="scale2-btns">'+
+      '<button class="scbtn mi" onpointerdown="obHoldStart2(\''+k+'\',-1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">−</button>'+
+      '<div style="font-size:11px;color:var(--t2);text-align:center">'+(lang==="uz"?"Raqamga bosib yozin":"Нажмите на число")+'</div>'+
+      '<button class="scbtn pl" onpointerdown="obHoldStart2(\''+k+'\',1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">+</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function tapeHTML(k,min,max,val,unit){
   var cells='';
   for(var p=0;p<5;p++)cells+='<div class="tape-cell" style="opacity:0;pointer-events:none"></div>';
   for(var i=min;i<=max;i++)cells+='<div class="tape-cell" id="tc-'+k+'-'+i+'">'+i+'</div>';
@@ -1600,7 +1631,7 @@ function tapeHTML(k,min,max,val){
   return '<div class="tape-page">'+
     '<div class="tape-val-row">'+
       '<span class="tape-bignum" id="s2v-'+k+'" onclick="obTapVal(\''+k+'\')">'+val+'</span>'+
-      '<span class="tape-unit-lbl">kg</span>'+
+      '<span class="tape-unit-lbl">'+(unit||'kg')+'</span>'+
     '</div>'+
     '<input style="display:none;font-size:64px;font-weight:800;width:140px;border:none;background:transparent;color:var(--teal);text-align:center;outline:none;-webkit-appearance:none;margin-bottom:18px" id="s2i-'+k+'" type="number" onblur="obValBlur(\''+k+'\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
     '<div class="tape-wrap" id="tape-'+k+'">'+
@@ -1614,12 +1645,7 @@ function obHTML(){
   var d=OB.data;
   /* Step 1: Gender */
   if(OB.step===1){
-    return '<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px">'+
-      '<svg width="32" height="64" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>'+
-      '<div style="font-size:20px;font-weight:800;color:var(--teal);margin-top:6px;letter-spacing:-0.5px">BARG</div>'+
-      '<div style="font-size:12px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
-    '</div>'+
-    '<div class="ob-gc">'+
+    return '<div class="ob-gc">'+
       '<div class="ob-gcard male '+(d.gender==="male"?"on":"")+'" id="gc-male" onclick="obGender(\'male\')">'+
         '<div class="ob-gcard-ico"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="16" cy="26" r="12" stroke="#007AFF" stroke-width="3" fill="rgba(0,122,255,0.14)"/><path d="M24 18 L36 6" stroke="#007AFF" stroke-width="3" stroke-linecap="round"/><path d="M27.5 6 H36 V14.5" stroke="#007AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
         '<div class="ob-gcard-lbl">'+t("male")+'</div>'+
@@ -1630,12 +1656,12 @@ function obHTML(){
       '</div>'+
     '</div>';
   }
-  /* Step 2: Age drum */
-  if(OB.step===2){return drumHTML('age',14,90,d.age||25);}
+  /* Step 2: Age tape */
+  if(OB.step===2){return tapeHTML('age',14,90,d.age||25,lang==="uz"?"yosh":"лет");}
   /* Step 3: Height ruler */
   if(OB.step===3){return rulerHTML('height',120,220,d.height||175);}
-  /* Step 4: Weight tape */
-  if(OB.step===4){return tapeHTML('weight',30,200,d.weight||75);}
+  /* Step 4: Weight scale */
+  if(OB.step===4){return scaleHTML('weight',30,220,+(d.weight||75).toFixed(1));}
   /* Step 5: Waist + Neck */
   if(OB.step===5){
     return '<div class="ig">'+
@@ -1648,34 +1674,38 @@ function obHTML(){
   /* Step 6: Steps + Activity */
   if(OB.step===6){
     var ac=OB.data.activity_coef||0;
+    var st=OB.data.steps||0;
     var isUz=lang==="uz";
     var actList=[
-      {c:1.2,  ico:"🪑", lbl:isUz?"Kam harakatli":"Малоподвижный",  desc:isUz?"0–3 000 qadam":"0–3 000 шагов"},
-      {c:1.375,ico:"🚶", lbl:isUz?"Oz faol":"Умеренный",             desc:isUz?"3–7 500 qadam":"3–7 500 шагов"},
-      {c:1.55, ico:"🏃", lbl:isUz?"Faol":"Активный",                 desc:isUz?"7 500–12 000 qadam":"7 500–12 000 шагов"},
-      {c:1.725,ico:"⚡", lbl:isUz?"Juda faol":"Очень активный",      desc:isUz?"12 000+ qadam":"12 000+ шагов"},
+      {c:1.2,  s:3000,  lbl:isUz?"Juda oz":"Очень мало",    steps:"3 000"},
+      {c:1.3,  s:5000,  lbl:isUz?"Oz":"Мало",               steps:"5 000"},
+      {c:1.35, s:7000,  lbl:isUz?"O'rtacha kam":"Ниже нормы",steps:"7 000"},
+      {c:1.4,  s:10000, lbl:isUz?"O'rtacha":"Норма",         steps:"10 000"},
+      {c:1.45, s:12000, lbl:isUz?"Faolroq":"Выше нормы",     steps:"12 000"},
+      {c:1.5,  s:15000, lbl:isUz?"Faol":"Активный",          steps:"15 000"},
+      {c:1.55, s:17000, lbl:isUz?"Juda faol":"Очень активный",steps:"17 000"},
+      {c:1.6,  s:20000, lbl:isUz?"Sport":"Спортсмен",        steps:"20 000"},
+      {c:1.7,  s:25000, lbl:isUz?"Pro sport":"Проф. спорт",  steps:"25 000"},
     ];
-    var cards=actList.map(function(a){
-      return '<div class="act-card'+(ac===a.c?' on':'')+'" onclick="obActCoef('+a.c+',this)">'+
-        '<div class="act-card-ico">'+a.ico+'</div>'+
-        '<div class="act-coef">×'+a.c+'</div>'+
-        '<div class="act-lbl">'+a.lbl+'</div>'+
-        '<div class="act-desc">'+a.desc+'</div>'+
+    var rows=actList.map(function(a){
+      var on=(ac===a.c);
+      return '<div class="act-row'+(on?' on':'')+'" onclick="obActCoef('+a.c+',this)">'+
+        '<span class="act-row-coef">×'+a.c+'</span>'+
+        '<span class="act-row-lbl">'+a.lbl+'</span>'+
+        '<span class="act-row-steps">'+a.steps+' '+(isUz?"qadam":"шагов")+'</span>'+
+        '<span class="act-row-dot"></span>'+
       '</div>';
     }).join('');
-    var customOn=(ac>0&&ac!==1.2&&ac!==1.375&&ac!==1.55&&ac!==1.725);
-    var customCard='<div class="act-card'+(customOn?' on':'')+'" id="act-custom-wrap" onclick="document.getElementById(\'act-cinp\').focus()">'+
-      '<div class="act-card-ico">✏️</div>'+
-      '<div class="act-coef"><input id="act-cinp" type="number" step="0.01" min="1.0" max="2.5" '+
-        'value="'+(customOn?ac:'')+'" placeholder="1.55" '+
-        'style="width:58px;font-size:16px;font-weight:800;border:none;background:transparent;color:var(--teal);outline:none;-webkit-appearance:none;text-align:left" '+
-        'oninput="obActCoefCustom(+this.value)" onclick="event.stopPropagation()"/></div>'+
-      '<div class="act-lbl">'+(isUz?"Boshqa":"Другой")+'</div>'+
-      '<div class="act-desc">'+(isUz?"Qo\'lda kiriting":"Введите вручную")+'</div>'+
+    /* Steps manual input */
+    var sv=OB.data.steps||0;
+    var stepsInput='<div class="act-steps-row">'+
+      '<span style="font-size:14px;color:var(--t1)">'+(isUz?"Kunlik qadamlar:":"Шаги в день:")+'</span>'+
+      '<span class="act-steps-val" id="s2v-steps" onclick="obTapVal(\'steps\')">'+(sv||isUz?"kiriting":"введите")+'</span>'+
+      '<input style="display:none;font-size:18px;font-weight:700;width:80px;border:none;background:transparent;color:var(--teal);outline:none;-webkit-appearance:none;text-align:center" id="s2i-steps" type="number" onblur="obValBlur(\'steps\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
     '</div>';
-    return '<div class="ig">'+spinRowHTML('steps',t("steps"),'q')+'</div>'+
-      '<div style="font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 0 4px">'+(isUz?"Faollik darajasi":"Уровень активности")+'</div>'+
-      '<div class="act-grid">'+cards+customCard+'</div>';
+    return stepsInput+
+      '<div style="font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px 4px">'+(isUz?"Faollik koeffitsienti":"Коэффициент активности")+'</div>'+
+      '<div class="act-list card">'+rows+'</div>';
   }
   /* Step 7: Goal */
   if(OB.step===7){
@@ -1712,9 +1742,9 @@ function obHTML(){
 
 /* ── Init step interactions ── */
 function initObStep(s){
-  if(s===2)initDrum('age',14,90,OB.data.age||25);
+  if(s===2)initTape('age',14,90,OB.data.age||25);
   if(s===3)initRuler('height',120,220,OB.data.height||175);
-  if(s===4)initTape('weight',30,200,OB.data.weight||75);
+  if(s===4)initScale('weight',30,220,+(OB.data.weight||75).toFixed(1));
 }
 
 function initDrum(k,min,max,cur){
@@ -1810,6 +1840,51 @@ function initRuler(k,min,max,cur){
   wrap.addEventListener('pointerup',end);wrap.addEventListener('pointercancel',end);
   wrap.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
   wrap.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+}
+
+function initScale(k,min,max,cur){
+  var svg=document.getElementById('sc-svg-'+k);
+  if(!svg)return;
+  var W=300,H=180,cx=150,cy=170,r=130;
+  var startA=Math.PI*(1+1/6),endA=Math.PI*(2-1/6); /* 210° → 330° */
+  var sweep=endA-startA;
+  function pct(v){return(v-min)/(max-min);}
+  function angFor(v){return startA+pct(v)*sweep;}
+  function pt(a,rr){return [cx+rr*Math.cos(a),cy+rr*Math.sin(a)];}
+  function draw(v){
+    /* arc bg */
+    var p0=pt(startA,r),p1=pt(endA,r);
+    var arcBg='M '+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A '+r+' '+r+' 0 0 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1);
+    /* arc fill (teal) */
+    var ang=angFor(v);
+    var pfA=pt(startA,r),pfB=pt(ang,r);
+    var largeArc=(ang-startA>Math.PI)?1:0;
+    var arcFill='M '+pfA[0].toFixed(1)+' '+pfA[1].toFixed(1)+' A '+r+' '+r+' 0 '+largeArc+' 1 '+pfB[0].toFixed(1)+' '+pfB[1].toFixed(1);
+    /* ticks */
+    var ticks='',labels='';
+    var STEPS=60;
+    for(var i=0;i<=STEPS;i++){
+      var a=startA+i/STEPS*sweep;
+      var major=i%(STEPS/6)===0,mid=i%(STEPS/12)===0;
+      var r1=major?r-20:mid?r-12:r-7;
+      var po=pt(a,r),pi=pt(a,r1);
+      ticks+='<line x1="'+po[0].toFixed(1)+'" y1="'+po[1].toFixed(1)+'" x2="'+pi[0].toFixed(1)+'" y2="'+pi[1].toFixed(1)+'" stroke="'+(major?'var(--t2)':'var(--sep)')+'" stroke-width="'+(major?1.5:1)+'" stroke-linecap="round"/>';
+      if(major){var lv=Math.round(min+i/STEPS*(max-min));var lp=pt(a,r-28);labels+='<text x="'+lp[0].toFixed(1)+'" y="'+(lp[1]+4).toFixed(1)+'" text-anchor="middle" font-size="10" fill="var(--t2)">'+lv+'</text>';}
+    }
+    /* needle */
+    var np=pt(ang,r-22),nb1=pt(ang+Math.PI/2,8),nb2=pt(ang-Math.PI/2,8);
+    var needle='M '+nb1[0].toFixed(1)+' '+nb1[1].toFixed(1)+' L '+np[0].toFixed(1)+' '+np[1].toFixed(1)+' L '+nb2[0].toFixed(1)+' '+nb2[1].toFixed(1);
+    svg.innerHTML=
+      '<path d="'+arcBg+'" stroke="var(--sep)" stroke-width="8" fill="none" stroke-linecap="round"/>'+
+      '<path d="'+arcFill+'" stroke="url(#sg)" stroke-width="8" fill="none" stroke-linecap="round"/>'+
+      '<defs><linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#1D9E75"/><stop offset="100%" stop-color="#22e8a4"/></linearGradient></defs>'+
+      ticks+labels+
+      '<path d="'+needle+'" fill="var(--teal)" stroke="none" opacity="0.9"/>'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="var(--card)" stroke="var(--teal)" stroke-width="2"/>'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="3.5" fill="var(--teal)"/>';
+  }
+  draw(cur);
+  window._scaleRedraw=draw;
 }
 
 function initTape(k,min,max,cur){
