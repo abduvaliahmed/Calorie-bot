@@ -14,6 +14,8 @@ API_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
 
 WAIT_CODE = 1
 
+UNLIMITED_CODES = {"AKA01"}
+
 PROMO_CODES = {
     "NB-Y49CFXF6": True,
     "NB-948OK6C4": True,
@@ -66,8 +68,9 @@ async def check_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     username = update.effective_user.username or ""
     code = update.message.text.strip().upper()
 
-    if code in PROMO_CODES and PROMO_CODES[code]:
-        PROMO_CODES[code] = False
+    if code in UNLIMITED_CODES or (code in PROMO_CODES and PROMO_CODES[code]):
+        if code not in UNLIMITED_CODES:
+            PROMO_CODES[code] = False
         allowed_users.add(uid)
         await save_user_info(uid, first_name, username)
         await update.message.reply_text(
