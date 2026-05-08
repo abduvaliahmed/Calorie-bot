@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BARG v4.9 -->
+<!-- BARG v5.0 -->
 <html lang="uz">
 <head>
 <meta charset="UTF-8"/>
@@ -584,8 +584,8 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
         </div>
         <div id="food-list"></div>
         <div id="food-sentinel" style="height:20px"></div>
-        <div id="gram-overlay" onclick="closeGramPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:299"></div>
-        <div id="gram-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px calc(80px + var(--sb));box-shadow:0 -4px 24px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto">
+        <div id="gram-overlay" onclick="closeGramPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:299;transition:opacity .28s ease;opacity:0"></div>
+        <div id="gram-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--card);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);border-top:.5px solid var(--gl-b);border-radius:28px 28px 0 0;padding:20px 16px calc(80px + var(--sb));max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.05,.64,1)">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div style="font-size:17px;font-weight:700;color:var(--t1)" id="gp-name">Mahsulot</div>
             <div style="display:flex;align-items:center;gap:8px">
@@ -1251,7 +1251,11 @@ function updateFoodArc(protein,fat,carb){
   if(arcC){arcC.setAttribute("stroke-dasharray",cLen+" "+(circ-cLen));arcC.setAttribute("stroke-dashoffset",-(pLen+fLen));}
 }
 
-function closeGramPanel(){document.getElementById("gram-panel").style.display="none";document.getElementById("gram-overlay").style.display="none";}
+function closeGramPanel(){
+  var gp=document.getElementById("gram-panel"),go=document.getElementById("gram-overlay");
+  gp.style.transform="translateY(100%)";go.style.opacity="0";
+  setTimeout(function(){gp.style.display="none";go.style.display="none";},320);
+}
 
 function selFood(i){
   var f=S.foods[i];if(!f)return;S.sel=f;
@@ -1272,8 +1276,11 @@ function selFood(i){
   if(document.getElementById("gr-lbl-c"))document.getElementById("gr-lbl-c").textContent=isRu?"Углев.":"Uglevod";
   document.getElementById("gram-lbl").textContent=isUnit?t("am_d"):t("am_g");
   document.getElementById("gram-val").value=isUnit?1:100;
-  document.getElementById("gram-overlay").style.display="block";
-  document.getElementById("gram-panel").style.display="block";
+  var gp=document.getElementById("gram-panel"),go=document.getElementById("gram-overlay");
+  go.style.display="block";gp.style.display="block";
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    go.style.opacity="1";gp.style.transform="translateY(0)";
+  });});
   updateFoodArc(f.protein,f.fat,f.carb);
   onGram();
 }
@@ -1350,7 +1357,7 @@ async function savePersFood(){
 }
 
 function _statsDayLabel(dateStr){var dow=new Date(dateStr+"T00:00:00").getDay();var uz=["Ya","Du","Se","Ch","Pa","Sh","Yak"];var ru=["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];return lang==="ru"?ru[dow]:uz[dow];}
-function _macroBar(val,max,col){return '<div style="height:7px;background:var(--sep);border-radius:4px;overflow:hidden;margin-top:6px"><div style="height:100%;width:'+Math.min(100,Math.round((val||0)/(max||1)*100))+'%;background:'+col+';border-radius:4px;transition:width 0.5s ease"></div></div>';}
+function _macroBar(val,max,col){var pct=Math.min(100,Math.round((val||0)/(max||1)*100));return '<div style="height:7px;background:var(--sep);border-radius:4px;overflow:hidden;margin-top:6px"><div class="mbar-fill" data-w="'+pct+'%" style="height:100%;width:0;background:'+col+';border-radius:4px;transition:width .55s cubic-bezier(.34,1.1,.64,1)"></div></div>';}
 async function renderStats(){
   var u=S.user;if(!u)return;
   var isRu=lang==="ru";
@@ -1403,6 +1410,11 @@ async function renderStats(){
         '<div style="display:flex;align-items:center;gap:6px"><div style="width:9px;height:9px;border-radius:50%;background:#5AC8FA"></div><span style="font-size:14px">'+t("carb")+'</span></div>'+
         '<div style="font-size:14px"><b style="color:#5AC8FA">'+Math.round(tot.carb||0)+'g</b><span style="color:var(--t2)"> / '+(tar.carb||u.carb_g||0)+'g</span></div></div>'+
         _macroBar(tot.carb,tar.carb||u.carb_g,"#5AC8FA")+'</div>';
+    requestAnimationFrame(function(){
+      document.querySelectorAll('#stats-macros .mbar-fill').forEach(function(el){
+        el.style.width=el.dataset.w;
+      });
+    });
   }catch(e){
     document.getElementById("stats-grid").innerHTML='<div style="padding:12px;color:var(--t2)">Xato</div>';
   }
@@ -2606,21 +2618,26 @@ function showInfo(key){
   var d=(lang==="ru"?INFO_TEXTS.ru:INFO_TEXTS.uz)[key];if(!d)return;
   document.getElementById("info-title").textContent=d.title;
   document.getElementById("info-body").textContent=d.body;
-  document.getElementById("info-overlay").style.display="block";
-  var sh=document.getElementById("info-sheet");sh.style.display="block";
-  requestAnimationFrame(function(){sh.style.transform="translateY(0)";});
+  var ov=document.getElementById("info-overlay"),sh=document.getElementById("info-sheet");
+  ov.style.display="block";sh.style.display="block";
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      ov.style.opacity="1";
+      sh.style.transform="translateY(0)";
+    });
+  });
 }
 function closeInfo(){
-  var sh=document.getElementById("info-sheet");
-  sh.style.transform="translateY(100%)";
-  setTimeout(function(){sh.style.display="none";document.getElementById("info-overlay").style.display="none";},250);
+  var ov=document.getElementById("info-overlay"),sh=document.getElementById("info-sheet");
+  ov.style.opacity="0";sh.style.transform="translateY(100%)";
+  setTimeout(function(){sh.style.display="none";ov.style.display="none";},320);
 }
 
 initTheme();
 init();
 </script>
-<div id="info-overlay" onclick="closeInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:998"></div>
-<div id="info-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 44px;z-index:999;max-height:70vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.25s ease">
+<div id="info-overlay" onclick="closeInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:998;transition:opacity .28s ease;opacity:0"></div>
+<div id="info-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);border-top:.5px solid var(--gl-b);border-radius:28px 28px 0 0;padding:24px 20px 44px;z-index:999;max-height:70vh;overflow-y:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.05,.64,1)">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
     <div id="info-title" style="font-size:17px;font-weight:700;color:var(--t1);flex:1;padding-right:12px"></div>
     <button onclick="closeInfo()" style="width:28px;height:28px;border-radius:14px;background:rgba(120,120,128,0.15);border:none;cursor:pointer;font-size:16px;color:var(--t2);flex-shrink:0">&#10005;</button>

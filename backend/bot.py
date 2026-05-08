@@ -9,7 +9,7 @@ from database import get_users_needing_profile_update
 logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
-WEBAPP_URL_V = WEBAPP_URL + "/app?v=49"
+WEBAPP_URL_V = WEBAPP_URL + "/app?v=50"
 API_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
 
 WAIT_CODE = 1
