@@ -2634,8 +2634,6 @@ async function addAIPortionToLog(rid,btn){
 
 async function init(){
   haptic('impact','soft');
-  var _logoEl=document.querySelector('.lp-dark');
-  if(_logoEl)_logoEl.addEventListener('animationiteration',function(){haptic('impact','soft');},{once:false});
   var loading=document.getElementById("s-loading");
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today"),req("/api/streak")]);
