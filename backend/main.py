@@ -1,4 +1,4 @@
-import os, sys, logging, json
+import os, sys, logging, json, asyncio, datetime
 import httpx
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -19,6 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+WEBAPP_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
 ADMIN_IDS = [int(x) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip()]
 
 app = FastAPI()
@@ -66,9 +67,47 @@ def get_uid(init_data: str) -> int:
     except:
         return 0
 
+async def _profile_reminder_loop():
+    await asyncio.sleep(60)
+    while True:
+        try:
+            if BOT_TOKEN and WEBAPP_URL:
+                users = get_users_needing_reminder()
+                for u in users:
+                    uid, lng = u["user_id"], u.get("lang", "uz")
+                    if lng == "ru":
+                        text = ("📊 <b>Пора обновить профиль!</b>\n\n"
+                                "Прошло более 14 дней. Ваш вес мог измениться — значит, изменился и TDEE!\n\n"
+                                "Обновите данные для точного расчёта калорий 👇")
+                        btn_text = "Открыть BARG"
+                    else:
+                        text = ("📊 <b>Profil yangilash vaqti!</b>\n\n"
+                                "14 kundan ko'proq o'tdi. Vazningiz o'zgargan bo'lishi mumkin — TDEE ham o'zgargan!\n\n"
+                                "To'g'ri hisob uchun ma'lumotlarni yangilang 👇")
+                        btn_text = "BARG ochish"
+                    try:
+                        async with httpx.AsyncClient() as client:
+                            await client.post(
+                                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                                json={
+                                    "chat_id": uid, "text": text, "parse_mode": "HTML",
+                                    "reply_markup": {"inline_keyboard": [[
+                                        {"text": btn_text, "web_app": {"url": WEBAPP_URL}}
+                                    ]]}
+                                },
+                                timeout=10.0
+                            )
+                        mark_reminder_sent(uid)
+                    except Exception:
+                        pass
+        except Exception as e:
+            logger.error(f"Profile reminder loop error: {e}")
+        await asyncio.sleep(86400)
+
 @app.on_event("startup")
-def startup():
+async def startup():
     init_db()
+    asyncio.create_task(_profile_reminder_loop())
     logger.info("NutriBot API started")
 
 @app.get("/api/health")
@@ -195,8 +234,10 @@ def api_today(x_init_data: str = Header(default="")):
     user = get_user(uid)
     totals = get_today_totals(uid)
     logs = get_today_log(uid)
+    streak = get_streak(uid)
     return {
         "totals": totals, "logs": logs,
+        "streak": streak,
         "targets": {
             "kcal": user.get("kcal_target", 2000) if user else 2000,
             "protein": user.get("protein_g", 150) if user else 150,
