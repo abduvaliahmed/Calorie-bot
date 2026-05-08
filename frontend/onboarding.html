@@ -9,441 +9,442 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:#080c10;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Inter',sans-serif;overflow:hidden;}
 
-.phone{width:320px;height:620px;background:#0c1016;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 40px 120px rgba(0,0,0,0.8),0 0 80px rgba(29,158,117,0.12);}
-#bgc{position:absolute;inset:0;z-index:0;}
-.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:90px;height:24px;background:#0c1016;border-radius:0 0 16px 16px;z-index:30;}
-.par{position:absolute;border-radius:50%;background:rgba(29,158,117,0.55);pointer-events:none;animation:parUp linear infinite;z-index:1;}
-@keyframes parUp{0%{opacity:0;transform:translateY(640px) scale(0.5)}10%{opacity:0.8}85%{opacity:0.4}100%{opacity:0;transform:translateY(-30px) scale(1.2)}}
+.phone{width:375px;height:700px;background:#0d1117;border-radius:48px;overflow:hidden;position:relative;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.07),0 40px 120px rgba(0,0,0,0.85),0 0 60px rgba(29,158,117,0.08);}
 
+/* Blobs */
+.bgs{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.b{position:absolute;border-radius:50%;filter:blur(60px);}
+.b1{width:300px;height:300px;background:rgba(29,158,117,0.18);top:-70px;left:-80px;animation:bm 18s ease-in-out infinite;}
+.b2{width:250px;height:250px;background:rgba(85,140,255,0.14);top:-50px;right:-60px;animation:bm 22s ease-in-out infinite reverse;}
+.b3{width:230px;height:230px;background:rgba(165,100,255,0.12);bottom:-50px;right:-40px;animation:bm 20s ease-in-out infinite 5s;}
+.b4{width:210px;height:210px;background:rgba(255,100,160,0.10);bottom:30px;left:-70px;animation:bm 24s ease-in-out infinite 3s;}
+@keyframes bm{0%,100%{transform:translate(0,0)}40%{transform:translate(22px,30px)}70%{transform:translate(-14px,-20px)}}
+
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:100px;height:26px;background:#0d1117;border-radius:0 0 18px 18px;z-index:30;}
+
+/* Step container */
 .sw{position:absolute;inset:0;z-index:5;overflow:hidden;}
-.stp{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(100%);transition:transform 0.42s cubic-bezier(0.34,1.1,0.64,1),opacity 0.42s cubic-bezier(0.34,1.1,0.64,1);will-change:transform,opacity;}
+.stp{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;
+  transform:translateX(100%);transition:transform .44s cubic-bezier(.34,1.08,.64,1),opacity .44s cubic-bezier(.34,1.08,.64,1);will-change:transform,opacity;}
 .stp.show{opacity:1;pointer-events:all;transform:translateX(0);}
-.stp.gone-left{opacity:0;pointer-events:none;transform:translateX(-60px);transition:transform 0.28s ease,opacity 0.28s ease;}
-.stp.gone-right{opacity:0;pointer-events:none;transform:translateX(60px);transition:transform 0.28s ease,opacity 0.28s ease;}
+.stp.gone-left{opacity:0;pointer-events:none;transform:translateX(-55px);transition:transform .26s ease,opacity .26s ease;}
+.stp.gone-right{opacity:0;pointer-events:none;transform:translateX(55px);transition:transform .26s ease,opacity .26s ease;}
 
-.tbar{flex-shrink:0;padding:36px 20px 0;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2;}
-.back-btn{width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;font-family:sans-serif;}
-.back-btn:active{background:rgba(255,255,255,0.14);}
-.skip-btn{font-size:12px;color:rgba(255,255,255,0.28);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;padding:4px 6px;}
-.sn{font-size:10px;font-weight:700;color:rgba(255,255,255,0.18);font-family:'Syne',sans-serif;}
-.dots{display:flex;gap:5px;align-items:center;}
-.dot{height:3px;border-radius:2px;background:rgba(255,255,255,0.1);transition:all 0.45s cubic-bezier(0.34,1.4,0.64,1);}
-.dot.on{width:22px!important;background:#1D9E75;box-shadow:0 0 8px rgba(29,158,117,0.7);}
+/* Top bar */
+.tbar{flex-shrink:0;padding:42px 24px 0;display:flex;align-items:center;justify-content:space-between;z-index:2;}
+.bk{width:36px;height:36px;border-radius:18px;background:rgba(255,255,255,0.06);border:.5px solid rgba(255,255,255,0.09);
+  color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0;}
+.bk:active{background:rgba(255,255,255,0.12);color:#fff;}
+.sk{font-size:12px;color:rgba(255,255,255,0.22);background:none;border:none;cursor:pointer;padding:6px 8px;letter-spacing:.3px;}
+.sn{font-size:10px;font-weight:700;color:rgba(255,255,255,0.14);font-family:'Syne',sans-serif;letter-spacing:1.2px;}
+.dots{display:flex;gap:4px;align-items:center;}
+.dot{height:3px;border-radius:2px;background:rgba(255,255,255,0.08);transition:all .4s cubic-bezier(.34,1.4,.64,1);}
+.dot.on{width:24px!important;background:#1D9E75;box-shadow:0 0 7px rgba(29,158,117,0.55);}
 .dot:not(.on){width:4px;}
 
-.ilz{flex:1;display:flex;align-items:center;justify-content:center;position:relative;}
-.bcon{flex-shrink:0;padding:0 20px 22px;position:relative;z-index:2;}
-.tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:1.8px;color:#1D9E75;text-transform:uppercase;background:rgba(29,158,117,0.1);border:0.5px solid rgba(29,158,117,0.3);border-radius:20px;padding:4px 10px;margin-bottom:9px;}
-.ttl{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;line-height:1.2;letter-spacing:-0.4px;margin-bottom:6px;}
-.sub{font-size:12px;color:rgba(255,255,255,0.35);line-height:1.65;margin-bottom:16px;}
-.nbtn{width:100%;padding:15px;border-radius:16px;border:none;background:linear-gradient(135deg,#22b585,#1D9E75);color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 24px rgba(29,158,117,0.38),inset 0 1px 0 rgba(255,255,255,0.18);position:relative;overflow:hidden;transition:transform 0.14s,box-shadow 0.14s;}
-.nbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.14),transparent 55%);pointer-events:none;}
-.nbtn:active{transform:scale(0.97);}
-.arr{font-size:18px;}
+/* Content zones */
+.mid{flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:2;}
+.bot{flex-shrink:0;padding:0 24px 30px;z-index:2;}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;letter-spacing:1.6px;color:#1D9E75;
+  text-transform:uppercase;background:rgba(29,158,117,0.09);border:.5px solid rgba(29,158,117,0.24);border-radius:20px;padding:4px 10px;margin-bottom:10px;}
+.ttl{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1.18;letter-spacing:-.5px;margin-bottom:6px;}
+.sub{font-size:12px;color:rgba(255,255,255,0.30);line-height:1.7;margin-bottom:18px;}
+.nbtn{width:100%;padding:16px;border-radius:18px;border:none;background:linear-gradient(135deg,#22b585,#1a9268);color:#fff;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:8px;box-shadow:0 8px 28px rgba(29,158,117,0.34),inset 0 1px 0 rgba(255,255,255,0.14);position:relative;overflow:hidden;transition:transform .14s,box-shadow .14s;}
+.nbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.11),transparent 55%);pointer-events:none;}
+.nbtn:active{transform:scale(0.97);box-shadow:0 4px 14px rgba(29,158,117,0.28);}
 
-/* ── STEP 1 ── */
-.logo-leaf{animation:leaff 3.5s ease-in-out infinite;}
-@keyframes leaff{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
-.rings .r{position:absolute;border-radius:50%;border:1px solid rgba(29,158,117,0.22);animation:rp 3.5s ease-in-out infinite;}
-.r:nth-child(1){inset:0}.r:nth-child(2){inset:-18px;border-color:rgba(29,158,117,0.12);animation-delay:-1.2s}.r:nth-child(3){inset:-38px;border-color:rgba(29,158,117,0.06);animation-delay:-2.4s}
-@keyframes rp{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.05);opacity:1}}
-.fcard{position:absolute;background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px 12px;animation:fcf 4s ease-in-out infinite;z-index:5;}
-@keyframes fcf{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.fv{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#1D9E75;}
-.fl{font-size:8px;color:rgba(255,255,255,0.3);margin-top:1px;letter-spacing:0.5px;}
+/* ─── STEP 1: Welcome ─── */
+.lwrap{position:relative;width:210px;height:210px;display:flex;align-items:center;justify-content:center;}
+.lrings .lr{position:absolute;border-radius:50%;border:1px solid rgba(29,158,117,0.16);animation:lrp 3.5s ease-in-out infinite;}
+.lr:nth-child(1){inset:0}.lr:nth-child(2){inset:-24px;border-color:rgba(29,158,117,0.09);animation-delay:-1.2s}
+.lr:nth-child(3){inset:-50px;border-color:rgba(29,158,117,0.05);animation-delay:-2.4s}
+@keyframes lrp{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.04);opacity:1}}
+.lleaf{animation:lleaf 3.5s ease-in-out infinite;}
+@keyframes lleaf{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+.fc{position:absolute;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border:.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:8px 12px;z-index:5;}
+.fv{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#1D9E75;}
+.fl{font-size:8px;color:rgba(255,255,255,0.24);margin-top:1px;letter-spacing:.5px;}
 
-/* ── STEP 2 — gender ── */
-.genders{display:flex;gap:14px;padding:0 28px;width:100%;flex-shrink:0;justify-content:center;}
-.gcard{width:120px;height:126px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all 0.28s cubic-bezier(0.34,1.2,0.64,1);position:relative;}
-.gcard.male{background:rgba(74,144,226,0.07);border:1.5px solid rgba(74,144,226,0.18);}
-.gcard.female{background:rgba(226,74,122,0.07);border:1.5px solid rgba(226,74,122,0.18);}
-.gcard.on{background:rgba(29,158,117,0.12);border-color:rgba(29,158,117,0.5);box-shadow:0 0 28px rgba(29,158,117,0.15);}
-.gcard:active{transform:scale(0.95);}
-.glbl{font-size:12px;font-weight:600;color:rgba(255,255,255,0.28);letter-spacing:0.3px;transition:color 0.25s;}
-.gcard.on .glbl{color:#1D9E75;}
+/* ─── STEP 2: Gender ─── */
+.gc-row{display:flex;gap:14px;padding:0 28px;width:100%;}
+.gc{flex:1;height:158px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  cursor:pointer;transition:all .28s cubic-bezier(.34,1.2,.64,1);border:1.5px solid rgba(255,255,255,0.07);position:relative;overflow:hidden;}
+.gc.m{background:rgba(70,140,230,0.07);}
+.gc.f{background:rgba(235,80,130,0.07);}
+.gc.m.on{background:rgba(70,140,230,0.14);border-color:rgba(100,170,255,0.32);box-shadow:0 0 32px rgba(70,140,230,0.18),inset 0 1px 0 rgba(150,200,255,0.12);}
+.gc.f.on{background:rgba(235,80,130,0.14);border-color:rgba(255,110,160,0.32);box-shadow:0 0 32px rgba(235,80,130,0.18),inset 0 1px 0 rgba(255,160,190,0.12);}
+.gc:active{transform:scale(0.95);}
+.gicn{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .28s;}
+.gc.m .gicn{background:rgba(70,140,230,0.12);border:1.5px solid rgba(100,170,255,0.20);}
+.gc.m.on .gicn{background:rgba(80,155,255,0.20);border-color:rgba(120,190,255,0.38);box-shadow:0 0 22px rgba(70,140,230,0.28);}
+.gc.f .gicn{background:rgba(235,80,130,0.12);border:1.5px solid rgba(255,110,160,0.20);}
+.gc.f.on .gicn{background:rgba(250,95,145,0.20);border-color:rgba(255,140,185,0.38);box-shadow:0 0 22px rgba(235,80,130,0.28);}
+.glb{font-size:13px;font-weight:600;color:rgba(255,255,255,0.32);letter-spacing:.3px;transition:color .25s;}
+.gc.on .glb{color:#fff;font-weight:700;}
 
-/* ── SPINNER (yosh/vazn/boy) ── */
-.spinners{display:flex;flex-direction:column;gap:8px;padding:0 20px;width:100%;flex-shrink:0;margin-top:14px;}
-.spin-row{display:flex;align-items:center;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;transition:border-color 0.2s;}
-.spin-row:focus-within{border-color:rgba(29,158,117,0.4);}
-.spin-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px;width:52px;padding-left:14px;flex-shrink:0;}
-.spin-val{flex:1;text-align:center;}
-.spin-num{font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:#fff;line-height:1;transition:transform 0.12s;}
-.spin-unit{font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.8px;margin-top:1px;}
-.spin-btn{width:50px;height:52px;border:none;background:transparent;cursor:pointer;font-size:22px;font-weight:300;color:rgba(255,255,255,0.45);display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;flex-shrink:0;user-select:none;-webkit-user-select:none;}
-.spin-btn:active{background:rgba(29,158,117,0.12);color:#1D9E75;}
+/* ─── STEP 3: Parameters (age/wt/ht) ─── */
+.params{display:flex;flex-direction:column;gap:10px;padding:0 24px;width:100%;}
+.pc{background:rgba(255,255,255,0.032);border:.5px solid rgba(255,255,255,0.07);border-radius:20px;
+  padding:16px 18px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;}
+.pc:focus-within{border-color:rgba(29,158,117,0.32);}
+.pc-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.24);letter-spacing:1.2px;text-transform:uppercase;}
+.pc-unit{font-size:9px;color:rgba(255,255,255,0.16);letter-spacing:.6px;margin-top:3px;}
+.pc-ctrl{display:flex;align-items:center;gap:14px;}
+.pn{font-family:'Syne',sans-serif;font-size:34px;font-weight:900;color:#fff;min-width:66px;text-align:center;transition:transform .1s;}
+.pb{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;font-size:22px;font-weight:300;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none;-webkit-user-select:none;line-height:1;}
+.pb.mi{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.52);}
+.pb.pl{background:rgba(29,158,117,0.14);color:#1D9E75;border:.5px solid rgba(29,158,117,0.24);}
+.pb.mi:active{background:rgba(255,255,255,0.13);color:#fff;}
+.pb.pl:active{background:rgba(29,158,117,0.28);color:#2dcc98;}
 
-/* ── STEP 3 — measurements + activity ── */
-.msrow{display:flex;gap:8px;padding:0 20px;width:100%;flex-shrink:0;}
-.msc{flex:1;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px;transition:border-color 0.2s;}
-.msc:focus-within{border-color:rgba(29,158,117,0.4);}
-.msc-lbl{font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.8px;margin-bottom:6px;}
-.msc-inner{display:flex;align-items:center;justify-content:space-between;}
-.msc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:#fff;}
-.msc-btns{display:flex;flex-direction:column;gap:2px;}
-.msc-b{width:26px;height:22px;border:0.5px solid rgba(255,255,255,0.1);border-radius:7px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;user-select:none;-webkit-user-select:none;}
-.msc-b:active{background:rgba(29,158,117,0.15);border-color:rgba(29,158,117,0.4);color:#1D9E75;}
-.msc-unit{font-size:9px;color:rgba(255,255,255,0.22);margin-top:3px;}
+/* ─── STEP 4: Body measurements ─── */
+.ms2{display:flex;gap:10px;padding:0 24px;width:100%;}
+.mc{flex:1;background:rgba(255,255,255,0.032);border:.5px solid rgba(255,255,255,0.07);border-radius:18px;padding:14px 14px;transition:border-color .2s;}
+.mc:focus-within{border-color:rgba(29,158,117,0.32);}
+.mc-l{font-size:9px;font-weight:700;color:rgba(255,255,255,0.22);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;}
+.mc-row{display:flex;align-items:center;justify-content:space-between;}
+.mc-v{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#fff;}
+.mc-u{font-size:9px;color:rgba(255,255,255,0.18);margin-top:3px;}
+.mc-bs{display:flex;flex-direction:column;gap:4px;}
+.mc-b{width:30px;height:26px;border:.5px solid rgba(255,255,255,0.09);border-radius:9px;background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.42);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;user-select:none;-webkit-user-select:none;}
+.mc-b:active{background:rgba(29,158,117,0.14);border-color:rgba(29,158,117,0.32);color:#1D9E75;}
 
-.act-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.25);letter-spacing:1px;padding:12px 20px 6px;flex-shrink:0;}
-.actgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 20px;width:100%;flex-shrink:0;}
-.actcard{background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:12px 10px;cursor:pointer;transition:all 0.25s cubic-bezier(0.34,1.2,0.64,1);display:flex;align-items:center;gap:10px;}
-.actcard.on{background:rgba(29,158,117,0.1);border-color:rgba(29,158,117,0.4);}
-.actcard:active{transform:scale(0.97);}
-.act-ic{font-size:20px;flex-shrink:0;}
-.act-n{font-size:13px;font-weight:600;color:rgba(255,255,255,0.4);transition:color 0.25s;}
-.actcard.on .act-n{color:#fff;}
-.act-d{font-size:10px;color:rgba(255,255,255,0.2);margin-top:1px;}
-.actcard.on .act-d{color:#1D9E75;}
+.al{font-size:10px;font-weight:700;color:rgba(255,255,255,0.22);letter-spacing:1.1px;padding:14px 24px 7px;
+  flex-shrink:0;text-transform:uppercase;}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 24px;width:100%;}
+.ac{background:rgba(255,255,255,0.032);border:1.5px solid rgba(255,255,255,0.06);border-radius:16px;padding:11px 10px;
+  cursor:pointer;transition:all .24s cubic-bezier(.34,1.2,.64,1);display:flex;align-items:center;gap:9px;}
+.ac.on{background:rgba(29,158,117,0.09);border-color:rgba(29,158,117,0.32);}
+.ac:active{transform:scale(0.97);}
+.ac-i{font-size:18px;flex-shrink:0;}
+.ac-n{font-size:12px;font-weight:600;color:rgba(255,255,255,0.36);transition:color .2s;}
+.ac.on .ac-n{color:#fff;}
+.ac-d{font-size:9px;color:rgba(255,255,255,0.17);margin-top:1px;}
+.ac.on .ac-d{color:rgba(29,158,117,0.8);}
+.act-manual{display:flex;align-items:center;gap:10px;padding:10px 24px 0;width:100%;}
+.act-manual-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,0.22);letter-spacing:.5px;white-space:nowrap;}
+.act-inp{flex:1;background:rgba(255,255,255,0.04);border:.5px solid rgba(255,255,255,0.10);border-radius:12px;
+  padding:10px 12px;color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;
+  text-align:center;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.act-inp:focus{border-color:rgba(29,158,117,0.38);}
+.act-inp::placeholder{color:rgba(255,255,255,0.18);font-family:'Inter',sans-serif;font-size:12px;font-weight:400;}
 
-/* ── STEP 4 — goals ── */
-.goals{display:flex;flex-direction:column;gap:8px;padding:0 20px;width:100%;flex-shrink:0;}
-.gi{display:flex;align-items:center;gap:12px;padding:14px 14px;border-radius:16px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.06);cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.2,0.64,1);}
-.gi.on{background:rgba(29,158,117,0.1);border-color:rgba(29,158,117,0.4);}
+/* ─── STEP 5: Goals ─── */
+.goals{display:flex;flex-direction:column;gap:9px;padding:0 24px;}
+.gi{display:flex;align-items:center;gap:14px;padding:16px 16px;border-radius:18px;
+  background:rgba(255,255,255,0.032);border:1.5px solid rgba(255,255,255,0.06);cursor:pointer;
+  transition:all .28s cubic-bezier(.34,1.2,.64,1);}
+.gi.on{background:rgba(29,158,117,0.09);border-color:rgba(29,158,117,0.32);}
 .gi:active{transform:scale(0.98);}
-.gico{font-size:24px;width:36px;text-align:center;}
-.gnm{font-size:14px;font-weight:600;color:rgba(255,255,255,0.45);transition:color 0.25s;flex:1;}
-.gi.on .gnm{color:#fff;}
-.gd{font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px;}
-.gi.on .gd{color:rgba(29,158,117,0.8);}
-.grad{width:20px;height:20px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;transition:all 0.25s;flex-shrink:0;}
+.gi-ico{font-size:22px;width:32px;text-align:center;flex-shrink:0;}
+.gi-n{font-size:14px;font-weight:600;color:rgba(255,255,255,0.40);transition:color .24s;flex:1;}
+.gi.on .gi-n{color:#fff;}
+.gi-d{font-size:10px;color:rgba(255,255,255,0.17);margin-top:2px;}
+.gi.on .gi-d{color:rgba(29,158,117,0.8);}
+.grad{width:20px;height:20px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;transition:all .24s;flex-shrink:0;}
 .gi.on .grad{background:#1D9E75;border-color:#1D9E75;}
-.grad::after{content:'';width:7px;height:7px;border-radius:4px;background:#fff;opacity:0;transition:opacity 0.2s;}
+.grad::after{content:'';width:7px;height:7px;border-radius:4px;background:#fff;opacity:0;transition:opacity .18s;}
 .gi.on .grad::after{opacity:1;}
 
-/* ── STEP 5 — summary ── */
-.scard{margin:0 20px;background:rgba(29,158,117,0.08);border:0.5px solid rgba(29,158,117,0.2);border-radius:20px;padding:14px 16px;position:relative;overflow:hidden;}
-.scard::before{content:'';position:absolute;top:-30px;right:-20px;width:90px;height:90px;border-radius:50%;background:rgba(29,158,117,0.15);filter:blur(20px);}
-.sr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);}
-.sr:last-child{border:none;}
-.slbl{font-size:12px;color:rgba(255,255,255,0.35);}
-.sval{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#1D9E75;}
-.bigchk{width:72px;height:72px;border-radius:36px;background:linear-gradient(135deg,#22b585,#1D9E75);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 8px 30px rgba(29,158,117,0.5);animation:leaff 3s ease-in-out infinite;}
+/* ─── STEP 6: Result ─── */
+.rcard{margin:0 24px;background:rgba(29,158,117,0.07);border:.5px solid rgba(29,158,117,0.16);border-radius:22px;padding:6px 4px;}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:.5px solid rgba(255,255,255,0.04);}
+.rrow:last-child{border:none;}
+.rl{font-size:12px;color:rgba(255,255,255,0.30);}
+.rv{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#1D9E75;}
+.bigck{width:76px;height:76px;border-radius:38px;background:linear-gradient(135deg,#22b585,#1a9268);
+  display:flex;align-items:center;justify-content:center;font-size:34px;
+  box-shadow:0 10px 36px rgba(29,158,117,0.44),0 0 0 1px rgba(255,255,255,0.07);}
 
-.cf{position:absolute;border-radius:50%;pointer-events:none;z-index:20;animation:cfpop 0.9s cubic-bezier(0.34,1.4,0.64,1) both;}
-@keyframes cfpop{0%{opacity:1;transform:translate(0,0) scale(0)}60%{opacity:1}100%{opacity:0;transform:var(--to) scale(1)}}
+/* Confetti */
+.cf{position:absolute;border-radius:50%;pointer-events:none;z-index:20;animation:cfp .9s cubic-bezier(.34,1.4,.64,1) both;}
+@keyframes cfp{0%{opacity:1;transform:translate(0,0) scale(0)}60%{opacity:1}100%{opacity:0;transform:var(--to) scale(1)}}
 </style>
 </head>
 <body>
-
 <div class="phone">
-  <canvas id="bgc"></canvas>
+  <div class="bgs"><div class="b b1"></div><div class="b b2"></div><div class="b b3"></div><div class="b b4"></div></div>
   <div class="notch"></div>
-  <div id="ptc"></div>
   <div class="sw">
 
-    <!-- ══ STEP 1 ══ -->
+    <!-- ══ 1: Welcome ══ -->
     <div class="stp show" id="s1">
       <div class="tbar">
         <div class="sn">01 / 05</div>
         <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-        <button class="skip-btn" onclick="goTo(5)">O'tkazish</button>
+        <button class="sk" onclick="goTo(5)">O'tkazish</button>
       </div>
-      <div class="ilz">
-        <div style="position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center">
-          <div class="rings" style="position:absolute;inset:0"><div class="r"></div><div class="r"></div><div class="r"></div></div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:2">
-            <div class="logo-leaf">
-              <svg width="46" height="92" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>
+      <div class="mid">
+        <div class="lwrap">
+          <div class="lrings" style="position:absolute;inset:0"><div class="lr"></div><div class="lr"></div><div class="lr"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:7px;position:relative;z-index:2">
+            <div class="lleaf">
+              <svg width="48" height="96" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>
             </div>
-            <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:-1px">BARG</div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.28);letter-spacing:1px">NUTRITION TRACKER</div>
+            <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">BARG</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.24);letter-spacing:1.5px">NUTRITION TRACKER</div>
           </div>
-          <div class="fcard" style="top:8px;right:-14px;animation-delay:-0.5s"><div class="fv">2,150</div><div class="fl">KKAL / KUN</div></div>
-          <div class="fcard" style="bottom:16px;left:-18px;animation-delay:-2s">
-            <div style="display:flex;gap:10px">
-              <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#4CD964">B 142g</div><div style="font-size:8px;color:rgba(255,255,255,0.28)">OQSIL</div></div>
-              <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#FF9500">Y 68g</div><div style="font-size:8px;color:rgba(255,255,255,0.28)">YOG'</div></div>
+          <div class="fc" style="top:10px;right:-26px;animation:lleaf 4s ease-in-out infinite">
+            <div class="fv">2,150</div><div class="fl">KKAL / KUN</div>
+          </div>
+          <div class="fc" style="bottom:16px;left:-32px;animation:lleaf 4.5s ease-in-out infinite .8s">
+            <div style="display:flex;gap:12px">
+              <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#4CD964">B 142g</div><div class="fl">OQSIL</div></div>
+              <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#FF9500">Y 68g</div><div class="fl">YOG'</div></div>
             </div>
           </div>
         </div>
       </div>
-      <div class="bcon">
+      <div class="bot">
         <div class="tag">● BARG v4.1</div>
         <div class="ttl">Ilmiy ovqatlanish<br>nazorati</div>
         <div class="sub">BMR, TDEE va yog' foizingizni avtomatik hisoblang. 2 daqiqada sozlang.</div>
-        <button class="nbtn" onclick="goTo(2)"><span>Boshlash</span><span class="arr">→</span></button>
+        <button class="nbtn" onclick="goTo(2)"><span>Boshlash</span><span style="font-size:18px">→</span></button>
       </div>
     </div>
 
-    <!-- ══ STEP 2 ══ -->
+    <!-- ══ 2: Gender ══ -->
     <div class="stp" id="s2">
       <div class="tbar">
-        <button class="back-btn" onclick="goTo(1)">‹</button>
+        <button class="bk" onclick="goTo(1)">‹</button>
         <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
         <div class="sn">02 / 05</div>
       </div>
-
-      <div class="ilz" style="flex:0;padding:18px 0 0;"></div>
-
-      <!-- Gender -->
-      <div class="genders">
-        <div class="gcard male on" id="gcm" onclick="pickG('m')">
-          <svg width="54" height="54" viewBox="0 0 62 62" fill="none">
-            <circle cx="26" cy="36" r="18" stroke="#4A90E2" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-            <line x1="39" y1="23" x2="56" y2="7" stroke="#4A90E2" stroke-width="3.5" stroke-linecap="round"/>
-            <polyline points="44,7 56,7 56,19" stroke="#4A90E2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-          <div class="glbl">Erkak</div>
-        </div>
-        <div class="gcard female" id="gcf" onclick="pickG('f')">
-          <svg width="54" height="54" viewBox="0 0 62 62" fill="none">
-            <circle cx="31" cy="22" r="17" stroke="#E24A7A" stroke-width="3.5" fill="none"/>
-            <line x1="31" y1="39" x2="31" y2="56" stroke="#E24A7A" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="20" y1="50" x2="42" y2="50" stroke="#E24A7A" stroke-width="3.5" stroke-linecap="round"/>
-          </svg>
-          <div class="glbl">Ayol</div>
+      <div class="mid">
+        <div class="gc-row">
+          <div class="gc m on" id="gcm" onclick="pickG('m')">
+            <div class="gicn">
+              <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+                <circle cx="15.5" cy="23" r="11" stroke="#7FC4FF" stroke-width="2.8" fill="rgba(74,144,226,0.16)"/>
+                <path d="M23.5 14.5 L34 4" stroke="#7FC4FF" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M26.5 4 H34 V11.5" stroke="#7FC4FF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="glb">Erkak</div>
+          </div>
+          <div class="gc f" id="gcf" onclick="pickG('f')">
+            <div class="gicn">
+              <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+                <circle cx="19" cy="15" r="11" stroke="#FF8AB5" stroke-width="2.8" fill="rgba(235,80,130,0.16)"/>
+                <line x1="19" y1="26" x2="19" y2="35" stroke="#FF8AB5" stroke-width="2.8" stroke-linecap="round"/>
+                <line x1="13" y1="31" x2="25" y2="31" stroke="#FF8AB5" stroke-width="2.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="glb">Ayol</div>
+          </div>
         </div>
       </div>
-
-      <!-- Spinners -->
-      <div class="spinners">
-        <div class="spin-row">
-          <div class="spin-lbl">YOSH</div>
-          <div class="spin-val">
-            <div class="spin-num" id="vage">25</div>
-            <div class="spin-unit">YIL</div>
-          </div>
-          <button class="spin-btn" onpointerdown="holdStart('age',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
-          <button class="spin-btn" onpointerdown="holdStart('age',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
-        </div>
-        <div class="spin-row">
-          <div class="spin-lbl">VAZN</div>
-          <div class="spin-val">
-            <div class="spin-num" id="vwt">75</div>
-            <div class="spin-unit">KG</div>
-          </div>
-          <button class="spin-btn" onpointerdown="holdStart('wt',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
-          <button class="spin-btn" onpointerdown="holdStart('wt',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
-        </div>
-        <div class="spin-row">
-          <div class="spin-lbl">BO'Y</div>
-          <div class="spin-val">
-            <div class="spin-num" id="vht">175</div>
-            <div class="spin-unit">SM</div>
-          </div>
-          <button class="spin-btn" onpointerdown="holdStart('ht',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
-          <button class="spin-btn" onpointerdown="holdStart('ht',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
-        </div>
-      </div>
-
-      <div class="bcon" style="padding-top:16px">
-        <div class="tag">● JINS VA O'LCHAMLAR</div>
-        <div class="ttl">Siz haqingizda<br>nimalar bilaylik?</div>
-        <button class="nbtn" onclick="goTo(3)"><span>Keyingi</span><span class="arr">→</span></button>
+      <div class="bot">
+        <div class="tag">● JINS</div>
+        <div class="ttl">Jinsingizni<br>tanlang</div>
+        <button class="nbtn" onclick="goTo(3)"><span>Keyingi</span><span style="font-size:18px">→</span></button>
       </div>
     </div>
 
-    <!-- ══ STEP 3 ══ -->
+    <!-- ══ 3: Age / Weight / Height ══ -->
     <div class="stp" id="s3">
       <div class="tbar">
-        <button class="back-btn" onclick="goTo(2)">‹</button>
+        <button class="bk" onclick="goTo(2)">‹</button>
         <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
         <div class="sn">03 / 05</div>
       </div>
-
-      <div class="ilz" style="flex:0;padding:18px 0 0;"></div>
-
-      <!-- Measurements -->
-      <div class="msrow">
-        <div class="msc">
-          <div class="msc-lbl">QORIN (SM)</div>
-          <div class="msc-inner">
-            <div>
-              <div class="msc-val" id="vwst">88</div>
-              <div class="msc-unit">SM</div>
-            </div>
-            <div class="msc-btns">
-              <button class="msc-b" onpointerdown="holdStart('wst',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
-              <button class="msc-b" onpointerdown="holdStart('wst',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
-            </div>
+      <div class="mid" style="flex:0;padding-top:14px"></div>
+      <div class="params">
+        <div class="pc">
+          <div><div class="pc-lbl">Yosh</div><div class="pc-unit">yil</div></div>
+          <div class="pc-ctrl">
+            <button class="pb mi" onpointerdown="holdStart('age',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
+            <div class="pn" id="vage">25</div>
+            <button class="pb pl" onpointerdown="holdStart('age',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
           </div>
         </div>
-        <div class="msc">
-          <div class="msc-lbl">BO'YIN (SM)</div>
-          <div class="msc-inner">
-            <div>
-              <div class="msc-val" id="vnck">38</div>
-              <div class="msc-unit">SM</div>
-            </div>
-            <div class="msc-btns">
-              <button class="msc-b" onpointerdown="holdStart('nck',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
-              <button class="msc-b" onpointerdown="holdStart('nck',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
-            </div>
+        <div class="pc">
+          <div><div class="pc-lbl">Vazn</div><div class="pc-unit">kg</div></div>
+          <div class="pc-ctrl">
+            <button class="pb mi" onpointerdown="holdStart('wt',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
+            <div class="pn" id="vwt">75</div>
+            <button class="pb pl" onpointerdown="holdStart('wt',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
+          </div>
+        </div>
+        <div class="pc">
+          <div><div class="pc-lbl">Bo'y</div><div class="pc-unit">sm</div></div>
+          <div class="pc-ctrl">
+            <button class="pb mi" onpointerdown="holdStart('ht',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
+            <div class="pn" id="vht">175</div>
+            <button class="pb pl" onpointerdown="holdStart('ht',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
           </div>
         </div>
       </div>
-
-      <!-- Activity -->
-      <div class="act-lbl">AKTIVLIK DARAJASI</div>
-      <div class="actgrid">
-        <div class="actcard" id="act0" onclick="pickAct(0)">
-          <div class="act-ic">🛋️</div>
-          <div><div class="act-n">Kam</div><div class="act-d">× 1.2</div></div>
-        </div>
-        <div class="actcard on" id="act1" onclick="pickAct(1)">
-          <div class="act-ic">🚶</div>
-          <div><div class="act-n">O'rta</div><div class="act-d">× 1.375</div></div>
-        </div>
-        <div class="actcard" id="act2" onclick="pickAct(2)">
-          <div class="act-ic">🏃</div>
-          <div><div class="act-n">Faol</div><div class="act-d">× 1.55</div></div>
-        </div>
-        <div class="actcard" id="act3" onclick="pickAct(3)">
-          <div class="act-ic">💪</div>
-          <div><div class="act-n">Sport</div><div class="act-d">× 1.725</div></div>
-        </div>
-      </div>
-
-      <div class="bcon" style="padding-top:14px">
-        <div class="tag">● TANA O'LCHAMLARI</div>
-        <div class="ttl">Aktivlik va<br>o'lchamlar</div>
-        <button class="nbtn" onclick="goTo(4)"><span>Keyingi</span><span class="arr">→</span></button>
+      <div class="bot" style="padding-top:20px">
+        <div class="tag">● O'LCHAMLAR</div>
+        <div class="ttl">Asosiy<br>ma'lumotlar</div>
+        <button class="nbtn" onclick="goTo(4)"><span>Keyingi</span><span style="font-size:18px">→</span></button>
       </div>
     </div>
 
-    <!-- ══ STEP 4 ══ -->
+    <!-- ══ 4: Body + Activity ══ -->
     <div class="stp" id="s4">
       <div class="tbar">
-        <button class="back-btn" onclick="goTo(3)">‹</button>
+        <button class="bk" onclick="goTo(3)">‹</button>
         <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div></div>
         <div class="sn">04 / 05</div>
       </div>
-      <div class="ilz" style="flex:0.18">
-        <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:900;color:rgba(255,255,255,0.03);letter-spacing:-2px">MAQSAD</div>
+      <div class="mid" style="flex:0;padding-top:14px"></div>
+      <div class="ms2">
+        <div class="mc">
+          <div class="mc-l">Qorin (sm)</div>
+          <div class="mc-row">
+            <div><div class="mc-v" id="vwst">88</div><div class="mc-u">SM</div></div>
+            <div class="mc-bs">
+              <button class="mc-b" onpointerdown="holdStart('wst',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
+              <button class="mc-b" onpointerdown="holdStart('wst',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
+            </div>
+          </div>
+        </div>
+        <div class="mc">
+          <div class="mc-l">Bo'yin (sm)</div>
+          <div class="mc-row">
+            <div><div class="mc-v" id="vnck">38</div><div class="mc-u">SM</div></div>
+            <div class="mc-bs">
+              <button class="mc-b" onpointerdown="holdStart('nck',1)" onpointerup="holdStop()" onpointerleave="holdStop()">+</button>
+              <button class="mc-b" onpointerdown="holdStart('nck',-1)" onpointerup="holdStop()" onpointerleave="holdStop()">−</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="goals">
-        <div class="gi on" id="gkl" onclick="pickGoal('l')">
-          <div class="gico">🔻</div>
-          <div style="flex:1"><div class="gnm">Vazn yo'qotish</div><div class="gd">Kaloriya kamomadi · −500 kkal/kun</div></div>
-          <div class="grad"></div>
-        </div>
-        <div class="gi" id="gkm" onclick="pickGoal('m')">
-          <div class="gico">⚖️</div>
-          <div style="flex:1"><div class="gnm">Vaznni saqlash</div><div class="gd">Balans rejimi · TDEE</div></div>
-          <div class="grad"></div>
-        </div>
-        <div class="gi" id="gkg" onclick="pickGoal('g')">
-          <div class="gico">💪</div>
-          <div style="flex:1"><div class="gnm">Massa olish</div><div class="gd">Kaloriya ortiqcha · +300 kkal/kun</div></div>
-          <div class="grad"></div>
-        </div>
+      <div class="al">Aktivlik darajasi</div>
+      <div class="ag">
+        <div class="ac" id="ac0" onclick="pickAct(0)"><div class="ac-i">🛋️</div><div><div class="ac-n">Kam</div><div class="ac-d">× 1.2</div></div></div>
+        <div class="ac on" id="ac1" onclick="pickAct(1)"><div class="ac-i">🚶</div><div><div class="ac-n">O'rta</div><div class="ac-d">× 1.375</div></div></div>
+        <div class="ac" id="ac2" onclick="pickAct(2)"><div class="ac-i">🏃</div><div><div class="ac-n">Faol</div><div class="ac-d">× 1.55</div></div></div>
+        <div class="ac" id="ac3" onclick="pickAct(3)"><div class="ac-i">💪</div><div><div class="ac-n">Sport</div><div class="ac-d">× 1.725</div></div></div>
       </div>
-      <div class="bcon" style="padding-top:16px">
-        <div class="tag">● MAQSADINGIZ</div>
-        <div class="ttl">Nima maqsad<br>qo'ymoqchisiz?</div>
-        <button class="nbtn" onclick="calcAndGoTo5()"><span>Keyingi</span><span class="arr">→</span></button>
+      <div class="act-manual">
+        <div class="act-manual-lbl">Yoki o'zing:</div>
+        <input type="number" class="act-inp" id="act-inp" min="1.0" max="2.5" step="0.05" placeholder="masalan 1.45" oninput="pickActCustom(this.value)"/>
+      </div>
+      <div class="bot" style="padding-top:13px">
+        <div class="tag">● AKTIVLIK</div>
+        <div class="ttl">Tana va<br>aktivlik</div>
+        <button class="nbtn" onclick="goTo(5)"><span>Keyingi</span><span style="font-size:18px">→</span></button>
       </div>
     </div>
 
-    <!-- ══ STEP 5 ══ -->
+    <!-- ══ 5: Goals ══ -->
     <div class="stp" id="s5">
       <div class="tbar">
-        <button class="back-btn" onclick="goTo(4)">‹</button>
+        <button class="bk" onclick="goTo(4)">‹</button>
         <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>
         <div class="sn">05 / 05</div>
       </div>
-      <div class="ilz" style="flex:0.32">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-          <div class="bigchk">✓</div>
-          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1px">HISOBOT TAYYOR</div>
+      <div class="mid" style="flex:0.12">
+        <div style="font-family:'Syne',sans-serif;font-size:40px;font-weight:900;color:rgba(255,255,255,0.025);letter-spacing:-2px">MAQSAD</div>
+      </div>
+      <div class="goals">
+        <div class="gi on" id="gkl" onclick="pickGoal('l')">
+          <div class="gi-ico">🔻</div>
+          <div style="flex:1"><div class="gi-n">Vazn yo'qotish</div><div class="gi-d">Kaloriya kamomadi · −500 kkal/kun</div></div>
+          <div class="grad"></div>
+        </div>
+        <div class="gi" id="gkm" onclick="pickGoal('m')">
+          <div class="gi-ico">⚖️</div>
+          <div style="flex:1"><div class="gi-n">Vaznni saqlash</div><div class="gi-d">Balans rejimi · TDEE</div></div>
+          <div class="grad"></div>
+        </div>
+        <div class="gi" id="gkg" onclick="pickGoal('g')">
+          <div class="gi-ico">💪</div>
+          <div style="flex:1"><div class="gi-n">Massa olish</div><div class="gi-d">Kaloriya ortiqcha · +300 kkal/kun</div></div>
+          <div class="grad"></div>
         </div>
       </div>
-      <div class="scard">
-        <div class="sr"><span class="slbl">Kunlik kaloriya</span><span class="sval" id="rkcal">—</span></div>
-        <div class="sr"><span class="slbl">Oqsil (B)</span><span class="sval" id="rprot" style="color:#4CD964">—</span></div>
-        <div class="sr"><span class="slbl">Yog' (Y)</span><span class="sval" id="rfat" style="color:#FF9500">—</span></div>
-        <div class="sr"><span class="slbl">Uglevod (U)</span><span class="sval" id="rcarb" style="color:#5AC8FA">—</span></div>
-        <div class="sr"><span class="slbl">Yog' foizi · BMR</span><span class="sval" id="rbmr">—</span></div>
+      <div class="bot" style="padding-top:18px">
+        <div class="tag">● MAQSAD</div>
+        <div class="ttl">Nima maqsad<br>qo'ymoqchisiz?</div>
+        <button class="nbtn" onclick="calcAndGoTo6()"><span>Hisoblash</span><span style="font-size:18px">→</span></button>
       </div>
-      <div class="bcon" style="padding-top:14px">
+    </div>
+
+    <!-- ══ 6: Result ══ -->
+    <div class="stp" id="s6">
+      <div class="tbar">
+        <button class="bk" onclick="goTo(5)">‹</button>
+        <div class="dots"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>
+        <div class="sn">TAYYOR</div>
+      </div>
+      <div class="mid" style="flex:0.24">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <div class="bigck">✓</div>
+          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.26);letter-spacing:1.2px">HISOBOT TAYYOR</div>
+        </div>
+      </div>
+      <div class="rcard">
+        <div class="rrow"><span class="rl">Kunlik kaloriya</span><span class="rv" id="rkcal">—</span></div>
+        <div class="rrow"><span class="rl">Oqsil (B)</span><span class="rv" id="rprot" style="color:#4CD964">—</span></div>
+        <div class="rrow"><span class="rl">Yog' (Y)</span><span class="rv" id="rfat" style="color:#FF9500">—</span></div>
+        <div class="rrow"><span class="rl">Uglevod (U)</span><span class="rv" id="rcarb" style="color:#5AC8FA">—</span></div>
+        <div class="rrow"><span class="rl">Yog' foizi · BMR</span><span class="rv" id="rbmr">—</span></div>
+      </div>
+      <div class="bot" style="padding-top:18px">
         <button class="nbtn" id="fbtn" onclick="finish()"><span>Ilovani boshlash 🚀</span></button>
       </div>
     </div>
 
   </div>
 </div>
-
 <script>
-/* BG */
-!function(){
-  var cv=document.getElementById('bgc'),ctx=cv.getContext('2d');
-  cv.width=320;cv.height=620;
-  var bl=[{x:.2,y:.25,c:[29,158,117],ph:0},{x:.82,y:.18,c:[80,140,255],ph:1.6},{x:.75,y:.8,c:[160,90,255],ph:3.2},{x:.18,y:.78,c:[255,100,155],ph:4.8}];
-  var t=0;
-  (function tick(){
-    t+=0.004;ctx.clearRect(0,0,320,620);
-    bl.forEach(function(b){
-      var bx=b.x*320+Math.sin(t+b.ph)*55,by=b.y*620+Math.cos(t*.8+b.ph)*45;
-      var g=ctx.createRadialGradient(bx,by,0,bx,by,280);
-      g.addColorStop(0,'rgba('+b.c+',0.20)');g.addColorStop(.45,'rgba('+b.c+',0.07)');g.addColorStop(1,'rgba('+b.c+',0)');
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by,280,0,6.28);ctx.fill();
-    });
-    requestAnimationFrame(tick);
-  })();
-}();
-
-/* PARTICLES */
-!function(){
-  var c=document.getElementById('ptc');
-  c.style.cssText='position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden';
-  for(var i=0;i<12;i++){
-    var d=document.createElement('div');d.className='par';
-    var sz=1.5+Math.random()*2.5;
-    d.style.cssText='left:'+(Math.random()*100)+'%;width:'+sz+'px;height:'+sz+'px;animation-duration:'+(5+Math.random()*7)+'s;animation-delay:-'+(Math.random()*10)+'s';
-    c.appendChild(d);
-  }
-}();
-
-/* NAVIGATION */
 var cur=1;
 function goTo(n){
   if(n===cur)return;
   var dir=n>cur?1:-1;
-  var oldEl=document.getElementById('s'+cur);
-  var newEl=document.getElementById('s'+n);
-  oldEl.style.cssText='';
-  newEl.style.cssText='';
-  oldEl.classList.remove('show','gone-left','gone-right');
-  oldEl.classList.add(dir>0?'gone-left':'gone-right');
-  newEl.classList.remove('show','gone-left','gone-right');
-  newEl.style.transition='none';
-  newEl.style.transform=dir>0?'translateX(100%)':'translateX(-100%)';
-  newEl.style.opacity='0';
-  void newEl.offsetWidth;
-  newEl.style.transition='transform 0.42s cubic-bezier(0.34,1.1,0.64,1),opacity 0.42s cubic-bezier(0.34,1.1,0.64,1)';
-  newEl.style.transform='translateX(0)';
-  newEl.style.opacity='1';
-  newEl.style.pointerEvents='all';
+  var o=document.getElementById('s'+cur),nw=document.getElementById('s'+n);
+  o.style.cssText='';nw.style.cssText='';
+  o.classList.remove('show','gone-left','gone-right');
+  o.classList.add(dir>0?'gone-left':'gone-right');
+  nw.classList.remove('show','gone-left','gone-right');
+  nw.style.transition='none';
+  nw.style.transform=dir>0?'translateX(100%)':'translateX(-100%)';
+  nw.style.opacity='0';
+  void nw.offsetWidth;
+  nw.style.transition='transform .44s cubic-bezier(.34,1.08,.64,1),opacity .44s cubic-bezier(.34,1.08,.64,1)';
+  nw.style.transform='translateX(0)';nw.style.opacity='1';nw.style.pointerEvents='all';
   cur=n;
 }
 
-/* GENDER */
+var selGender='m';
 function pickG(g){
+  selGender=g;
   document.getElementById('gcm').classList.toggle('on',g==='m');
   document.getElementById('gcf').classList.toggle('on',g==='f');
 }
-var selGender='m';
-document.getElementById('gcm').addEventListener('click',function(){selGender='m';});
-document.getElementById('gcf').addEventListener('click',function(){selGender='f';});
 
-/* ACTIVITY */
-var selAct=1;
-var actMult=[1.2,1.375,1.55,1.725];
+var selAct=1,actMult=[1.2,1.375,1.55,1.725],actCustom=null;
 function pickAct(i){
-  selAct=i;
-  for(var j=0;j<4;j++) document.getElementById('act'+j).classList.toggle('on',j===i);
+  selAct=i;actCustom=null;
+  for(var j=0;j<4;j++) document.getElementById('ac'+j).classList.toggle('on',j===i);
+  var inp=document.getElementById('act-inp');if(inp)inp.value=actMult[i];
+}
+function pickActCustom(v){
+  var n=parseFloat(v);
+  if(!isNaN(n)&&n>=1.0&&n<=2.5){
+    actCustom=n;
+    for(var j=0;j<4;j++) document.getElementById('ac'+j).classList.remove('on');
+  }
 }
 
-/* GOAL */
-var selGoal='l';
-var goalDelta={'l':-500,'m':0,'g':300};
+var selGoal='l',goalDelta={'l':-500,'m':0,'g':300};
 function pickGoal(g){
   selGoal=g;
   ['l','m','g'].forEach(function(k){document.getElementById('gk'+k).classList.toggle('on',k===g);});
 }
 
-/* SPINNERS — data */
 var vals={age:25,wt:75,ht:175,wst:88,nck:38};
 var lims={age:[14,90],wt:[30,200],ht:[120,220],wst:[50,150],nck:[25,60]};
 var ids={age:'vage',wt:'vwt',ht:'vht',wst:'vwst',nck:'vnck'};
@@ -452,71 +453,50 @@ function setVal(k,v){
   v=Math.max(lims[k][0],Math.min(lims[k][1],v));
   vals[k]=v;
   var el=document.getElementById(ids[k]);
-  if(el){
-    el.style.transform='scale(1.18)';
-    el.textContent=v;
-    setTimeout(function(){el.style.transform='';},100);
-  }
+  if(el){el.style.transform='scale(1.14)';el.textContent=v;setTimeout(function(){el.style.transform='';},100);}
 }
 
-var holdTimer=null,holdInterval=null;
+var ht=null,hi=null;
 function holdStart(k,d){
   setVal(k,vals[k]+d);
-  holdTimer=setTimeout(function(){holdInterval=setInterval(function(){setVal(k,vals[k]+d);},80);},350);
+  ht=setTimeout(function(){hi=setInterval(function(){setVal(k,vals[k]+d);},80);},350);
 }
-function holdStop(){
-  clearTimeout(holdTimer);clearInterval(holdInterval);
-  holdTimer=null;holdInterval=null;
-}
+function holdStop(){clearTimeout(ht);clearInterval(hi);ht=null;hi=null;}
 
-/* CALC */
-function calcAndGoTo5(){
-  var g=selGender,a=vals.age,w=vals.wt,h=vals.ht,wst=vals.wst,nck=vals.nck;
-  // BMR (Mifflin-St Jeor)
+function calcAndGoTo6(){
+  var g=selGender,a=vals.age,w=vals.wt,h=vals.ht,ws=vals.wst,nk=vals.nck;
   var bmr=g==='m'?10*w+6.25*h-5*a+5:10*w+6.25*h-5*a-161;
   bmr=Math.round(bmr);
-  // TDEE
-  var tdee=Math.round(bmr*actMult[selAct]);
-  // Goal
+  var mult=actCustom!==null?actCustom:actMult[selAct];
+  var tdee=Math.round(bmr*mult);
   var kcal=Math.max(1200,tdee+goalDelta[selGoal]);
-  // Macros
-  var prot=Math.round(w*2.0);
-  var fat=Math.round(kcal*0.28/9);
-  var carb=Math.round((kcal-prot*4-fat*9)/4);
-  // Body fat % (Navy method)
+  var prot=Math.round(w*2.0),fat=Math.round(kcal*0.28/9),carb=Math.round((kcal-prot*4-fat*9)/4);
   var bf;
-  if(g==='m'){
-    bf=495/(1.0324-0.19077*Math.log10(wst-nck)+0.15456*Math.log10(h))-450;
-  } else {
-    var hip=wst+10;
-    bf=495/(1.29579-0.35004*Math.log10(wst+hip-nck)+0.22100*Math.log10(h))-450;
-  }
+  if(g==='m') bf=495/(1.0324-0.19077*Math.log10(ws-nk)+0.15456*Math.log10(h))-450;
+  else{var hip=ws+10;bf=495/(1.29579-0.35004*Math.log10(ws+hip-nk)+0.22100*Math.log10(h))-450;}
   bf=Math.max(5,Math.min(50,Math.round(bf*10)/10));
-
   document.getElementById('rkcal').textContent=kcal+' kkal';
   document.getElementById('rprot').textContent=prot+' g';
   document.getElementById('rfat').textContent=fat+' g';
   document.getElementById('rcarb').textContent=carb+' g';
   document.getElementById('rbmr').textContent=bf+'% · '+bmr+' kkal';
-  goTo(5);
+  goTo(6);
 }
 
-/* FINISH */
 function finish(){
   var btn=document.getElementById('fbtn');
   btn.innerHTML='<span>✓ Bajarildi!</span>';
-  btn.style.background='linear-gradient(135deg,#4CD964,#1D9E75)';
-  var phone=document.querySelector('.phone');
+  btn.style.background='linear-gradient(135deg,#4CD964,#1a9268)';
+  var ph=document.querySelector('.phone');
   var cols=['#1D9E75','#4CD964','#FF9500','#5AC8FA','#FFD60A','#FF453A','#fff'];
-  for(var i=0;i<22;i++){
+  for(var i=0;i<26;i++){
     var el=document.createElement('div');el.className='cf';
     var sz=4+Math.random()*7;
-    var tx=(Math.random()*200-100)+'px,'+(Math.random()*-220-40)+'px';
-    el.style.cssText=['width:'+sz+'px','height:'+sz+'px','background:'+cols[Math.floor(Math.random()*cols.length)],'left:'+(90+Math.random()*140)+'px','top:'+(150+Math.random()*180)+'px','--to:translate('+tx+')','animation-delay:'+Math.random()*0.25+'s'].join(';');
-    phone.appendChild(el);
-    setTimeout(function(e){if(e.parentNode)e.parentNode.removeChild(e);},1100,el);
+    el.style.cssText='width:'+sz+'px;height:'+sz+'px;background:'+cols[i%cols.length]+';left:'+(80+Math.random()*180)+'px;top:'+(150+Math.random()*220)+'px;--to:translate('+(Math.random()*230-115)+'px,'+(Math.random()*-260-40)+'px);animation-delay:'+Math.random()*0.3+'s';
+    ph.appendChild(el);
+    setTimeout(function(e){if(e.parentNode)e.parentNode.removeChild(e);},1200,el);
   }
-  setTimeout(function(){btn.innerHTML='<span>Ilovani boshlash 🚀</span>';btn.style.background='';goTo(1);},2400);
+  setTimeout(function(){btn.innerHTML='<span>Ilovani boshlash 🚀</span>';btn.style.background='';goTo(1);},2600);
 }
 </script>
 </body>
