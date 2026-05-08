@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BARG v4.2 -->
+<!-- BARG v4.5 -->
 <html lang="uz">
 <head>
 <meta charset="UTF-8"/>
@@ -195,6 +195,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .scbtn.mi{background:rgba(120,120,128,0.14);color:var(--t1)}
 .scbtn.pl{background:var(--teal);color:#fff;box-shadow:0 5px 18px rgba(29,158,117,0.38)}
 .scbtn:active{transform:scale(0.87)}
+/* ── Tape picker (weight) ── */
+.tape-page{display:flex;flex-direction:column;align-items:center;padding:10px 0}
+.tape-val-row{display:flex;align-items:baseline;gap:8px;margin-bottom:18px}
+.tape-bignum{font-size:82px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-3px;cursor:pointer;transition:transform .1s}
+.tape-unit-lbl{font-size:18px;color:var(--t2)}
+.tape-wrap{width:100%;overflow:hidden;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;position:relative;height:80px;display:flex;align-items:center}
+.tape-inner{display:flex;align-items:center;will-change:transform}
+.tape-cell{flex-shrink:0;width:56px;height:60px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;color:var(--t2);opacity:.35;transition:all .12s;border-radius:14px}
+.tape-cell.near1{opacity:.6;font-size:19px}
+.tape-cell.near2{opacity:.45;font-size:18px}
+.tape-cell.sel{
+  font-size:22px;font-weight:800;color:var(--t1);opacity:1;
+  background:var(--card);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(20px) saturate(180%);
+  border-radius:18px;
+  border:1.5px solid var(--teal);
+  box-shadow:0 0 24px rgba(29,158,117,0.22),var(--gl-s);
+  width:68px;height:68px
+}
+.tape-hint{font-size:12px;color:var(--t2);margin-top:10px}
+/* ── Activity coefficient cards ── */
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.act-card{
+  background:var(--card);
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
+  border-radius:18px;padding:12px 10px;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:var(--gl-s);
+  text-align:left
+}
+.act-card.on{border-color:var(--teal);background:rgba(29,158,117,0.09)}
+.act-card-ico{font-size:22px;margin-bottom:4px}
+.act-coef{font-size:18px;font-weight:800;color:var(--teal)}
+.act-lbl{font-size:12px;font-weight:600;color:var(--t1);margin-top:2px}
+.act-desc{font-size:10px;color:var(--t2);margin-top:2px;line-height:1.3}
 /* ── Waist+neck spinners ── */
 .ob-spin2{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--sep)}
 .ob-spin2:last-child{border:none}
@@ -1441,6 +1480,19 @@ function renderOB(){
 }
 
 function obChoice(key,val,el){OB.data[key]=val;el.closest(".cg").querySelectorAll(".ch").forEach(function(c){c.classList.remove("on");});el.classList.add("on");}
+var _actStepMap={1.2:2000,1.375:5500,1.55:10000,1.725:15000};
+function obActCoef(c,el){
+  OB.data.activity_coef=c;
+  if(_actStepMap[c]){OB.data.steps=_actStepMap[c];var sv=document.getElementById('s2v-steps');if(sv)sv.textContent=_actStepMap[c];}
+  document.querySelectorAll('.act-card').forEach(function(x){x.classList.remove('on');});
+  el.classList.add('on');
+}
+function obActCoefCustom(c){
+  if(isNaN(c)||c<1||c>2.5)return;
+  OB.data.activity_coef=c;
+  document.querySelectorAll('.act-card').forEach(function(x){x.classList.remove('on');});
+  var cc=document.getElementById('act-custom-wrap');if(cc)cc.classList.add('on');
+}
 var _obHT=null,_obHI=null;
 var _obLims={age:[14,90],weight:[30,200],height:[120,220],waist:[50,150],neck:[25,60],hip:[60,160],steps:[500,30000]};
 var _obSteps={steps:500,age:1,weight:1,height:1,waist:1,neck:1,hip:1};
@@ -1499,6 +1551,7 @@ function obValBlur(k){
   var v=parseInt(inp.value);
   if(!isNaN(v)){OB.data[k]=Math.max(lm[0],Math.min(lm[1],v));disp.textContent=OB.data[k];}
   inp.style.display='none';disp.style.display='block';
+  if(window['_tapeSnap_'+k])window['_tapeSnap_'+k](OB.data[k]);
 }
 
 function spinRowHTML(k,lbl,unit){
@@ -1539,17 +1592,21 @@ function rulerHTML(k,min,max,val){
   '</div>';
 }
 
-function scaleHTML(k,min,max,val){
-  return '<div class="scale-page">'+
-    '<div class="scale-numbox" id="sc-num-'+k+'" onclick="obTapVal(\''+k+'\')">'+val+'</div>'+
-    '<div class="scale-unit-lbl">kg</div>'+
-    '<div class="scale-svg-wrap"><svg id="sc-svg-'+k+'" width="280" height="150" viewBox="0 0 280 150"></svg></div>'+
-    '<div style="font-size:11px;color:var(--t2);margin-top:6px">'+(lang==="uz"?"Raqamga bosib yozishingiz mumkin":"Нажмите на число для ввода")+'</div>'+
-    '<input style="display:none" id="s2i-'+k+'" type="number" onblur="obValBlur(\''+k+'\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
-    '<div class="scale-btns">'+
-      '<button class="scbtn mi" onpointerdown="obHoldStart2(\''+k+'\',-1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">−</button>'+
-      '<button class="scbtn pl" onpointerdown="obHoldStart2(\''+k+'\',1)" onpointerup="obHoldStop2()" onpointerleave="obHoldStop2()">+</button>'+
+function tapeHTML(k,min,max,val){
+  var cells='';
+  for(var p=0;p<5;p++)cells+='<div class="tape-cell" style="opacity:0;pointer-events:none"></div>';
+  for(var i=min;i<=max;i++)cells+='<div class="tape-cell" id="tc-'+k+'-'+i+'">'+i+'</div>';
+  for(var p=0;p<5;p++)cells+='<div class="tape-cell" style="opacity:0;pointer-events:none"></div>';
+  return '<div class="tape-page">'+
+    '<div class="tape-val-row">'+
+      '<span class="tape-bignum" id="s2v-'+k+'" onclick="obTapVal(\''+k+'\')">'+val+'</span>'+
+      '<span class="tape-unit-lbl">kg</span>'+
     '</div>'+
+    '<input style="display:none;font-size:64px;font-weight:800;width:140px;border:none;background:transparent;color:var(--teal);text-align:center;outline:none;-webkit-appearance:none;margin-bottom:18px" id="s2i-'+k+'" type="number" onblur="obValBlur(\''+k+'\')" onkeydown="if(event.key===\'Enter\')this.blur()"/>'+
+    '<div class="tape-wrap" id="tape-'+k+'">'+
+      '<div class="tape-inner" id="tape-inner-'+k+'">'+cells+'</div>'+
+    '</div>'+
+    '<div class="tape-hint">'+(lang==="uz"?"← chapga/o\'ngga suring yoki raqamga bosing →":"← свайп или нажмите на число →")+'</div>'+
   '</div>';
 }
 
@@ -1557,7 +1614,12 @@ function obHTML(){
   var d=OB.data;
   /* Step 1: Gender */
   if(OB.step===1){
-    return '<div class="ob-gc">'+
+    return '<div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px">'+
+      '<svg width="32" height="64" viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>'+
+      '<div style="font-size:20px;font-weight:800;color:var(--teal);margin-top:6px;letter-spacing:-0.5px">BARG</div>'+
+      '<div style="font-size:12px;color:var(--t2);margin-top:2px">'+(lang==="uz"?"Ilmiy ovqatlanish nazorati":"Научный контроль питания")+'</div>'+
+    '</div>'+
+    '<div class="ob-gc">'+
       '<div class="ob-gcard male '+(d.gender==="male"?"on":"")+'" id="gc-male" onclick="obGender(\'male\')">'+
         '<div class="ob-gcard-ico"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="16" cy="26" r="12" stroke="#007AFF" stroke-width="3" fill="rgba(0,122,255,0.14)"/><path d="M24 18 L36 6" stroke="#007AFF" stroke-width="3" stroke-linecap="round"/><path d="M27.5 6 H36 V14.5" stroke="#007AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
         '<div class="ob-gcard-lbl">'+t("male")+'</div>'+
@@ -1572,8 +1634,8 @@ function obHTML(){
   if(OB.step===2){return drumHTML('age',14,90,d.age||25);}
   /* Step 3: Height ruler */
   if(OB.step===3){return rulerHTML('height',120,220,d.height||175);}
-  /* Step 4: Weight scale */
-  if(OB.step===4){return scaleHTML('weight',30,200,d.weight||75);}
+  /* Step 4: Weight tape */
+  if(OB.step===4){return tapeHTML('weight',30,200,d.weight||75);}
   /* Step 5: Waist + Neck */
   if(OB.step===5){
     return '<div class="ig">'+
@@ -1583,13 +1645,37 @@ function obHTML(){
     '</div>'+
     '<div class="rc" style="font-size:12px;color:var(--td);line-height:1.7;margin-top:12px">'+(lang==="uz"?"Qorin — kindik darajasida · Bo\'yin — eng tor qismidan":"Талия — на уровне пупка · Шея — в самом узком месте")+'</div>';
   }
-  /* Step 6: Steps */
+  /* Step 6: Steps + Activity */
   if(OB.step===6){
+    var ac=OB.data.activity_coef||0;
+    var isUz=lang==="uz";
+    var actList=[
+      {c:1.2,  ico:"🪑", lbl:isUz?"Kam harakatli":"Малоподвижный",  desc:isUz?"0–3 000 qadam":"0–3 000 шагов"},
+      {c:1.375,ico:"🚶", lbl:isUz?"Oz faol":"Умеренный",             desc:isUz?"3–7 500 qadam":"3–7 500 шагов"},
+      {c:1.55, ico:"🏃", lbl:isUz?"Faol":"Активный",                 desc:isUz?"7 500–12 000 qadam":"7 500–12 000 шагов"},
+      {c:1.725,ico:"⚡", lbl:isUz?"Juda faol":"Очень активный",      desc:isUz?"12 000+ qadam":"12 000+ шагов"},
+    ];
+    var cards=actList.map(function(a){
+      return '<div class="act-card'+(ac===a.c?' on':'')+'" onclick="obActCoef('+a.c+',this)">'+
+        '<div class="act-card-ico">'+a.ico+'</div>'+
+        '<div class="act-coef">×'+a.c+'</div>'+
+        '<div class="act-lbl">'+a.lbl+'</div>'+
+        '<div class="act-desc">'+a.desc+'</div>'+
+      '</div>';
+    }).join('');
+    var customOn=(ac>0&&ac!==1.2&&ac!==1.375&&ac!==1.55&&ac!==1.725);
+    var customCard='<div class="act-card'+(customOn?' on':'')+'" id="act-custom-wrap" onclick="document.getElementById(\'act-cinp\').focus()">'+
+      '<div class="act-card-ico">✏️</div>'+
+      '<div class="act-coef"><input id="act-cinp" type="number" step="0.01" min="1.0" max="2.5" '+
+        'value="'+(customOn?ac:'')+'" placeholder="1.55" '+
+        'style="width:58px;font-size:16px;font-weight:800;border:none;background:transparent;color:var(--teal);outline:none;-webkit-appearance:none;text-align:left" '+
+        'oninput="obActCoefCustom(+this.value)" onclick="event.stopPropagation()"/></div>'+
+      '<div class="act-lbl">'+(isUz?"Boshqa":"Другой")+'</div>'+
+      '<div class="act-desc">'+(isUz?"Qo\'lda kiriting":"Введите вручную")+'</div>'+
+    '</div>';
     return '<div class="ig">'+spinRowHTML('steps',t("steps"),'q')+'</div>'+
-      '<div class="card" style="padding:14px;margin-top:10px">'+
-      [["3 000 dan kam","x1.20"],["5 000 – 10 000","x1.35"],["10 000 – 15 000","x1.50"],["15 000+","x1.65"]].map(function(r){
-        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--sep)"><span style="font-size:13px;color:var(--t2)">'+r[0]+'</span><span style="font-size:13px;font-weight:600;color:var(--teal)">'+r[1]+'</span></div>';
-      }).join("")+'</div>';
+      '<div style="font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 0 4px">'+(isUz?"Faollik darajasi":"Уровень активности")+'</div>'+
+      '<div class="act-grid">'+cards+customCard+'</div>';
   }
   /* Step 7: Goal */
   if(OB.step===7){
@@ -1628,7 +1714,7 @@ function obHTML(){
 function initObStep(s){
   if(s===2)initDrum('age',14,90,OB.data.age||25);
   if(s===3)initRuler('height',120,220,OB.data.height||175);
-  if(s===4)initScale('weight',30,200,OB.data.weight||75);
+  if(s===4)initTape('weight',30,200,OB.data.weight||75);
 }
 
 function initDrum(k,min,max,cur){
@@ -1667,6 +1753,8 @@ function initDrum(k,min,max,cur){
   }
   outer.addEventListener('pointerup',end);
   outer.addEventListener('pointercancel',end);
+  outer.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
+  outer.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
 }
 
 function updateDrum(k,v,min){
@@ -1720,41 +1808,73 @@ function initRuler(k,min,max,cur){
     numEl.textContent=v;
   }
   wrap.addEventListener('pointerup',end);wrap.addEventListener('pointercancel',end);
+  wrap.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
+  wrap.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
 }
 
-function initScale(k,min,max,cur){
-  var svg=document.getElementById('sc-svg-'+k);
-  var numEl=document.getElementById('sc-num-'+k);
-  if(!svg||!numEl)return;
-  function draw(v){
-    var cx=140,cy=145,r=115,arcStart=Math.PI,arcEnd=2*Math.PI;
-    var pct=(v-min)/(max-min);
-    var ang=arcStart+pct*(arcEnd-arcStart);
-    var ticks='';
-    for(var i=0;i<=20;i++){
-      var a=arcStart+(i/20)*(arcEnd-arcStart);
-      var major=i%5===0;
-      var r1=major?r-14:r-8;
-      var x1=cx+r*Math.cos(a),y1=cy+r*Math.sin(a);
-      var x2=cx+r1*Math.cos(a),y2=cy+r1*Math.sin(a);
-      ticks+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="var(--sep)" stroke-width="'+(major?2:1)+'" stroke-linecap="round"/>';
-      if(major){var lv=Math.round(min+(i/20)*(max-min));var lx=cx+(r-22)*Math.cos(a),ly=cy+(r-22)*Math.sin(a);ticks+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="middle" font-size="9" fill="var(--t2)">'+lv+'</text>';}
-    }
-    var nx=cx+(r-28)*Math.cos(ang),ny=cy+(r-28)*Math.sin(ang);
-    svg.innerHTML=
-      '<path d="M '+(cx-r)+' '+cy+' A '+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" stroke="var(--sep)" stroke-width="6" fill="none" stroke-linecap="round"/>'+
-      '<path d="M '+(cx-r)+' '+cy+' A '+r+' '+r+' 0 0 1 '+nx.toFixed(1)+' '+ny.toFixed(1)+'" stroke="var(--teal)" stroke-width="6" fill="none" stroke-linecap="round"/>'+
-      ticks+
-      '<line x1="'+cx+'" y1="'+cy+'" x2="'+nx.toFixed(1)+'" y2="'+ny.toFixed(1)+'" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/>'+
-      '<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="var(--teal)"/>';
+function initTape(k,min,max,cur){
+  var wrap=document.getElementById('tape-'+k);
+  var inner=document.getElementById('tape-inner-'+k);
+  var numEl=document.getElementById('s2v-'+k);
+  if(!wrap||!inner||!numEl)return;
+  var CW=56,SEL=68,PAD=5; /* cell width, selected width, padding cells */
+  /* Center the selected value */
+  var wrapW=wrap.offsetWidth||320;
+  var centerX=wrapW/2;
+  function offsetFor(v){return centerX-(PAD*CW+(v-min)*CW+CW/2);}
+  var offset=offsetFor(cur);
+  inner.style.transition='none';
+  inner.style.transform='translateX('+offset+'px)';
+  updateTape(k,cur,min);
+  var sx=0,so=offset,dragging=false,moved=false;
+  function clampOff(o){return Math.min(offsetFor(min),Math.max(offsetFor(max),o));}
+  function valFor(o){return Math.max(min,Math.min(max,Math.round(min+(centerX-o-PAD*CW-CW/2)/CW)));}
+  wrap.addEventListener('pointerdown',function(e){
+    sx=e.clientX;so=offset;dragging=true;moved=false;
+    inner.style.transition='none';
+    wrap.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  },{passive:false});
+  wrap.addEventListener('pointermove',function(e){
+    if(!dragging)return;
+    var dx=e.clientX-sx;
+    if(Math.abs(dx)>3)moved=true;
+    offset=clampOff(so+dx);
+    inner.style.transform='translateX('+offset+'px)';
+    var v=valFor(offset);
+    if(v!==OB.data[k]){OB.data[k]=v;numEl.textContent=v;numEl.style.transform='scale(1.05)';setTimeout(function(){numEl.style.transform='';},80);updateTape(k,v,min);}
+    e.preventDefault();
+  },{passive:false});
+  function endDrag(){
+    if(!dragging)return;dragging=false;
+    var v=valFor(offset);OB.data[k]=v;
+    offset=offsetFor(v);
+    inner.style.transition='transform .3s cubic-bezier(.34,1.1,.64,1)';
+    inner.style.transform='translateX('+offset+'px)';
+    numEl.textContent=v;updateTape(k,v,min);
   }
-  draw(cur);
-  /* Override obSpin2 to also redraw */
-  var _orig=obHoldStart2;
-  var _origSpin=obSpin2;
-  window._obSpinHook=function(kk){if(kk===k){draw(OB.data[kk]||cur);var n=document.getElementById('sc-num-'+kk);if(n)n.textContent=OB.data[kk]||cur;}};
-  var _realSpin=obSpin2;
-  obSpin2=function(kk,d){_realSpin(kk,d);if(kk===k){draw(OB.data[kk]);var n=document.getElementById('sc-num-'+kk);if(n)n.textContent=OB.data[kk];}};
+  wrap.addEventListener('pointerup',endDrag);
+  wrap.addEventListener('pointercancel',endDrag);
+  wrap.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
+  wrap.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+  /* Snap callback used by obValBlur */
+  window['_tapeSnap_'+k]=function(v){
+    OB.data[k]=v;numEl.textContent=v;
+    offset=offsetFor(v);
+    inner.style.transition='transform .35s cubic-bezier(.34,1.1,.64,1)';
+    inner.style.transform='translateX('+offset+'px)';
+    updateTape(k,v,min);
+  };
+}
+
+function updateTape(k,v,min){
+  document.querySelectorAll('#tape-inner-'+k+' .tape-cell').forEach(function(el,i){
+    if(el.style.opacity==='0')return;
+    var diff=Math.abs(i-5-(v-min)); /* 5 = padding count */
+    el.classList.toggle('sel',diff===0);
+    el.classList.toggle('near1',diff===1);
+    el.classList.toggle('near2',diff===2);
+  });
 }
 
 async function fetchPreview(){
