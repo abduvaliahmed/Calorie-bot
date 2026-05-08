@@ -75,6 +75,11 @@ def startup():
 def health():
     return {"ok": True}
 
+@app.get("/version")
+def version():
+    import time
+    return {"version": "4.2", "ts": int(time.time()), "file": os.path.exists(index_file)}
+
 @app.get("/api/user")
 def api_get_user(x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
