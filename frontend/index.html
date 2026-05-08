@@ -2633,11 +2633,22 @@ async function addAIPortionToLog(rid,btn){
 }
 
 async function init(){
-  haptic('impact','soft');
+  /* Animatsiya tezligiga mos haptic: cubic-bezier(0.4,0,0.2,1) — sekin boshlab, tezlashib, sekinlashadi */
+  var _animCycle=2500,_ticks=[0,320,580,780,940,1080,1200,1310,1420,1560,1720,1950,2300];
+  var _hapticStop=false;
+  function _runHapticCycle(){
+    if(_hapticStop)return;
+    _ticks.forEach(function(t){
+      setTimeout(function(){if(!_hapticStop)haptic('selection');},t);
+    });
+    setTimeout(function(){if(!_hapticStop)_runHapticCycle();},_animCycle);
+  }
+  _runHapticCycle();
   var loading=document.getElementById("s-loading");
   try{
     var results=await Promise.all([req("/api/user"),req("/api/today"),req("/api/streak")]);
     var r=results[0],td=results[1],sr=results[2];
+    _hapticStop=true;
     if(loading)loading.classList.remove("act");
     haptic('notification','success');
     if(r&&r.exists&&r.user){
@@ -2654,6 +2665,7 @@ async function init(){
       startOB();
     }
   }catch(e){
+    _hapticStop=true;
     if(loading)loading.classList.remove("act");
     updateUITexts();
     startOB();
