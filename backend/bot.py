@@ -9,6 +9,7 @@ from database import get_users_needing_profile_update
 logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
+WEBAPP_URL_V = WEBAPP_URL + "?v=42"
 API_URL = os.environ.get("WEBAPP_URL", "").rstrip("/")
 
 WAIT_CODE = 1
@@ -84,7 +85,7 @@ async def check_code(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def send_app(update: Update):
     kb = InlineKeyboardMarkup([[
-        InlineKeyboardButton("BARG ochish", web_app=WebAppInfo(url=WEBAPP_URL))
+        InlineKeyboardButton("BARG ochish", web_app=WebAppInfo(url=WEBAPP_URL_V))
     ]])
     await update.message.reply_text("Pastdagi tugmani bosib ilovani oching!", reply_markup=kb)
 
@@ -93,7 +94,7 @@ async def remind_profile_update(context: ContextTypes.DEFAULT_TYPE):
         users = get_users_needing_profile_update()
         logging.info(f"Profile update reminder: {len(users)} users to notify")
         kb = InlineKeyboardMarkup([[
-            InlineKeyboardButton("Profilni yangilash", web_app=WebAppInfo(url=WEBAPP_URL))
+            InlineKeyboardButton("Profilni yangilash", web_app=WebAppInfo(url=WEBAPP_URL_V))
         ]])
         for user in users:
             try:
