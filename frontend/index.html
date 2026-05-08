@@ -11,16 +11,6 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body.premium{
-  --bg:#060400;
-  --bg-mesh:linear-gradient(135deg,#120900 0%,#0a0600 35%,#100400 65%,#0e0a00 100%);
-  --card:rgba(28,16,4,0.80);
-  --sep:rgba(205,127,50,0.15);
-  --gl-b:rgba(205,127,50,0.32);
-  --gl-s:0 4px 32px rgba(0,0,0,0.80),inset 2px 0 14px rgba(210,130,50,0.22),inset -1px 0 8px rgba(255,200,60,0.12),inset 0 1px 0 rgba(255,215,0,0.28);
-  --t1:#f0ddb0;--t2:#9a7a50;
-  --tl:rgba(205,127,50,0.15);--td:#CD7F32;--teal:#CD7F32;
-}
 body.dark{
   --bg:#0a0a0f;
   --bg-mesh:linear-gradient(135deg,#102818 0%,#121030 40%,#261016 70%,#101830 100%);
@@ -35,8 +25,6 @@ body.dark{
 :root{
   --teal:#1D9E75;--tl:rgba(29,158,117,0.10);--td:#0F6E56;
   --bg:#eef2f8;
-  --bg-mesh:linear-gradient(135deg,#b5e4d4 0%,#c8d8f5 35%,#e2d0f8 65%,#f8dac4 100%);
-  --sx:0px;--sy:0px;
   --card:rgba(255,255,255,0.50);
   --sep:rgba(0,0,0,0.07);
   --gl-b:rgba(255,255,255,0.82);
@@ -45,7 +33,7 @@ body.dark{
   --ora:#FF9500;--blu:#007AFF;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)
 }
-html,body{height:100%;overflow:hidden;background:var(--bg)}
+html,body{height:100%;overflow:hidden;background:var(--bg);}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;z-index:1}
 .screens{flex:1;overflow:hidden;position:relative;background:transparent}
@@ -301,26 +289,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
     background:rgba(28,28,32,0.98)
   }
 }
-.card,.sc,.fi,.ig,.ch,.hero{position:relative;overflow:hidden}
-.card::before,.sc::before,.fi::before,.ig::before,.ch::before,.hero::before{
-  content:'';position:absolute;
-  width:280%;height:280%;top:-90%;left:-90%;
-  border-radius:50%;
-  background:radial-gradient(ellipse at center,rgba(255,255,255,0.30) 0%,transparent 42%);
-  pointer-events:none;
-  transform:translate(var(--sx),var(--sy));
-  will-change:transform
-}
-body.dark .card::before,body.dark .sc::before,body.dark .fi::before,
-body.dark .ig::before,body.dark .ch::before,body.dark .hero::before{
-  background:radial-gradient(ellipse at center,rgba(255,255,255,0.11) 0%,transparent 42%)
-}
-#blob-cv{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+/* ── ANIMATED BLOBS ── */
+.blob-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bl{position:absolute;border-radius:50%;filter:blur(70px);will-change:transform}
+.bl1{width:70vw;height:70vw;background:rgba(72,200,155,0.62);top:-18%;left:-12%;animation:bm1 20s ease-in-out infinite}
+.bl2{width:65vw;height:65vw;background:rgba(85,145,255,0.58);top:-8%;right:-18%;animation:bm2 24s ease-in-out infinite}
+.bl3{width:62vw;height:62vw;background:rgba(165,105,255,0.55);bottom:-8%;right:-5%;animation:bm3 22s ease-in-out infinite}
+.bl4{width:65vw;height:65vw;background:rgba(255,125,175,0.52);bottom:8%;left:-18%;animation:bm4 26s ease-in-out infinite}
+.bl5{width:50vw;height:50vw;background:rgba(255,195,70,0.38);top:38%;left:18%;animation:bm5 18s ease-in-out infinite}
+@keyframes bm1{0%,100%{transform:translate(0,0)}35%{transform:translate(28px,42px)}68%{transform:translate(-18px,-28px)}}
+@keyframes bm2{0%,100%{transform:translate(0,0)}40%{transform:translate(-38px,28px)}72%{transform:translate(22px,-22px)}}
+@keyframes bm3{0%,100%{transform:translate(0,0)}30%{transform:translate(-28px,-32px)}65%{transform:translate(32px,26px)}}
+@keyframes bm4{0%,100%{transform:translate(0,0)}45%{transform:translate(38px,-28px)}78%{transform:translate(-22px,32px)}}
+@keyframes bm5{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-18px,22px) scale(1.08)}}
+body.dark .bl1{background:rgba(35,175,125,0.52)}
+body.dark .bl2{background:rgba(50,105,235,0.48)}
+body.dark .bl3{background:rgba(120,55,225,0.48)}
+body.dark .bl4{background:rgba(215,70,140,0.45)}
+body.dark .bl5{background:rgba(45,115,195,0.38)}
 .app{position:relative;z-index:1}
-html,body{background:var(--bg-mesh)!important}
 </style>
 </head>
 <body>
+<div class="blob-bg"><div class="bl bl1"></div><div class="bl bl2"></div><div class="bl bl3"></div><div class="bl bl4"></div><div class="bl bl5"></div></div>
 <canvas id="confetti-cv" style="position:fixed;inset:0;z-index:1002;pointer-events:none;display:none"></canvas>
 <div class="app">
   <div class="screens">
@@ -407,7 +398,6 @@ html,body{background:var(--bg-mesh)!important}
           <div style="display:flex;align-items:center;gap:8px">
             <button onclick="toggleLang()" id="lang-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer">RU</button>
             <button onclick="toggleTheme()" id="theme-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">&#127769;</button>
-            <button onclick="togglePremium()" id="prem-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">✦</button>
           </div>
         </div>
       </div>
@@ -576,7 +566,6 @@ html,body{background:var(--bg-mesh)!important}
           <div style="display:flex;gap:8px">
             <button onclick="toggleLang()" id="lang-btn2" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer">RU</button>
             <button onclick="toggleTheme()" id="theme-btn2" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">&#127769;</button>
-            <button onclick="togglePremium()" id="prem-btn2" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">✦</button>
           </div>
         </div>
       </div>
@@ -861,13 +850,6 @@ function cacheInvalidate(k){delete _cache[k];}
 var _theme='light';
 function toggleTheme(){_theme=_theme==='light'?'dark':'light';document.body.classList.toggle('dark',_theme==='dark');var icon=_theme==='dark'?'☀️':'🌙';var b1=document.getElementById('theme-btn');var b2=document.getElementById('theme-btn2');if(b1)b1.textContent=icon;if(b2)b2.textContent=icon;try{localStorage.setItem('barg_theme',_theme);}catch(e){}}
 function initTheme(){try{var saved=localStorage.getItem('barg_theme');if(saved==='dark')toggleTheme();}catch(e){}}
-function togglePremium(){
-  var on=document.body.classList.toggle('premium');
-  var gold='rgba(205,127,50,0.28)';var def='var(--tl)';
-  ['prem-btn','prem-btn2'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.background=on?gold:def;b.style.color=on?'#FFD700':'var(--td)';}});
-  try{localStorage.setItem('barg_prem',on?'1':'0');}catch(e){}
-}
-function initPremium(){try{if(localStorage.getItem('barg_prem')==='1'){document.body.classList.add('premium');['prem-btn','prem-btn2'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.background='rgba(205,127,50,0.28)';b.style.color='#FFD700';}});}}catch(e){}}
 
 function updateTabLabels(){
   var isRu=lang==="ru";
@@ -2140,7 +2122,6 @@ function closeInfo(){
 }
 
 initTheme();
-initPremium();
 init();
 </script>
 <div id="info-overlay" onclick="closeInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:998"></div>
@@ -2151,88 +2132,5 @@ init();
   </div>
   <div id="info-body" style="font-size:14px;color:var(--t2);line-height:1.7;white-space:pre-line"></div>
 </div>
-<script>
-(function(){
-  /* ── CANVAS BLOB FONI ── */
-  var cv=document.createElement('canvas');
-  cv.id='blob-cv';
-  document.body.appendChild(cv);
-  var ctx=cv.getContext('2d');
-  var W=0,H=0;
-  function resize(){
-    W=window.innerWidth;
-    H=window.innerHeight;
-    cv.width=W; cv.height=H;
-  }
-  resize();
-  window.addEventListener('resize',resize);
-
-  var L=[
-    {x:.20,y:.25,r:.80,c:[80,210,165]},
-    {x:.80,y:.20,r:.75,c:[90,155,255]},
-    {x:.75,y:.78,r:.78,c:[170,115,255]},
-    {x:.22,y:.75,r:.72,c:[255,140,185]}
-  ];
-  var D=[
-    {x:.20,y:.25,r:.80,c:[35,185,135]},
-    {x:.80,y:.20,r:.75,c:[55,115,240]},
-    {x:.75,y:.78,r:.78,c:[125,60,230]},
-    {x:.22,y:.75,r:.72,c:[220,80,145]}
-  ];
-  var P=[
-    {x:.20,y:.25,r:.84,c:[210,130,50]},
-    {x:.80,y:.20,r:.78,c:[255,195,40]},
-    {x:.75,y:.78,r:.82,c:[190,80,15]},
-    {x:.22,y:.75,r:.76,c:[255,115,30]}
-  ];
-
-  function drawBlob(bx,by,br,c,a){
-    var g=ctx.createRadialGradient(bx,by,0,bx,by,br);
-    g.addColorStop(0,'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')');
-    g.addColorStop(.45,'rgba('+c[0]+','+c[1]+','+c[2]+','+(a*.38)+')');
-    g.addColorStop(1,'rgba('+c[0]+','+c[1]+','+c[2]+',0)');
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.arc(bx,by,br,0,6.2832);ctx.fill();
-  }
-
-  /* ── GYROSCOPE ── */
-  var tx=0,ty=0,cx=0,cy=0;
-  var root=document.documentElement.style;
-  function onOri(e){tx=(e.gamma||0)*1.1;ty=((e.beta||45)-45)*.75;}
-
-  /* ── ANIMATION LOOP ── */
-  var t=0;
-  var OX=[0,0,0,0],OY=[0,0,0,0];
-  function tick(){
-    t+=.0042;
-    var dark=document.body.classList.contains('dark');
-    var prem=document.body.classList.contains('premium');
-    var B=prem?P:(dark?D:L), a=prem?.68:(dark?.65:.78);
-
-    OX[0]=Math.sin(t      )*80; OY[0]=Math.cos(t*.70   )*70;
-    OX[1]=Math.sin(t*.80+1)*75; OY[1]=Math.cos(t*.90+2 )*65;
-    OX[2]=Math.sin(t*.60+3)*85; OY[2]=Math.cos(t*.70+1 )*72;
-    OX[3]=Math.sin(t*.90+2)*72; OY[3]=Math.cos(t*.80+3 )*60;
-
-    ctx.clearRect(0,0,W,H);
-    for(var i=0;i<4;i++){
-      drawBlob(B[i].x*W+OX[i], B[i].y*H+OY[i], B[i].r*Math.max(W,H), B[i].c, a);
-    }
-
-    cx+=(tx-cx)*.07; cy+=(ty-cy)*.07;
-    root.setProperty('--sx',cx.toFixed(1)+'px');
-    root.setProperty('--sy',cy.toFixed(1)+'px');
-    requestAnimationFrame(tick);
-  }
-
-  function start(){window.addEventListener('deviceorientation',onOri,true);tick();}
-  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
-    document.addEventListener('touchstart',function req(){
-      DeviceOrientationEvent.requestPermission().then(function(s){if(s==='granted')start();}).catch(function(){});
-      document.removeEventListener('touchstart',req);
-    },{once:true});
-  }else{start();}
-})();
-</script>
 </body>
 </html>
