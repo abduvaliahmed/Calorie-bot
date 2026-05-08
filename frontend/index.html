@@ -831,8 +831,9 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
   </div>
 </div>
 
-<div id="le-panel" style="display:none;position:fixed;inset:0;z-index:997;background:rgba(0,0,0,0.4);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeLogEdit()">
-  <div style="background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-width:480px;padding-bottom:calc(20px + var(--sb))">
+<div id="le-overlay" onclick="closeLogEdit()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:997;transition:opacity .28s ease;opacity:0"></div>
+<div id="le-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);border-top:.5px solid var(--gl-b);border-radius:28px 28px 0 0;padding:20px 16px;padding-bottom:calc(20px + var(--sb));z-index:998;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.05,.64,1)">
+  <div style="width:36px;height:4px;border-radius:2px;background:rgba(120,120,128,0.3);margin:0 auto 16px"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div style="font-size:17px;font-weight:700;color:var(--t1)" id="le-name">Tahrirlash</div>
       <button onclick="closeLogEdit()" style="width:30px;height:30px;border-radius:15px;background:rgba(120,120,128,0.15);border:none;cursor:pointer;font-size:18px;color:var(--t2)">&#10005;</button>
@@ -854,7 +855,6 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
     <input type="hidden" id="le-kcal"/><input type="hidden" id="le-p"/><input type="hidden" id="le-f"/><input type="hidden" id="le-c"/>
     <button class="btn bp" onclick="saveLogEdit()" style="font-size:16px;font-weight:700;margin-bottom:8px" id="le-save-btn">Saqlash</button>
     <button class="btn bg2" onclick="closeLogEdit()">Bekor</button>
-  </div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -2240,7 +2240,9 @@ function openLogEdit(id,name,grams,kcal,protein,fat,carb){
   document.getElementById("le-kcal").value=kcal;document.getElementById("le-p").value=protein;document.getElementById("le-f").value=fat;document.getElementById("le-c").value=carb;
   var ks=document.getElementById("le-kcal-show");var ps=document.getElementById("le-p-show");var fs=document.getElementById("le-f-show");var cs=document.getElementById("le-c-show");
   if(ks)ks.textContent=Math.round(kcal)+" kkal";if(ps)ps.textContent=protein+"g";if(fs)fs.textContent=fat+"g";if(cs)cs.textContent=carb+"g";
-  document.getElementById("le-panel").style.display="flex";
+  var ov=document.getElementById("le-overlay"),sh=document.getElementById("le-panel");
+  ov.style.display="block";sh.style.display="block";
+  requestAnimationFrame(function(){requestAnimationFrame(function(){ov.style.opacity="1";sh.style.transform="translateY(0)";});});
 }
 
 function onLeGrams(){
@@ -2252,7 +2254,12 @@ function onLeGrams(){
   document.getElementById("le-kcal").value=k;document.getElementById("le-p").value=p;document.getElementById("le-f").value=f;document.getElementById("le-c").value=c;
 }
 
-function closeLogEdit(){document.getElementById("le-panel").style.display="none";editLogId=null;}
+function closeLogEdit(){
+  var ov=document.getElementById("le-overlay"),sh=document.getElementById("le-panel");
+  ov.style.opacity="0";sh.style.transform="translateY(100%)";
+  setTimeout(function(){sh.style.display="none";ov.style.display="none";},320);
+  editLogId=null;
+}
 
 async function saveLogEdit(){
   if(!editLogId)return;
