@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BARG v4.7 -->
+<!-- BARG v4.8 -->
 <html lang="uz">
 <head>
 <meta charset="UTF-8"/>
@@ -292,36 +292,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 .lp-dark{fill:none;stroke:#1D9E75;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2000;animation:stroke 2.5s cubic-bezier(0.4,0,0.2,1) infinite}
 /* ── Splash card ── */
 .splash-card{
-  display:flex;flex-direction:column;align-items:center;gap:0;
+  display:flex;align-items:center;justify-content:center;
+  width:130px;height:130px;
   background:var(--card);
-  -webkit-backdrop-filter:blur(48px) saturate(200%);
-  backdrop-filter:blur(48px) saturate(200%);
-  border-radius:44px;
-  padding:52px 60px 40px;
+  -webkit-backdrop-filter:blur(40px) saturate(180%);
+  backdrop-filter:blur(40px) saturate(180%);
+  border-radius:36px;
   border:.5px solid var(--gl-b);
-  box-shadow:var(--gl-s),0 40px 80px rgba(0,0,0,0.18);
-  animation:scIn .7s cubic-bezier(.34,1.35,.64,1) both
+  box-shadow:var(--gl-s),0 24px 48px rgba(0,0,0,0.15);
+  animation:scIn .55s cubic-bezier(.34,1.35,.64,1) both
 }
-@keyframes scIn{0%{opacity:0;transform:scale(0.72)}100%{opacity:1;transform:scale(1)}}
-.splash-leaf{
-  width:72px;height:72px;
-  animation:leafIn .9s .12s cubic-bezier(.34,1.4,.64,1) both
-}
-@keyframes leafIn{0%{opacity:0;transform:scale(0.3) rotate(-40deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
-.splash-title{
-  font-size:30px;font-weight:800;color:var(--teal);
-  letter-spacing:-1px;margin-top:12px;
-  animation:fadeUp .5s .45s ease both
-}
-.splash-sub{
-  font-size:12px;color:var(--t2);margin-top:5px;
-  animation:fadeUp .5s .6s ease both
-}
-@keyframes fadeUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
-.splash-dots{display:flex;gap:7px;margin-top:28px;animation:fadeUp .4s .75s ease both}
-.sdot{width:8px;height:8px;border-radius:4px;background:var(--teal);opacity:.5;animation:dotPulse 1.3s ease-in-out infinite}
-.sdot:nth-child(2){animation-delay:.18s}
-.sdot:nth-child(3){animation-delay:.36s}
+@keyframes scIn{0%{opacity:0;transform:scale(0.6)}100%{opacity:1;transform:scale(1)}}
 @keyframes dotPulse{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
 @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
 .toast{
@@ -481,14 +462,7 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
     <div class="screen act" id="s-loading" style="background:transparent">
       <div style="display:flex;align-items:center;justify-content:center;height:100%;position:relative;z-index:2">
         <div class="splash-card">
-          <div class="splash-leaf">
-            <svg viewBox="510 390 220 440" xmlns="http://www.w3.org/2000/svg" width="72" height="72"><path d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" fill="#1D9E75" transform="translate(626,405)"/></svg>
-          </div>
-          <div class="splash-title">BARG</div>
-          <div class="splash-sub" id="splash-text">Ilmiy ovqatlanish nazorati</div>
-          <div class="splash-dots">
-            <div class="sdot"></div><div class="sdot"></div><div class="sdot"></div>
-          </div>
+          <svg width="56" height="112" xmlns="http://www.w3.org/2000/svg" viewBox="510 390 220 440"><path class="lp-dark" d="M0 0 C3 1.4 5 2.9 7.4 5.3 C8 6 8.6 6.6 9.2 7.3 C9.9 8 10.5 8.7 11.2 9.4 C11.9 10.2 12.5 10.9 13.2 11.6 C17.6 16.4 21.9 21.3 25.9 26.4 C28.1 29.2 30.4 31.9 32.8 34.6 C48.4 53.4 61.7 74.3 73 96 C98.5 145.1 104.8 196.3 89.4 246.8 C82.5 268.3 70.5 286.6 55 303 C38.6 320.4 19.2 333.8 0 341 C-1.3 337.2 -0.2 333.7 1.1 330.1 C7 313.9 11.4 298.1 14 281 C17.6 255.5 13.7 229.7 0.8 209.6 C0 208 0 208 0 205 C17.7 221.6 35.2 244.9 36.1 270.2 C36 296 36 296 36 296 C41.5 290.1 46.6 284.2 51.1 277.4 C63.6 258 71.3 239 75 219 C84.6 166.2 64.7 116.1 36.7 75.7 C24.8 59 16.7 48.8 8 39 C1 31 1 31 1 31 C-37 68.7 -68.9 119.1 -77.4 172.5 C-79.3 207.3 -79.3 207.3 -79.3 207.3 C-76.5 247.9 -70 268 -70 268 C-59.4 301.5 -43.2 329.3 -21 353 C-12.7 362.5 -6 368.8 1 375 C5 378.2 5 378.2 7.3 377.9 C39.8 367.3 81.6 342.9 98.3 311.6 C89.2 348.1 56.3 376.6 22.2 394.8 C6.7 403 6.7 403 4 402.9 C-15 394.5 -33.7 373 -46 357 C-65.6 329.4 -73.4 315.5 -73.4 315.5 C-88 280.4 -96 250 -96 250 C-100.3 213.6 -100.3 204.9 -100.3 204.9 C-99.3 176.5 -97 166 -97 166 C-92.1 137.6 -82.7 116 -72 95 C-59.5 71.3 -45.5 51.9 -30.4 33.8 C-16.9 17.1 -8.5 8.5 0 0 Z" transform="translate(626,405)"/></svg>
         </div>
       </div>
     </div>
