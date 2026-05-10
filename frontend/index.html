@@ -586,13 +586,14 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
         <div id="food-sentinel" style="height:20px"></div>
         <div id="gram-overlay" onclick="closeGramPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:299;transition:opacity .28s ease;opacity:0"></div>
         <div id="gram-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--card);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);border-top:.5px solid var(--gl-b);border-radius:28px 28px 0 0;padding:20px 16px calc(80px + var(--sb));max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.05,.64,1)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <div style="font-size:17px;font-weight:700;color:var(--t1)" id="gp-name">Mahsulot</div>
             <div style="display:flex;align-items:center;gap:8px">
               <div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 8px;border-radius:10px" id="gp-per">100g uchun</div>
               <button onclick="closeGramPanel()" style="width:28px;height:28px;border-radius:14px;background:rgba(120,120,128,0.15);border:none;cursor:pointer;font-size:16px;color:var(--t2)">&#10005;</button>
             </div>
           </div>
+          <div id="gp-badges" style="display:none;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
           <div style="background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px;display:flex;align-items:center;gap:20px">
             <div style="position:relative;flex-shrink:0;width:90px;height:90px">
               <svg width="90" height="90" viewBox="0 0 90 90" style="transform:rotate(-90deg)">
@@ -1285,6 +1286,7 @@ function showFoods(foods){
     var clr=getFoodColor(f.name);
     var initial=getFoodInitial(displayName);
     var src=isPers?'<span style="font-size:9px;background:var(--teal);color:#fff;border-radius:4px;padding:1px 5px;margin-right:4px;vertical-align:middle">'+(lang==="ru"?"МОЙ":"MEN")+'</span>':'';
+    var storeBadge=(f.store==="korzinka")?'<span title="Korzinka" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#E30613;color:#fff;border-radius:4px;font-size:10px;font-weight:800;margin-right:5px;vertical-align:-3px;letter-spacing:-.5px">K</span>':'';
     var editBtns=isPers?
       '<div style="display:flex;gap:4px;flex-shrink:0">'+
       '<button onclick="event.stopPropagation();openPersEdit(S.foods['+i+'])" style="width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:13px;color:var(--t2)">✎</button>'+
@@ -1294,7 +1296,7 @@ function showFoods(foods){
     return '<div onclick="selFood('+i+')" style="display:flex;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--sep);cursor:pointer">'+
       '<div style="width:40px;height:40px;border-radius:12px;background:'+clr.bg+';display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;font-size:16px;font-weight:700;color:'+clr.c+'">'+initial+'</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)">'+src+displayName+'</div>'+
+        '<div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)">'+src+storeBadge+displayName+'</div>'+
         '<div style="display:flex;gap:10px;margin-top:3px;font-size:12px;color:var(--t2)">'+
           '<span style="color:var(--teal);font-weight:600">'+Math.round(f.kcal)+' kkal</span>'+
           '<span>B '+f.protein+'g</span><span>Y '+f.fat+'g</span><span>U '+f.carb+'g</span>'+
@@ -1326,6 +1328,25 @@ function selFood(i){
   var isRu=lang==="ru";
   document.getElementById("gp-name").textContent=displayName;
   document.getElementById("gp-per").textContent=isUnit?t("per1"):t("per100");
+  // Badges (store + source)
+  var bb=document.getElementById("gp-badges");
+  var badges=[];
+  if(f.store==="korzinka"){
+    badges.push('<span style="display:inline-flex;align-items:center;gap:4px;background:#E30613;color:#fff;padding:3px 8px 3px 6px;border-radius:8px;font-size:11px;font-weight:700">'+
+      '<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:#fff;color:#E30613;border-radius:3px;font-size:10px;font-weight:900">K</span>'+
+      'Korzinka</span>');
+  }
+  if(f.data_source==="USDA"){
+    badges.push('<span title="U.S. Department of Agriculture" style="display:inline-flex;align-items:center;gap:4px;background:#0F6E56;color:#fff;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700">'+
+      '<span style="font-size:9px">✓</span>USDA</span>');
+  }
+  if(badges.length){
+    bb.innerHTML=badges.join("");
+    bb.style.display="flex";
+  }else{
+    bb.style.display="none";
+    bb.innerHTML="";
+  }
   document.getElementById("g100-k").textContent=Math.round(f.kcal);
   document.getElementById("g100-p").textContent=f.protein+"g";
   document.getElementById("g100-f").textContent=f.fat+"g";
