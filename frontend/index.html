@@ -717,6 +717,10 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
             <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px" id="ai-example-lbl">MISOL</div>
             <div style="font-size:14px;color:var(--t1);line-height:1.7" id="ai-example-txt">Osh pishirdim: guruch 200g, mol go'shti 150g, sabzi 100g, piyoz 80g, oy yog' 40g</div>
           </div>
+          <button onclick="openAIQuickAdd()" data-snd="open" id="ai-quick-btn" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="ai-quick-btn-txt">Mahsulot qo'shish</span>
+          </button>
         </div>
         <div id="ai-messages" style="padding-bottom:16px"></div>
       </div>
@@ -1132,6 +1136,7 @@ function updateUITexts(){
   var aiwt=document.getElementById("ai-welcome-txt");if(aiwt)aiwt.textContent=isRu?"Что приготовили? Напишите ингредиенты — я посчитаю БЖУ":"Ovqat pishirdingizmi? Ingredientlarni yozing — men BJU ni hisoblayman";
   var aiel=document.getElementById("ai-example-lbl");if(aiel)aiel.textContent=isRu?"ПРИМЕР":"MISOL";
   var aiet=document.getElementById("ai-example-txt");if(aiet)aiet.textContent=isRu?"Приготовил плов: рис 200г, говядина 150г, морковь 100г, лук 80г, масло 40г":"Osh pishirdim: guruch 200g, mol go'shti 150g, sabzi 100g, piyoz 80g, oy yog' 40g";
+  var aiqb=document.getElementById("ai-quick-btn-txt");if(aiqb)aiqb.textContent=isRu?"Добавить продукт":"Mahsulot qo'shish";
   var aiinp=document.getElementById("ai-input");if(aiinp)aiinp.placeholder=isRu?"Напишите продукты с граммовкой...":"Mahsulotlarni grammaj bilan yozing...";
   // Calendar screen
   var calb=document.getElementById("cal-back");if(calb)calb.textContent="‹ "+(isRu?"Назад":"Orqaga");
@@ -2969,92 +2974,180 @@ function _renderAIItemsHtml(rid, r, isRu){
     '</div>'+
   '</div>';
 }
-function bindAICells(rid){
-  var listEl = document.getElementById('ai-items-'+rid);
-  if(!listEl) return;
-  // Har bir kataklarni hodisalar bilan ulash
-  listEl.querySelectorAll('[data-rid="'+rid+'"]').forEach(function(row){
-    var gIn  = row.querySelector('.ai-cell-g');
-    var nIn  = row.querySelector('.ai-cell-name');
-    var del  = row.querySelector('.ai-cell-del');
-    var kcal = row.querySelector('.ai-cell-kcal');
-    if(gIn){
-      gIn.oninput = function(){
-        var r=_aiResults[rid];if(!r)return;
-        var idx=parseInt(row.getAttribute('data-idx'),10);
-        var it=r.items[idx];if(!it)return;
-        var newG=parseFloat(gIn.value)||0;
-        var ratio = it.grams>0 ? newG/it.grams : 0;
-        // Per100 saqlanmagan bo'lsa, hozirgi kcal/grams dan olamiz
-        if(typeof it._k100==='undefined'){
+// Global event delegation — barcha dynamic tugmalar uchun
+if(!window._aiCellsDelegated){
+  window._aiCellsDelegated = true;
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('button');
+    if(!t || !t.id) return;
+    var m = t.id.match(/^ai-(add-row|recalc)-(.+)$/);
+    if(!m) return;
+    var action = m[1], rid = m[2];
+    if(action === 'add-row'){
+      var r=_aiResults[rid];if(!r)return;
+      r.items=r.items||[];
+      r.items.push({name_orig:"",matched:"",grams:100,source:"USER",kcal:0,protein:0,fat:0,carb:0});
+      renderAIItems(rid);
+    } else if(action === 'recalc'){
+      aiRecalcRequest(rid, t);
+    }
+  });
+  // Cell delegation
+  document.addEventListener('input', function(e){
+    var row = e.target.closest('[data-rid][data-idx]');
+    if(!row) return;
+    var rid = row.getAttribute('data-rid'), idx = parseInt(row.getAttribute('data-idx'),10);
+    var r=_aiResults[rid];if(!r||!r.items[idx])return;
+    var it=r.items[idx];
+    if(e.target.classList.contains('ai-cell-g')){
+      var newG=parseFloat(e.target.value)||0;
+      if(typeof it._k100==='undefined' && it.grams>0){
+        it._k100=it.kcal/it.grams*100; it._p100=it.protein/it.grams*100;
+        it._f100=it.fat/it.grams*100; it._c100=it.carb/it.grams*100;
+      }
+      it.grams=newG;
+      if(typeof it._k100==='number' && it._k100>0){
+        it.kcal=Math.round(it._k100*newG/100*10)/10;
+        it.protein=Math.round((it._p100||0)*newG/100*10)/10;
+        it.fat=Math.round((it._f100||0)*newG/100*10)/10;
+        it.carb=Math.round((it._c100||0)*newG/100*10)/10;
+        var kcalEl=row.querySelector('.ai-cell-kcal');
+        if(kcalEl)kcalEl.textContent=Math.round(it.kcal)+' kc';
+        recomputeAITotal(rid);
+      }
+    } else if(e.target.classList.contains('ai-cell-name')){
+      it.name_orig=e.target.value; it.matched=e.target.value;
+    }
+  });
+  document.addEventListener('click', function(e){
+    var del = e.target.closest('.ai-cell-del');
+    if(!del) return;
+    var row = del.closest('[data-rid][data-idx]');
+    if(!row) return;
+    var rid = row.getAttribute('data-rid'), idx = parseInt(row.getAttribute('data-idx'),10);
+    var r=_aiResults[rid];if(!r)return;
+    r.items.splice(idx,1);
+    renderAIItems(rid);
+    recomputeAITotal(rid);
+  });
+}
+
+async function aiRecalcRequest(rid, btn){
+  var r=_aiResults[rid];if(!r)return;
+  if(btn){btn.disabled=true; btn.textContent='...';}
+  try{
+    var payload={items:r.items.map(function(it){
+      var p100 = (typeof it._k100==='number' && it._k100>0) ? it._k100 :
+                 (it.grams>0 ? it.kcal/it.grams*100 : null);
+      var pp = (typeof it._p100==='number') ? it._p100 :
+               (it.grams>0 ? it.protein/it.grams*100 : null);
+      var pf = (typeof it._f100==='number') ? it._f100 :
+               (it.grams>0 ? it.fat/it.grams*100 : null);
+      var pc = (typeof it._c100==='number') ? it._c100 :
+               (it.grams>0 ? it.carb/it.grams*100 : null);
+      return {
+        name: it.name_orig || it.matched || "",
+        grams: it.grams,
+        per100_kcal: (p100>0?p100:undefined),
+        per100_p: (pp>0?pp:undefined),
+        per100_f: (pf>0?pf:undefined),
+        per100_c: (pc>0?pc:undefined),
+        kcal: it.kcal, protein: it.protein, fat: it.fat, carb: it.carb,
+        source: it.source
+      };
+    }).filter(function(x){return x.name && x.grams>0;})};
+    if(!payload.items.length){toast(lang==="ru"?"Список пуст":"Ro'yxat bo'sh");return;}
+    var resp=await req('/api/ai/recalc','POST',payload);
+    if(resp && resp.result){
+      var nr=resp.result;
+      Object.assign(r, nr);
+      // Per100 ni saqlash — kelajakdagi tahrir uchun
+      r.items.forEach(function(it){
+        if(it.grams>0){
           it._k100=it.kcal/it.grams*100; it._p100=it.protein/it.grams*100;
           it._f100=it.fat/it.grams*100; it._c100=it.carb/it.grams*100;
         }
-        it.grams=newG;
-        it.kcal=Math.round(it._k100*newG/100*10)/10;
-        it.protein=Math.round(it._p100*newG/100*10)/10;
-        it.fat=Math.round(it._f100*newG/100*10)/10;
-        it.carb=Math.round(it._c100*newG/100*10)/10;
-        if(kcal)kcal.innerHTML=Math.round(it.kcal)+'<span style="font-size:9px;font-weight:400;color:var(--t2)"> kc</span>';
-        recomputeAITotal(rid);
-      };
-    }
-    if(nIn){
-      nIn.onchange = function(){
-        var r=_aiResults[rid];if(!r)return;
-        var idx=parseInt(row.getAttribute('data-idx'),10);
-        var it=r.items[idx];if(it){it.name_orig=nIn.value;it.matched=nIn.value;}
-      };
-    }
-    if(del){
-      del.onclick = function(){
-        var r=_aiResults[rid];if(!r)return;
-        var idx=parseInt(row.getAttribute('data-idx'),10);
-        r.items.splice(idx,1);
-        row.remove();
-        // Indekslarni qayta sanaymiz
-        listEl.querySelectorAll('[data-rid="'+rid+'"]').forEach(function(rr,i){rr.setAttribute('data-idx',i);});
-        recomputeAITotal(rid);
-      };
-    }
-  });
-  // + qator
-  var addRowBtn=document.getElementById('ai-add-row-'+rid);
-  if(addRowBtn){
-    addRowBtn.onclick = function(){
-      var r=_aiResults[rid];if(!r)return;
-      r.items.push({name_orig:"",matched:"",grams:100,source:"USER",kcal:0,protein:0,fat:0,carb:0,_k100:0,_p100:0,_f100:0,_c100:0});
-      // Qaytadan render qilamiz — eng oson yo'l
+      });
       renderAIItems(rid);
-    };
-  }
-  // Qayta hisobla (server-side)
-  var recalcBtn=document.getElementById('ai-recalc-'+rid);
-  if(recalcBtn){
-    recalcBtn.onclick = async function(){
-      var r=_aiResults[rid];if(!r)return;
-      recalcBtn.disabled=true; recalcBtn.textContent=(lang==="ru"?"...":"...");
-      try{
-        var payload={items:r.items.map(function(it){
-          return {name:it.name_orig||it.matched||"", grams:it.grams,
-                  per100_kcal:(typeof it._k100!=='undefined')?it._k100:(it.grams?it.kcal/it.grams*100:undefined),
-                  per100_p:(typeof it._p100!=='undefined')?it._p100:(it.grams?it.protein/it.grams*100:undefined),
-                  per100_f:(typeof it._f100!=='undefined')?it._f100:(it.grams?it.fat/it.grams*100:undefined),
-                  per100_c:(typeof it._c100!=='undefined')?it._c100:(it.grams?it.carb/it.grams*100:undefined),
-                  kcal:it.kcal,protein:it.protein,fat:it.fat,carb:it.carb,source:it.source};
-        })};
-        var resp=await req('/api/ai/recalc','POST',payload);
-        if(resp && resp.result){
-          var nr=resp.result;
-          // Eski rid'ni saqlab, yangi qiymatlarni nusxalaymiz
-          Object.assign(r, nr);
-          renderAIItems(rid);
-          recomputeAITotal(rid);
-        }
-      }catch(e){toast(lang==="ru"?"Ошибка":"Xato");}
-      recalcBtn.disabled=false; recalcBtn.textContent=(lang==="ru"?"Пересчитать":"Qayta hisobla");
-    };
-  }
+      recomputeAITotal(rid);
+      toast(lang==="ru"?"Пересчитано":"Qayta hisoblandi");
+    }
+  }catch(e){toast(lang==="ru"?"Ошибка":"Xato");}
+  if(btn){btn.disabled=false; btn.textContent=(lang==="ru"?"Пересчитать":"Qayta hisobla");}
+}
+
+function bindAICells(rid){
+  // Endi global event delegation orqali ishlaydi — bu funksiya no-op (compatibility uchun saqlanadi)
+}
+
+function openAIQuickAdd(){
+  // Welcome ekranni yashirib, bo'sh karta yaratamiz (1 ta bosh qator bilan)
+  document.getElementById('ai-welcome').style.display='none';
+  var rid='quick_'+Date.now();
+  var r={
+    name: lang==="ru"?"Быстрый расчёт":"Tez hisob",
+    is_recipe: true,
+    _isRecipe: true, _parts:1, _eaten:1,
+    total_g: 100,
+    kcal: 0, protein:0, fat:0, carb:0,
+    per100_kcal:0, per100_p:0, per100_f:0, per100_c:0,
+    items: [{name_orig:"",matched:"",grams:100,source:"USER",kcal:0,protein:0,fat:0,carb:0}]
+  };
+  _aiResults[rid]=r;
+  var isRu=lang==="ru";
+  var oqsil=isRu?"Белки":"Oqsil";var yog2=isRu?"Жиры":"Yog'";var uglev=isRu?"Углев.":"Uglevod";
+  var addLbl=isRu?"Добавить в дневник":"Logga qo'shish";
+  var saveLbl=isRu?"В мои продукты":"Mahsulotlarimga";
+  var itemsHtml=_renderAIItemsHtml(rid, r, isRu);
+  var html=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
+      '<div style="font-size:17px;font-weight:700;color:var(--t1)">'+(isRu?"Быстрый расчёт":"Tez hisob")+'</div>'+
+      '<div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 10px;border-radius:10px">'+(isRu?"ручной":"qo'lda")+'</div>'+
+    '</div>'+
+    '<div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.5">'+
+      (isRu?"Введите название и граммы. Нажмите «Пересчитать» — БЖУ подтянутся из базы.":
+            "Mahsulot nomi va grammni kiriting. «Qayta hisobla» bossangiz bazadan KBJU keladi.")+
+    '</div>'+
+    '<div id="ai-total-'+rid+'" style="background:var(--teal);border-radius:16px;padding:16px;margin-bottom:12px">'+
+      '<div style="font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:1px;margin-bottom:6px">'+(isRu?"ИТОГО":"JAMI")+'</div>'+
+      '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+        '<div class="ai-tot-k" style="font-size:30px;font-weight:800;color:#fff;line-height:1">0<span style="font-size:14px;font-weight:400"> kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div class="ai-tot-p" style="font-size:14px;font-weight:700;color:#fff">0g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div class="ai-tot-f" style="font-size:14px;font-weight:700;color:#fff">0g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div class="ai-tot-c" style="font-size:14px;font-weight:700;color:#fff">0g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+uglev+'</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    itemsHtml+
+    '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+      '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Количество (г)":"Miqdor (g)")+'</div>'+
+      '<input id="ai-parts-'+rid+'" type="number" value="100" min="1" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:22px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+      '<input id="ai-eaten-'+rid+'" type="hidden" value="1"/>'+
+      '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="font-size:20px;font-weight:800;color:var(--teal)">0 <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">0g</div><div style="font-size:9px;color:var(--t2)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">0g</div><div style="font-size:9px;color:var(--t2)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">0g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px">'+
+      '<button id="ai-add-'+rid+'" class="ai-log-btn" style="flex:2;font-size:15px;font-weight:700">'+addLbl+'</button>'+
+      '<button id="ai-save-'+rid+'" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)">'+saveLbl+'</button>'+
+    '</div>';
+  addAIMsg('bot', html);
+  setTimeout(function(){
+    var partsIn=document.getElementById('ai-parts-'+rid);
+    var addBtn=document.getElementById('ai-add-'+rid);
+    var saveBtn=document.getElementById('ai-save-'+rid);
+    if(partsIn)partsIn.oninput=function(){updateAIPortionResult(rid);};
+    if(addBtn)addBtn.onclick=function(){addAIPortionToLog(rid,addBtn);};
+    if(saveBtn)saveBtn.onclick=function(){saveAIToMyFoods(rid,saveBtn);};
+    var nameIn=document.querySelector('[data-rid="'+rid+'"] .ai-cell-name');
+    if(nameIn)nameIn.focus();
+  },100);
 }
 function recomputeAITotal(rid){
   var r=_aiResults[rid];if(!r||!r.items)return;

@@ -208,8 +208,16 @@ RAW lamb (mol go'sht): 270 kcal, 17 P, 22 F, 0 C
 RAW carrots:       41 kcal, 0.9 P, 0.2 F, 9.6 C
 RAW onion:         40 kcal, 1.1 P, 0.1 F, 9.3 C
 RAW potato:        77 kcal, 2 P, 0.1 F, 17 C
-Vegetable oil:     884 kcal, 0 P, 100 F, 0 C  (1ml ≈ 0.92g)
-Butter:            717 kcal, 0.9 P, 81 F, 0.1 C
+OILS — ALL OILS ARE ~884 kcal/100g (100% fat):
+  Vegetable oil (sunflower/kungaboqar): 884 kcal, 0 P, 100 F, 0 C
+  Olive oil (zaytun yog'i):              884 kcal, 0 P, 100 F, 0 C
+  Corn oil / soybean oil:                884 kcal, 0 P, 100 F, 0 C
+  Coconut oil:                           862 kcal, 0 P, 100 F, 0 C
+  Sesame oil (kunjut yog'i):             884 kcal, 0 P, 100 F, 0 C
+  1 ml of oil ≈ 0.92g (so 1ml oil ≈ 8.1 kcal, 250ml ≈ 230g ≈ 2070 kcal)
+Butter (sariyog'/maslo):                 717 kcal, 0.9 P, 81 F, 0.1 C
+Ghee/clarified butter:                   876 kcal, 0 P, 99 F, 0 C
+Margarine:                               717 kcal, 0.2 P, 81 F, 0.7 C
 White bread:       265 kcal, 9 P, 3.2 F, 49 C
 Yogurt plain:      61 kcal, 3.5 P, 3.3 F, 4.7 C
 Apple:             52 kcal, 0.3 P, 0.2 F, 14 C
@@ -521,8 +529,9 @@ async def recalc_from_items(items_list: list) -> dict:
 
         source = it.get("source", "USER")
 
-        # Agar foydalanuvchi qiymatlarni bermagan bo'lsa, DBdan qidiramiz
-        if per100_kcal is None:
+        # Agar per100 qiymat yo'q yoki 0 bo'lsa, DBdan qidiramiz
+        has_p100 = (per100_kcal is not None) and (float(per100_kcal or 0) > 0)
+        if not has_p100:
             db_food = _db_search(name)
             if db_food:
                 per100_kcal = float(db_food.get("kcal") or 0)
