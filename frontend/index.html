@@ -390,17 +390,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--t1)}
 /* ── ANIMATED BLOBS ── */
 .blob-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .bl{position:absolute;border-radius:50%;filter:blur(70px);will-change:transform}
-.bl1{width:70vw;height:70vw;background:rgba(72,200,155,0.62);top:-18%;left:-12%;animation:bm1 18s linear infinite}
-.bl2{width:65vw;height:65vw;background:rgba(85,145,255,0.58);top:-8%;right:-18%;animation:bm2 20s linear infinite}
-.bl3{width:62vw;height:62vw;background:rgba(165,105,255,0.55);bottom:-8%;right:-5%;animation:bm3 19s linear infinite}
-.bl4{width:65vw;height:65vw;background:rgba(255,125,175,0.52);bottom:8%;left:-18%;animation:bm4 21s linear infinite}
-.bl5{width:50vw;height:50vw;background:rgba(255,195,70,0.38);top:38%;left:18%;animation:bm5 16s linear infinite}
-/* Soat yo'nalishi bo'yicha aylanish: tepadagilar pastga, pastdagilar tepaga */
-@keyframes bm1{0%{transform:translate(0,0)}25%{transform:translate(55vw,15vh)}50%{transform:translate(55vw,65vh)}75%{transform:translate(0,65vh)}100%{transform:translate(0,0)}}
-@keyframes bm2{0%{transform:translate(0,0)}25%{transform:translate(0,55vh)}50%{transform:translate(-55vw,55vh)}75%{transform:translate(-55vw,0)}100%{transform:translate(0,0)}}
-@keyframes bm3{0%{transform:translate(0,0)}25%{transform:translate(-55vw,-15vh)}50%{transform:translate(-55vw,-60vh)}75%{transform:translate(0,-60vh)}100%{transform:translate(0,0)}}
-@keyframes bm4{0%{transform:translate(0,0)}25%{transform:translate(0,-55vh)}50%{transform:translate(55vw,-55vh)}75%{transform:translate(55vw,0)}100%{transform:translate(0,0)}}
-@keyframes bm5{0%{transform:translate(0,0) scale(1)}25%{transform:translate(25vw,-20vh) scale(1.06)}50%{transform:translate(25vw,20vh) scale(.94)}75%{transform:translate(-25vw,20vh) scale(1.06)}100%{transform:translate(0,0) scale(1)}}
+.bl1{width:70vw;height:70vw;background:rgba(72,200,155,0.62);top:-18%;left:-12%;animation:bm1 23s linear infinite}
+.bl2{width:65vw;height:65vw;background:rgba(85,145,255,0.58);top:-8%;right:-18%;animation:bm2 19s linear infinite;animation-delay:-7s}
+.bl3{width:62vw;height:62vw;background:rgba(165,105,255,0.55);bottom:-8%;right:-5%;animation:bm3 26s linear infinite;animation-delay:-13s}
+.bl4{width:65vw;height:65vw;background:rgba(255,125,175,0.52);bottom:8%;left:-18%;animation:bm4 21s linear infinite;animation-delay:-5s}
+.bl5{width:50vw;height:50vw;background:rgba(255,195,70,0.38);top:38%;left:18%;animation:bm5 14s linear infinite;animation-delay:-3s}
+/* Tartibsiz yo'llar — har biri turli shaklda, sinxron emas */
+@keyframes bm1{0%{transform:translate(0,0)}18%{transform:translate(38vw,22vh)}41%{transform:translate(-12vw,48vh)}67%{transform:translate(42vw,30vh)}89%{transform:translate(-8vw,15vh)}100%{transform:translate(0,0)}}
+@keyframes bm2{0%{transform:translate(0,0)}23%{transform:translate(-28vw,35vh)}46%{transform:translate(-58vw,10vh)}71%{transform:translate(-30vw,-22vh)}100%{transform:translate(0,0)}}
+@keyframes bm3{0%{transform:translate(0,0)}14%{transform:translate(-25vw,18vh)}38%{transform:translate(-52vw,-28vh)}62%{transform:translate(-18vw,-52vh)}85%{transform:translate(-38vw,-12vh)}100%{transform:translate(0,0)}}
+@keyframes bm4{0%{transform:translate(0,0)}27%{transform:translate(30vw,-45vh)}54%{transform:translate(55vw,-12vh)}79%{transform:translate(20vw,-58vh)}100%{transform:translate(0,0)}}
+@keyframes bm5{0%{transform:translate(0,0) scale(1)}22%{transform:translate(18vw,-22vh) scale(1.08)}48%{transform:translate(-26vw,14vh) scale(.93)}76%{transform:translate(10vw,28vh) scale(1.05)}100%{transform:translate(0,0) scale(1)}}
 body.dark .bl1{background:rgba(35,175,125,0.52)}
 body.dark .bl2{background:rgba(50,105,235,0.48)}
 body.dark .bl3{background:rgba(120,55,225,0.48)}
