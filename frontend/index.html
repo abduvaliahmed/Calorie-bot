@@ -1097,16 +1097,16 @@ function renderHome(){
   var cRatio=Math.min(1,(tot.carb*4)/(tar.carb*4||1));
   var pLen=(pRatio/3)*circ2,fLen=(fRatio/3)*circ2,cLen=(cRatio/3)*circ2;
   var seg=circ2/3;
-  var arcHtml='<div style="position:relative;flex-shrink:0;width:100px;height:100px">'+
-    '<svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">'+
+  var arcHtml='<div style="position:relative;flex-shrink:0;width:118px;height:118px">'+
+    '<svg width="118" height="118" viewBox="0 0 100 100" style="transform:rotate(-90deg)">'+
       '<circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="7"/>'+
       '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+pLen.toFixed(1)+' '+(circ2-pLen).toFixed(1)+'" stroke-dashoffset="0"/>'+
       '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+fLen.toFixed(1)+' '+(circ2-fLen).toFixed(1)+'" stroke-dashoffset="'+(-seg).toFixed(1)+'"/>'+
       '<circle cx="50" cy="50" r="40" fill="none" stroke="'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+cLen.toFixed(1)+' '+(circ2-cLen).toFixed(1)+'" stroke-dashoffset="'+(-seg*2).toFixed(1)+'"/>'+
     '</svg>'+
     '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'+
-      '<div style="font-size:14px;font-weight:800;color:#fff;line-height:1">'+kp+'%</div>'+
-      '<div style="font-size:8px;color:rgba(255,255,255,0.7)">'+(lang==="ru"?"цель":"maqsad")+'</div>'+
+      '<div style="font-size:20px;font-weight:800;color:#fff;line-height:1">'+kp+'%</div>'+
+      '<div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px">'+(lang==="ru"?"цель":"maqsad")+'</div>'+
     '</div>'+
   '</div>';
   var todayLogged=tot.kcal>0;
@@ -1143,29 +1143,29 @@ function renderHome(){
   document.getElementById("home-body").innerHTML=
     bannerHtml+
     '<div class="hero" style="background:'+(tot.kcal>tar.kcal?'linear-gradient(135deg,#C62828,#E53935)':'var(--teal)')+'">'+
-      '<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">'+
+      '<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">'+
         arcHtml+
         '<div style="flex:1">'+
-          '<div style="font-size:38px;font-weight:800;color:#fff;line-height:1">'+(tot.kcal>tar.kcal?'⚠️ ':'')+fmt(tot.kcal)+'</div>'+
-          '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px">/ '+fmt(tar.kcal)+' kkal</div>'+
-          (tot.kcal>tar.kcal?'<div style="font-size:10px;color:#FFCDD2;margin-top:4px;font-weight:600">'+(lang==="ru"?"Превышение!":"Norma oshdi!")+'</div>':'')+
+          '<div style="font-size:46px;font-weight:800;color:#fff;line-height:1;letter-spacing:-1px">'+(tot.kcal>tar.kcal?'⚠️ ':'')+fmt(tot.kcal)+'</div>'+
+          '<div style="font-size:15px;color:rgba(255,255,255,0.78);margin-top:6px;font-weight:500">/ '+fmt(tar.kcal)+' kkal</div>'+
+          (tot.kcal>tar.kcal?'<div style="font-size:11px;color:#FFCDD2;margin-top:4px;font-weight:600">'+(lang==="ru"?"Превышение!":"Norma oshdi!")+'</div>':'')+
         '</div>'+
       '</div>'+
       '<div style="display:flex;gap:8px">'+
-        '<div style="flex:1;background:rgba(255,255,255,'+(tot.protein>tar.protein?'0.25':'0.1')+');border-radius:14px;padding:10px;border:'+(tot.protein>tar.protein?'1px solid #FF453A':'1px solid transparent')+'">'+
-          '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px"><div style="width:3px;height:16px;border-radius:2px;background:'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+'"></div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+t("prot")+'</div></div>'+
-          '<div style="font-size:15px;font-weight:700;color:'+(tot.protein>tar.protein?'#FFCDD2':'#fff')+'">'+Math.round(tot.protein)+'<span style="font-size:9px;opacity:0.6">/'+Math.round(tar.protein)+'g</span></div>'+
-          '<div style="height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:5px"><div style="height:100%;width:'+Math.min(pp,100)+'%;background:'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+';border-radius:1px"></div></div>'+
+        '<div style="flex:1;background:rgba(255,255,255,'+(tot.protein>tar.protein?'0.25':'0.1')+');border-radius:14px;padding:12px 10px;border:'+(tot.protein>tar.protein?'1px solid #FF453A':'1px solid transparent')+'">'+
+          '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px"><div style="width:3px;height:18px;border-radius:2px;background:'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+'"></div><div style="font-size:12px;color:rgba(255,255,255,0.82);font-weight:600">'+t("prot")+'</div></div>'+
+          '<div style="font-size:22px;font-weight:800;color:'+(tot.protein>tar.protein?'#FFCDD2':'#fff')+';line-height:1">'+Math.round(tot.protein)+'<span style="font-size:11px;opacity:0.65;font-weight:500">/'+Math.round(tar.protein)+'g</span></div>'+
+          '<div style="height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:7px"><div style="height:100%;width:'+Math.min(pp,100)+'%;background:'+(tot.protein>tar.protein?'#FF453A':'#4CD964')+';border-radius:2px"></div></div>'+
         '</div>'+
-        '<div style="flex:1;background:rgba(255,255,255,'+(tot.fat>tar.fat?'0.25':'0.1')+');border-radius:14px;padding:10px;border:'+(tot.fat>tar.fat?'1px solid #FF453A':'1px solid transparent')+'">'+
-          '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px"><div style="width:3px;height:16px;border-radius:2px;background:'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+'"></div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+t("fat")+'</div></div>'+
-          '<div style="font-size:15px;font-weight:700;color:'+(tot.fat>tar.fat?'#FFCDD2':'#fff')+'">'+Math.round(tot.fat)+'<span style="font-size:9px;opacity:0.6">/'+Math.round(tar.fat)+'g</span></div>'+
-          '<div style="height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:5px"><div style="height:100%;width:'+Math.min(fp,100)+'%;background:'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+';border-radius:1px"></div></div>'+
+        '<div style="flex:1;background:rgba(255,255,255,'+(tot.fat>tar.fat?'0.25':'0.1')+');border-radius:14px;padding:12px 10px;border:'+(tot.fat>tar.fat?'1px solid #FF453A':'1px solid transparent')+'">'+
+          '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px"><div style="width:3px;height:18px;border-radius:2px;background:'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+'"></div><div style="font-size:12px;color:rgba(255,255,255,0.82);font-weight:600">'+t("fat")+'</div></div>'+
+          '<div style="font-size:22px;font-weight:800;color:'+(tot.fat>tar.fat?'#FFCDD2':'#fff')+';line-height:1">'+Math.round(tot.fat)+'<span style="font-size:11px;opacity:0.65;font-weight:500">/'+Math.round(tar.fat)+'g</span></div>'+
+          '<div style="height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:7px"><div style="height:100%;width:'+Math.min(fp,100)+'%;background:'+(tot.fat>tar.fat?'#FF453A':'#FF9500')+';border-radius:2px"></div></div>'+
         '</div>'+
-        '<div style="flex:1;background:rgba(255,255,255,'+(tot.carb>tar.carb?'0.25':'0.1')+');border-radius:14px;padding:10px;border:'+(tot.carb>tar.carb?'1px solid #FF453A':'1px solid transparent')+'">'+
-          '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px"><div style="width:3px;height:16px;border-radius:2px;background:'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+'"></div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+t("carb")+'</div></div>'+
-          '<div style="font-size:15px;font-weight:700;color:'+(tot.carb>tar.carb?'#FFCDD2':'#fff')+'">'+Math.round(tot.carb)+'<span style="font-size:9px;opacity:0.6">/'+Math.round(tar.carb)+'g</span></div>'+
-          '<div style="height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:5px"><div style="height:100%;width:'+Math.min(cp,100)+'%;background:'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+';border-radius:1px"></div></div>'+
+        '<div style="flex:1;background:rgba(255,255,255,'+(tot.carb>tar.carb?'0.25':'0.1')+');border-radius:14px;padding:12px 10px;border:'+(tot.carb>tar.carb?'1px solid #FF453A':'1px solid transparent')+'">'+
+          '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px"><div style="width:3px;height:18px;border-radius:2px;background:'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+'"></div><div style="font-size:12px;color:rgba(255,255,255,0.82);font-weight:600">'+t("carb")+'</div></div>'+
+          '<div style="font-size:22px;font-weight:800;color:'+(tot.carb>tar.carb?'#FFCDD2':'#fff')+';line-height:1">'+Math.round(tot.carb)+'<span style="font-size:11px;opacity:0.65;font-weight:500">/'+Math.round(tar.carb)+'g</span></div>'+
+          '<div style="height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:7px"><div style="height:100%;width:'+Math.min(cp,100)+'%;background:'+(tot.carb>tar.carb?'#FF453A':'#5AC8FA')+';border-radius:2px"></div></div>'+
         '</div>'+
       '</div>'+
       streakHtml+
