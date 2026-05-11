@@ -2755,35 +2755,42 @@ function openAIHistoryItem(id){
   },200);
 }
 function renderAIHistoryResult(rid, r){
-  // Soddalashtirilgan render — original sendAI'dagi html ni yana yaratamiz
   var isRu=lang==="ru";
   var oqsil=isRu?"Белки":"Oqsil";var yog2=isRu?"Жиры":"Yog'";var uglev=isRu?"Углев.":"Uglevod";
-  var srcBadge=function(s){
-    if(s==='DB')return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#34C759"></span>';
-    if(s==='USDA')return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#FF9500"></span>';
-    return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#5AC8FA"></span>';
-  };
-  var itemsHtml='';
-  if(r.items&&r.items.length){
-    itemsHtml='<div style="background:var(--bg);border-radius:16px;padding:8px;margin-bottom:12px">'+
-      '<div style="font-size:10px;color:var(--t2);letter-spacing:.8px;padding:6px 10px">'+(isRu?"ИНГРЕДИЕНТЫ":"INGREDIENTLAR")+' ('+r.items.length+')</div>'+
-      r.items.map(function(it,idx){
-        var nm=(it.name_orig||it.matched||'').replace(/"/g,'&quot;');
-        return '<div data-rid="'+rid+'" data-idx="'+idx+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--card);margin-bottom:4px">'+
-          srcBadge(it.source)+
-          '<input type="text" class="ai-cell-name" value="'+nm+'" style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;padding:4px 0"/>'+
-          '<input type="number" class="ai-cell-g" value="'+Math.round(it.grams)+'" min="0" style="width:60px;border:1px solid var(--sep);background:var(--card);border-radius:8px;padding:4px 6px;font-size:13px;font-weight:600;text-align:center;color:var(--t1);outline:none"/>'+
-          '<span style="font-size:10px;color:var(--t2);min-width:14px">g</span>'+
-          '<span class="ai-cell-kcal" style="font-size:13px;font-weight:700;color:var(--teal);min-width:50px;text-align:right">'+Math.round(it.kcal)+'<span style="font-size:9px;font-weight:400;color:var(--t2)"> kc</span></span>'+
-          '<button class="ai-cell-del" style="width:22px;height:22px;border-radius:11px;background:rgba(0,0,0,0.06);border:none;cursor:pointer;font-size:11px;color:var(--t2);flex-shrink:0">×</button>'+
-        '</div>';
-      }).join('')+
-      '<div style="display:flex;gap:6px;padding:4px 6px">'+
-        '<button id="ai-add-row-'+rid+'" style="flex:1;background:transparent;border:1px dashed var(--sep);border-radius:10px;padding:8px;font-size:12px;color:var(--t2);cursor:pointer">+ '+(isRu?"добавить":"qator")+'</button>'+
-        '<button id="ai-recalc-'+rid+'" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">'+(isRu?"Пересчитать":"Qayta hisobla")+'</button>'+
+  var addLbl=isRu?"Добавить в дневник":"Logga qo'shish";
+  var saveLbl=isRu?"В мои продукты":"Mahsulotlarimga";
+  var itemsHtml=_renderAIItemsHtml(rid, r, isRu);
+  // Portion divider (recipe bo'lsa) yoki gramm input
+  var portionHtml = r._isRecipe || r.is_recipe ?
+    '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+      '<div style="display:flex;gap:12px;margin-bottom:10px">'+
+        '<div style="flex:1"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Разделить на":"Qismlarga bo\'l")+'</div>'+
+        '<input id="ai-parts-'+rid+'" type="number" value="1" min="1" max="100" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/></div>'+
+        '<div style="flex:1"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Я съел":"Men yedim")+'</div>'+
+        '<input id="ai-eaten-'+rid+'" type="number" value="1" min="1" max="100" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/></div>'+
+      '</div>'+
+      '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">'+r.protein+'g</div><div style="font-size:9px;color:var(--t2)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">'+r.fat+'g</div><div style="font-size:9px;color:var(--t2)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+r.carb+'g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>' :
+    '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+      '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Количество (г)":"Miqdor (g)")+'</div>'+
+      '<input id="ai-parts-'+rid+'" type="number" value="'+r.total_g+'" min="1" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:22px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+      '<input id="ai-eaten-'+rid+'" type="hidden" value="1"/>'+
+      '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">'+r.protein+'g</div><div style="font-size:9px;color:var(--t2)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">'+r.fat+'g</div><div style="font-size:9px;color:var(--t2)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+r.carb+'g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
+        '</div>'+
       '</div>'+
     '</div>';
-  }
   var html=
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
       '<div style="font-size:17px;font-weight:700;color:var(--t1)">'+(r.name||'')+'</div>'+
@@ -2800,9 +2807,24 @@ function renderAIHistoryResult(rid, r){
         '</div>'+
       '</div>'+
     '</div>'+
-    itemsHtml;
+    itemsHtml+
+    portionHtml+
+    '<div style="display:flex;gap:8px">'+
+      '<button id="ai-add-'+rid+'" class="ai-log-btn" style="flex:2;font-size:15px;font-weight:700">'+addLbl+'</button>'+
+      '<button id="ai-save-'+rid+'" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)">'+saveLbl+'</button>'+
+    '</div>';
   addAIMsg('bot', html);
-  setTimeout(function(){bindAICells(rid);},100);
+  setTimeout(function(){
+    var partsIn=document.getElementById('ai-parts-'+rid);
+    var eatenIn=document.getElementById('ai-eaten-'+rid);
+    var addBtn=document.getElementById('ai-add-'+rid);
+    var saveBtn=document.getElementById('ai-save-'+rid);
+    if(partsIn)partsIn.oninput=function(){updateAIPortionResult(rid);};
+    if(eatenIn)eatenIn.oninput=function(){updateAIPortionResult(rid);};
+    if(addBtn)addBtn.onclick=function(){addAIPortionToLog(rid,addBtn);};
+    if(saveBtn)saveBtn.onclick=function(){saveAIToMyFoods(rid,saveBtn);};
+    bindAICells(rid);
+  },100);
 }
 function aiHistDel(id){
   var list=_aiHistLoad();
@@ -2841,33 +2863,8 @@ async function sendAI(){
     var addLbl=isRu?"Добавить в дневник":"Logga qo'shish";
     var saveLbl=isRu?"В мои продукты":"Mahsulotlarimga";
     var oqsil=isRu?"Белки":"Oqsil";var yog2=isRu?"Жиры":"Yog'";var uglev=isRu?"Углев.":"Uglevod";
-    // Smart cells — items jadval ko'rinishida
-    var srcBadge = function(s){
-      if(s==='DB')   return '<span title="Bazadan" style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#34C759"></span>';
-      if(s==='USDA') return '<span title="USDA" style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#FF9500"></span>';
-      return '<span title="AI tahmin" style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#5AC8FA"></span>';
-    };
-    var itemsHtml='';
-    if(r.items && r.items.length){
-      itemsHtml = '<div style="background:var(--bg);border-radius:16px;padding:8px;margin-bottom:12px">'+
-        '<div style="font-size:10px;color:var(--t2);letter-spacing:.8px;padding:6px 10px">'+(isRu?"ИНГРЕДИЕНТЫ":"INGREDIENTLAR")+' ('+r.items.length+')</div>'+
-        r.items.map(function(it, idx){
-          var nm = it.name_orig || it.matched || '';
-          return '<div data-rid="'+rid+'" data-idx="'+idx+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--card);margin-bottom:4px">'+
-            srcBadge(it.source)+
-            '<input type="text" class="ai-cell-name" value="'+nm.replace(/"/g,'&quot;')+'" style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;padding:4px 0"/>'+
-            '<input type="number" class="ai-cell-g" value="'+Math.round(it.grams)+'" min="0" style="width:60px;border:1px solid var(--sep);background:var(--card);border-radius:8px;padding:4px 6px;font-size:13px;font-weight:600;text-align:center;color:var(--t1);outline:none"/>'+
-            '<span style="font-size:10px;color:var(--t2);min-width:14px">g</span>'+
-            '<span class="ai-cell-kcal" style="font-size:13px;font-weight:700;color:var(--teal);min-width:50px;text-align:right">'+Math.round(it.kcal)+'<span style="font-size:9px;font-weight:400;color:var(--t2)"> kc</span></span>'+
-            '<button class="ai-cell-del" style="width:22px;height:22px;border-radius:11px;background:rgba(0,0,0,0.06);border:none;cursor:pointer;font-size:11px;color:var(--t2);flex-shrink:0">×</button>'+
-            '</div>';
-        }).join('')+
-        '<div style="display:flex;gap:6px;padding:4px 6px">'+
-          '<button id="ai-add-row-'+rid+'" style="flex:1;background:transparent;border:1px dashed var(--sep);border-radius:10px;padding:8px;font-size:12px;color:var(--t2);cursor:pointer">+ '+(isRu?"добавить":"qator")+'</button>'+
-          '<button id="ai-recalc-'+rid+'" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">'+(isRu?"Пересчитать":"Qayta hisobla")+'</button>'+
-        '</div>'+
-        '</div>';
-    }
+    // Smart cells — items jadval ko'rinishida (kompakt, 2 qator)
+    var itemsHtml = _renderAIItemsHtml(rid, r, isRu);
     var html=
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
         '<div style="font-size:17px;font-weight:700;color:var(--t1)">'+r.name+'</div>'+
@@ -2938,10 +2935,43 @@ async function sendAI(){
   btn.disabled=false;
 }
 
+function _aiSrcBadge(s){
+  if(s==='DB')   return '<span title="Bazadan" style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#34C759;flex-shrink:0"></span>';
+  if(s==='USDA') return '<span title="USDA" style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#FF9500;flex-shrink:0"></span>';
+  return '<span title="AI tahmin" style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#5AC8FA;flex-shrink:0"></span>';
+}
+function _renderAIItemsHtml(rid, r, isRu){
+  if(!r.items || !r.items.length) return '';
+  var rows = r.items.map(function(it, idx){
+    var nm = (it.name_orig || it.matched || '').replace(/"/g,'&quot;');
+    return '<div data-rid="'+rid+'" data-idx="'+idx+'" style="display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;background:var(--card);margin-bottom:4px;overflow:hidden">'+
+      // 1-qator: badge + nom + ×
+      '<div style="display:flex;align-items:center;gap:8px;min-width:0">'+
+        _aiSrcBadge(it.source)+
+        '<input type="text" class="ai-cell-name" value="'+nm+'" style="flex:1;min-width:0;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;padding:2px 0"/>'+
+        '<button class="ai-cell-del" style="width:22px;height:22px;border-radius:11px;background:rgba(0,0,0,0.06);border:none;cursor:pointer;font-size:11px;color:var(--t2);flex-shrink:0">&#10005;</button>'+
+      '</div>'+
+      // 2-qator: gramm + kcal + BJU
+      '<div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);padding-left:14px;min-width:0">'+
+        '<input type="number" class="ai-cell-g" value="'+Math.round(it.grams)+'" min="0" style="width:54px;border:1px solid var(--sep);background:var(--bg);border-radius:6px;padding:3px 6px;font-size:12px;font-weight:600;text-align:center;color:var(--t1);outline:none;flex-shrink:0"/>'+
+        '<span style="flex-shrink:0">g</span>'+
+        '<span style="flex:1"></span>'+
+        '<span class="ai-cell-kcal" style="font-size:13px;font-weight:700;color:var(--teal);flex-shrink:0">'+Math.round(it.kcal)+' kc</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  return '<div id="ai-items-'+rid+'" style="background:var(--bg);border-radius:16px;padding:8px;margin-bottom:12px">'+
+    '<div style="font-size:10px;color:var(--t2);letter-spacing:.8px;padding:6px 10px">'+(isRu?"ИНГРЕДИЕНТЫ":"INGREDIENTLAR")+' ('+r.items.length+')</div>'+
+    rows +
+    '<div style="display:flex;gap:6px;padding:4px 6px;margin-top:4px">'+
+      '<button id="ai-add-row-'+rid+'" style="flex:1;background:transparent;border:1px dashed var(--sep);border-radius:10px;padding:9px;font-size:12px;color:var(--t2);cursor:pointer;font-weight:600">+ '+(isRu?"добавить":"qator")+'</button>'+
+      '<button id="ai-recalc-'+rid+'" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer">'+(isRu?"Пересчитать":"Qayta hisobla")+'</button>'+
+    '</div>'+
+  '</div>';
+}
 function bindAICells(rid){
-  var container = document.querySelector('[id="ai-add-row-'+rid+'"]');
-  if(!container) return;
-  var listEl = container.closest('div').parentNode;
+  var listEl = document.getElementById('ai-items-'+rid);
+  if(!listEl) return;
   // Har bir kataklarni hodisalar bilan ulash
   listEl.querySelectorAll('[data-rid="'+rid+'"]').forEach(function(row){
     var gIn  = row.querySelector('.ai-cell-g');
@@ -3046,34 +3076,18 @@ function recomputeAITotal(rid){
   updateAIPortionResult(rid);
 }
 function renderAIItems(rid){
-  // Soddalik uchun: butun panelni qayta yaratish o'rniga, faqat itemsHtml ni almashtirib chiqamiz
   var r=_aiResults[rid];if(!r)return;
-  var addRowBtn=document.getElementById('ai-add-row-'+rid);
-  if(!addRowBtn)return;
-  var card=addRowBtn.closest('div').parentNode; // items konteyner
-  if(!card)return;
+  var card=document.getElementById('ai-items-'+rid);
+  if(!card){
+    // Hech qachon yaratilmagan bo'lsa, total bo'limidan keyin yaratamiz
+    return;
+  }
   var isRu=lang==="ru";
-  var srcBadge=function(s){
-    if(s==='DB')return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#34C759"></span>';
-    if(s==='USDA')return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#FF9500"></span>';
-    return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#5AC8FA"></span>';
-  };
-  var rows=r.items.map(function(it,idx){
-    var nm=(it.name_orig||it.matched||"").replace(/"/g,'&quot;');
-    return '<div data-rid="'+rid+'" data-idx="'+idx+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--card);margin-bottom:4px">'+
-      srcBadge(it.source)+
-      '<input type="text" class="ai-cell-name" value="'+nm+'" style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;padding:4px 0"/>'+
-      '<input type="number" class="ai-cell-g" value="'+Math.round(it.grams)+'" min="0" style="width:60px;border:1px solid var(--sep);background:var(--card);border-radius:8px;padding:4px 6px;font-size:13px;font-weight:600;text-align:center;color:var(--t1);outline:none"/>'+
-      '<span style="font-size:10px;color:var(--t2);min-width:14px">g</span>'+
-      '<span class="ai-cell-kcal" style="font-size:13px;font-weight:700;color:var(--teal);min-width:50px;text-align:right">'+Math.round(it.kcal)+'<span style="font-size:9px;font-weight:400;color:var(--t2)"> kc</span></span>'+
-      '<button class="ai-cell-del" style="width:22px;height:22px;border-radius:11px;background:rgba(0,0,0,0.06);border:none;cursor:pointer;font-size:11px;color:var(--t2);flex-shrink:0">×</button>'+
-      '</div>';
-  }).join('');
-  card.innerHTML='<div style="font-size:10px;color:var(--t2);letter-spacing:.8px;padding:6px 10px">'+(isRu?"ИНГРЕДИЕНТЫ":"INGREDIENTLAR")+' ('+r.items.length+')</div>'+rows+
-    '<div style="display:flex;gap:6px;padding:4px 6px">'+
-      '<button id="ai-add-row-'+rid+'" style="flex:1;background:transparent;border:1px dashed var(--sep);border-radius:10px;padding:8px;font-size:12px;color:var(--t2);cursor:pointer">+ '+(isRu?"добавить":"qator")+'</button>'+
-      '<button id="ai-recalc-'+rid+'" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">'+(isRu?"Пересчитать":"Qayta hisobla")+'</button>'+
-    '</div>';
+  // _renderAIItemsHtml id wrapper qaytaradi — uning innerHTMLini olamiz
+  var temp=document.createElement('div');
+  temp.innerHTML=_renderAIItemsHtml(rid, r, isRu);
+  var inner=temp.firstChild;
+  if(inner)card.innerHTML=inner.innerHTML;
   bindAICells(rid);
 }
 
