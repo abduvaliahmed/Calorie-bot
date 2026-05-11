@@ -16,6 +16,85 @@ from database import conn, release
 _USDA_PATH = Path(__file__).parent / "usda_data.json"
 _USDA = None
 
+
+def _similar(a, b):
+    return SequenceMatcher(None, (a or "").lower(), (b or "").lower()).ratio()
+
+
+def _db_search(query: str):
+    """food_global jadvalida fuzzy qidiruv — brand mahsulotlari uchun aniq qiymat."""
+    if not query or len(query.strip()) < 3:
+        return None
+    c = conn(); cur = c.cursor()
+    q_low = query.lower().strip()
+    q = f"%{q_low}%"
+    try:
+        # 1. Aniq moslik
+        cur.execute(
+            "SELECT name,kcal,protein,fat,carb FROM food_global "
+            "WHERE LOWER(name)=%s OR LOWER(COALESCE(name_ru,''))=%s LIMIT 1",
+            (q_low, q_low)
+        )
+        row = cur.fetchone()
+        if row:
+            return dict(row)
+
+        # 2. Substring (ILIKE)
+        cur.execute(
+            "SELECT name,kcal,protein,fat,carb FROM food_global "
+            "WHERE LOWER(name) LIKE %s OR LOWER(COALESCE(name_ru,'')) LIKE %s "
+            "ORDER BY length(name) LIMIT 10",
+            (q, q)
+        )
+        rows = [dict(r) for r in cur.fetchall()]
+        if not rows:
+            # Brand bo'lakli qidiruv — har bir so'z bo'yicha
+            words = [w for w in re.split(r"\s+", q_low) if len(w) >= 3]
+            if not words:
+                return None
+            # Hech bo'lmaganda 2 so'z mos kelishi kerak (brand ehtimoli ko'p)
+            for word in words:
+                cur.execute(
+                    "SELECT name,kcal,protein,fat,carb FROM food_global "
+                    "WHERE LOWER(name) LIKE %s LIMIT 5",
+                    (f"%{word}%",)
+                )
+                more = [dict(r) for r in cur.fetchall()]
+                rows.extend(m for m in more if m not in rows)
+            if not rows:
+                return None
+    finally:
+        release(c)
+
+    if not rows:
+        return None
+
+    # Eng yaxshi mosini topish
+    first_word = q_low.split()[0] if q_low else ""
+
+    def score(r):
+        name_low = r["name"].lower()
+        s = _similar(q_low, name_low)
+        if name_low == q_low:
+            s += 1.0
+        elif name_low.startswith(q_low + " "):
+            s += 0.6
+        elif name_low.startswith(q_low):
+            s += 0.4
+        if first_word and (name_low.startswith(first_word + " ") or name_low == first_word):
+            s += 0.3
+        # Har bir so'z mos kelsa qo'shimcha bonus (brand uchun)
+        q_words = set(q_low.split())
+        n_words = set(name_low.split())
+        matched_words = q_words & n_words
+        if matched_words:
+            s += 0.15 * len(matched_words)
+        return s
+
+    best = max(rows, key=score)
+    final_score = score(best)
+    return best if final_score >= 0.35 else None
+
 def _load_usda():
     global _USDA
     if _USDA is None:
@@ -170,24 +249,39 @@ async def _groq_call(user_msg: str, api_key: str) -> dict:
 
 
 async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
-    """Asosiy entry-point: Gemini (bepul) → Claude → Groq fallback."""
+    """Asosiy entry-point: Gemini (bepul) → Claude → Groq fallback.
+    Hybrid: AI ajratadi, DB'dagi mahsulot bo'lsa uning aniq qiymati ishlatiladi."""
     gemini_key    = os.environ.get("GEMINI_API_KEY", "")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     import logging
     log = logging.getLogger(__name__)
 
+    # AI ga DB dagi brand mahsulotlarining qisqacha ro'yxatini hint sifatida beramiz
+    # Shunda u foydalanuvchi yozgan "Sut Lactel" deganini "Sut Lactel 1%" bilan moslashtiradi
+    db_hint = ""
+    try:
+        c = conn(); cur = c.cursor()
+        cur.execute("SELECT name FROM food_global ORDER BY id LIMIT 500")
+        db_names = [r[0] if isinstance(r, tuple) else r["name"] for r in cur.fetchall()]
+        release(c)
+        if db_names:
+            db_hint = "\n\nKNOWN BRAND PRODUCTS IN DATABASE — if user mentions any of these (even partially), use the EXACT name from this list:\n" + ", ".join(db_names[:300])
+    except Exception:
+        pass
+    enriched_message = user_message + (("\n\n" + db_hint) if db_hint else "")
+
     parsed = None
     # 1) Gemini (bepul, asosiy)
     if gemini_key:
         try:
-            parsed = await _gemini_call(user_message, gemini_key)
+            parsed = await _gemini_call(enriched_message, gemini_key)
         except Exception as e:
             log.warning(f"Gemini failed: {e}")
 
     # 2) Claude (pullik, fallback)
     if parsed is None and anthropic_key:
         try:
-            parsed = await _claude_call(user_message, anthropic_key)
+            parsed = await _claude_call(enriched_message, anthropic_key)
         except Exception as e:
             log.warning(f"Claude failed: {e}")
 
@@ -195,25 +289,71 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
     if parsed is None:
         if not groq_key:
             raise ValueError("GEMINI_API_KEY, ANTHROPIC_API_KEY yoki GROQ_API_KEY zarur")
-        parsed = await _groq_call(user_message, groq_key)
+        parsed = await _groq_call(enriched_message, groq_key)
 
     # AI javobini standart format ga keltirish
     items = parsed.get("items", [])
     if not items:
         return {"ok": False, "error": "Mahsulot aniqlanmadi"}
 
+    # HYBRID: agar DBda mahsulot bor bo'lsa, AI qiymatini DB qiymatiga almashtiramiz
     result_items = []
+    total = {"kcal":0,"protein":0,"fat":0,"carb":0}
+
     for it in items:
+        name_orig = (it.get("name") or "").strip()
+        grams     = float(it.get("grams") or 0)
+        if not name_orig or grams <= 0:
+            continue
+
+        # AI qiymatini olamiz
+        ai_kcal = float(it.get("kcal") or 0)
+        ai_p    = float(it.get("protein") or 0)
+        ai_f    = float(it.get("fat") or 0)
+        ai_c    = float(it.get("carb") or 0)
+        source  = "AI"
+        matched = name_orig
+
+        # DBdan qidirish
+        db_food = _db_search(name_orig)
+        if db_food:
+            # DB qiymatlari 100g uchun, item uchun grams'ga ko'paytiramiz
+            ratio = grams / 100.0
+            ai_kcal = round(float(db_food.get("kcal") or 0) * ratio, 1)
+            ai_p    = round(float(db_food.get("protein") or 0) * ratio, 1)
+            ai_f    = round(float(db_food.get("fat") or 0) * ratio, 1)
+            ai_c    = round(float(db_food.get("carb") or 0) * ratio, 1)
+            source  = "DB"
+            matched = db_food.get("name", name_orig)
+            log.info(f"DB match: '{name_orig}' → '{matched}' ({ai_kcal} kcal)")
+
         result_items.append({
-            "name_orig": it.get("name", ""),
-            "matched":   it.get("name", ""),
-            "grams":     float(it.get("grams") or 0),
-            "source":    "AI",
-            "kcal":      round(float(it.get("kcal") or 0), 1),
-            "protein":   round(float(it.get("protein") or 0), 1),
-            "fat":       round(float(it.get("fat") or 0), 1),
-            "carb":      round(float(it.get("carb") or 0), 1),
+            "name_orig": name_orig,
+            "matched":   matched,
+            "grams":     grams,
+            "source":    source,
+            "kcal":      round(ai_kcal, 1),
+            "protein":   round(ai_p, 1),
+            "fat":       round(ai_f, 1),
+            "carb":      round(ai_c, 1),
         })
+        total["kcal"]    += ai_kcal
+        total["protein"] += ai_p
+        total["fat"]     += ai_f
+        total["carb"]    += ai_c
+
+    # Agar DB dan biror mahsulot olingan bo'lsa — jami summa qaytadan hisoblanadi
+    has_db_match = any(r["source"] == "DB" for r in result_items)
+    if has_db_match:
+        final_kcal    = round(total["kcal"], 1)
+        final_protein = round(total["protein"], 1)
+        final_fat     = round(total["fat"], 1)
+        final_carb    = round(total["carb"], 1)
+    else:
+        final_kcal    = round(float(parsed.get("kcal") or 0), 1)
+        final_protein = round(float(parsed.get("protein") or 0), 1)
+        final_fat     = round(float(parsed.get("fat") or 0), 1)
+        final_carb    = round(float(parsed.get("carb") or 0), 1)
 
     total_g = float(parsed.get("total_g_cooked") or parsed.get("total_g_raw") or
                     sum(r["grams"] for r in result_items) or 1)
@@ -225,14 +365,14 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
             "is_recipe":    bool(parsed.get("is_recipe", False)),
             "total_g":      round(total_g, 1),
             "total_g_raw":  parsed.get("total_g_raw"),
-            "kcal":         round(float(parsed.get("kcal") or 0), 1),
-            "protein":      round(float(parsed.get("protein") or 0), 1),
-            "fat":          round(float(parsed.get("fat") or 0), 1),
-            "carb":         round(float(parsed.get("carb") or 0), 1),
-            "per100_kcal":  round(float(parsed.get("per100_kcal") or 0), 1),
-            "per100_p":     round(float(parsed.get("per100_p") or 0), 1),
-            "per100_f":     round(float(parsed.get("per100_f") or 0), 1),
-            "per100_c":     round(float(parsed.get("per100_c") or 0), 1),
+            "kcal":         final_kcal,
+            "protein":      final_protein,
+            "fat":          final_fat,
+            "carb":         final_carb,
+            "per100_kcal":  round(final_kcal/total_g*100, 1) if total_g else 0,
+            "per100_p":     round(final_protein/total_g*100, 1) if total_g else 0,
+            "per100_f":     round(final_fat/total_g*100, 1) if total_g else 0,
+            "per100_c":     round(final_carb/total_g*100, 1) if total_g else 0,
             "items":        result_items,
         },
     }
