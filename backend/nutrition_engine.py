@@ -256,19 +256,35 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
     import logging
     log = logging.getLogger(__name__)
 
-    # AI ga DB dagi brand mahsulotlarining qisqacha ro'yxatini hint sifatida beramiz
-    # Shunda u foydalanuvchi yozgan "Sut Lactel" deganini "Sut Lactel 1%" bilan moslashtiradi
-    db_hint = ""
+    # AI ga DB dan FAQAT foydalanuvchining xabariga mos keluvchi mahsulot nomlarini hint sifatida beramiz (RAG)
+    db_hint_names = []
     try:
-        c = conn(); cur = c.cursor()
-        cur.execute("SELECT name FROM food_global ORDER BY id LIMIT 500")
-        db_names = [r[0] if isinstance(r, tuple) else r["name"] for r in cur.fetchall()]
-        release(c)
-        if db_names:
-            db_hint = "\n\nKNOWN BRAND PRODUCTS IN DATABASE — if user mentions any of these (even partially), use the EXACT name from this list:\n" + ", ".join(db_names[:300])
+        words = [w for w in re.findall(r"[a-zA-Zа-яА-ЯёЁ'ʻ]{3,}", user_message.lower()) if len(w) >= 3]
+        if words:
+            c = conn(); cur = c.cursor()
+            # Har bir so'z bo'yicha qidirish
+            seen = set()
+            for w in words[:10]:
+                cur.execute(
+                    "SELECT name FROM food_global WHERE LOWER(name) LIKE %s ORDER BY length(name) LIMIT 8",
+                    (f"%{w}%",)
+                )
+                for row in cur.fetchall():
+                    nm = row[0] if isinstance(row, tuple) else row["name"]
+                    if nm not in seen:
+                        seen.add(nm)
+                        db_hint_names.append(nm)
+            release(c)
     except Exception:
         pass
-    enriched_message = user_message + (("\n\n" + db_hint) if db_hint else "")
+
+    db_hint = ""
+    if db_hint_names:
+        # Maks 30 ta nom — Gemini tokenini ortiqcha to'ldirmaslik uchun
+        db_hint = ("\n\n[DATABASE BRAND PRODUCTS — if user mentions any of these, "
+                   "use this EXACT name and the values for this exact product]:\n"
+                   + " | ".join(db_hint_names[:30]))
+    enriched_message = user_message + db_hint
 
     parsed = None
     # 1) Gemini (bepul, asosiy)
