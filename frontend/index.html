@@ -497,6 +497,7 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
             <span id="streak-badge" onclick="openStreakModal()" style="display:none;background:rgba(255,149,0,0.12);color:#FF9500;border-radius:20px;padding:3px 10px;font-size:13px;font-weight:600;cursor:pointer"></span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="toggleSnd()" data-snd="tap" id="snd-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">&#128266;</button>
             <button onclick="toggleLang()" id="lang-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer">RU</button>
             <button onclick="toggleTheme()" id="theme-btn" style="background:var(--tl);color:var(--td);border:none;border-radius:20px;padding:6px 10px;font-size:13px;cursor:pointer">&#127769;</button>
           </div>
@@ -878,6 +879,92 @@ function haptic(type, style) {
     else if (type === 'notification') tg.HapticFeedback.notificationOccurred(style || 'success');
   } catch(e) {}
 }
+
+/* ─── Tovush tizimi (Web Audio, sintetik) ─────────────────────────────── */
+var Snd = {
+  ctx: null,
+  enabled: (function(){ try{return localStorage.getItem('snd_off')!=='1';}catch(e){return true;} })(),
+  init: function(){
+    if (this.ctx) return;
+    try { this.ctx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e) {}
+  },
+  _tone: function(freq, dur, vol, type, delay){
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    var t = this.ctx.currentTime + (delay||0)/1000;
+    var o = this.ctx.createOscillator();
+    var g = this.ctx.createGain();
+    o.frequency.value = freq;
+    o.type = type || 'sine';
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur/1000);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(t); o.stop(t + dur/1000 + 0.02);
+  },
+  /* Yengil tap — odatiy tugma */
+  tap:        function(){ this._tone(620, 35, 0.045, 'sine'); },
+  /* Selection — qatorga, optsiyaga bosish */
+  select:     function(){ this._tone(800, 40, 0.05, 'sine'); },
+  /* Confirm — Save/Add/Submit (yuqorilovchi 2 ton) */
+  confirm:    function(){ this._tone(523, 50, 0.05, 'sine'); this._tone(784, 70, 0.05, 'sine', 50); },
+  /* Cancel/Back — pasayuvchi 2 ton */
+  back:       function(){ this._tone(660, 35, 0.045, 'sine'); this._tone(440, 55, 0.045, 'sine', 35); },
+  /* Delete — qisqa past */
+  del:        function(){ this._tone(260, 70, 0.06, 'triangle'); },
+  /* Tab almashtirish — kichik 2-ton */
+  tab:        function(){ this._tone(680, 25, 0.04, 'sine'); this._tone(880, 35, 0.04, 'sine', 25); },
+  /* Tick — son +/- */
+  tick:       function(){ this._tone(1200, 20, 0.035, 'square'); },
+  /* Open sheet/panel */
+  open:       function(){ this._tone(440, 30, 0.04, 'sine'); this._tone(660, 50, 0.04, 'sine', 30); },
+  /* Close */
+  close:      function(){ this._tone(660, 30, 0.04, 'sine'); this._tone(440, 50, 0.04, 'sine', 30); },
+  /* Success notification — toast */
+  success:    function(){ this._tone(659, 60, 0.06, 'sine'); this._tone(880, 80, 0.06, 'sine', 60); this._tone(1175, 100, 0.05, 'sine', 140); },
+  /* Error/warning */
+  error:      function(){ this._tone(220, 90, 0.07, 'sawtooth'); this._tone(180, 110, 0.06, 'sawtooth', 90); },
+  toggle:     function(on){ try{localStorage.setItem('snd_off', on?'0':'1');}catch(e){} this.enabled = !!on; }
+};
+/* Knopka turini avtomatik aniqlaydi va mos tovush chaladi */
+(function(){
+  function classify(el){
+    var override = el.getAttribute && el.getAttribute('data-snd');
+    if (override) return override;
+    var cls = (el.className||'') + '';
+    var txt = (el.textContent||'').trim().toLowerCase();
+    var html = (el.innerHTML||'').toLowerCase();
+    // Delete: ×, ✕, .del, qizil rang
+    if (/^[×✕✖✗xX]$/.test(txt) || el.classList && el.classList.contains('del')) return 'del';
+    if (/o'chir|удал|delete/i.test(txt)) return 'del';
+    // Back: ‹, ←, Orqaga, Назад
+    if (/^[‹←<]/.test(txt) || /orqaga|назад|back/i.test(txt)) return 'back';
+    // Close: Yopish
+    if (/yopish|закрыть|close/i.test(txt) || html.indexOf('10005')>=0) return 'close';
+    // Confirm: Save/Add/Submit/Qo'shish
+    if (/saqla|qo'sh|сохран|добав|save|add|create|yarat|davom|продолж|next|kelu/i.test(txt)) return 'confirm';
+    // .btn.bp = primary
+    if (/\bbp\b/.test(cls)) return 'confirm';
+    // Tab buttons
+    if (/\btab\b|switch|filter/i.test(cls)) return 'tab';
+    return 'tap';
+  }
+  document.addEventListener('click', function(e){
+    if (!Snd.enabled) return;
+    var el = e.target;
+    /* Tugma yoki onclick li elementga ko'tarilamiz */
+    var btn = el.closest ? el.closest('button, [onclick], [role="button"], .row, .fi, .opt') : null;
+    if (!btn) return;
+    /* Forma input larini o'tkazib yuboramiz */
+    if (btn.tagName === 'INPUT' || btn.tagName === 'TEXTAREA' || btn.tagName === 'SELECT') return;
+    var type = classify(btn);
+    if (typeof Snd[type] === 'function') Snd[type]();
+  }, true);
+})();
+/* Toast tovushi (showLoading/toast funksiyalari qo'llab-quvvatlaydi) */
+function sndSuccess(){ try{Snd.success();}catch(e){} }
+function sndError(){ try{Snd.error();}catch(e){} }
 var lang = (tgU && tgU.language_code && tgU.language_code.startsWith("ru")) ? "ru" : "uz";
 var S = { user: null, today: null, foods: [], sel: null };
 
@@ -952,12 +1039,12 @@ function _startLoadHaptic(){
 }
 function _stopLoadHaptic(){_loadHapticStop=true;}
 function showLoading(txt){var el=document.getElementById('overlay');var tt=document.getElementById('overlay-txt');if(tt)tt.textContent=txt||(lang==="uz"?"Yuklanmoqda...":"Загрузка...");if(el)el.classList.add('show');_startLoadHaptic();}
-function hideLoading(){var el=document.getElementById('overlay');if(el)el.classList.remove('show');_stopLoadHaptic();haptic('notification','success');}
+function hideLoading(){var el=document.getElementById('overlay');if(el)el.classList.remove('show');_stopLoadHaptic();haptic('notification','success');try{Snd.success();}catch(e){}}
 function fmt(n){return Math.round(n).toLocaleString("ru");}
 function fd(n){return Math.round(n*10)/10;}
 function pct(a,b){return b>0?Math.min(100,Math.round(a/b*100)):0;}
 function mkbar(p,col){col=col||"var(--teal)";return '<div style="height:6px;background:var(--sep);border-radius:3px;overflow:hidden;margin-top:5px"><div style="height:6px;background:'+col+';border-radius:3px;width:'+p+'%"></div></div>';}
-function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(function(){el.classList.remove("show");},2500);}
+function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");try{var m=(msg||'').toLowerCase();if(/error|ошибк|xato/.test(m))Snd.error();else if(/saqlandi|сохран|qo['']?shildi|добавл|o['']?chirildi|удал|deleted/.test(m))Snd.success();}catch(e){}setTimeout(function(){el.classList.remove("show");},2500);}
 function gIcon(g){return {lose:"🔻",maintain:"⚖️",muscle:"💪"}[g]||"";}
 function gLabel(g){return {lose:t("gl"),maintain:t("gm"),muscle:t("gg")}[g]||g;}
 function fIcon(n){var m={tovuq:"🍗",tuxum:"🥚",guruch:"🍚",banan:"🍌",olma:"🍎",non:"🍞",sut:"🥛",tvorog:"🧀",losos:"🐟",mol:"🥩",kartoshka:"🥔"};var k=n.toLowerCase();for(var w in m){if(k.indexOf(w)>=0)return m[w];}return "🍽";}
@@ -977,6 +1064,8 @@ function cacheInvalidate(k){delete _cache[k];}
 var _theme='light';
 function toggleTheme(){_theme=_theme==='light'?'dark':'light';document.body.classList.toggle('dark',_theme==='dark');var icon=_theme==='dark'?'☀️':'🌙';var b1=document.getElementById('theme-btn');var b2=document.getElementById('theme-btn2');if(b1)b1.textContent=icon;if(b2)b2.textContent=icon;try{localStorage.setItem('barg_theme',_theme);}catch(e){}}
 function initTheme(){try{var saved=localStorage.getItem('barg_theme');if(saved==='dark')toggleTheme();}catch(e){}}
+function toggleSnd(){var on=!Snd.enabled;Snd.toggle(on);var b=document.getElementById('snd-btn');if(b)b.textContent=on?'🔊':'🔇';if(on)Snd.tap();}
+function initSnd(){var b=document.getElementById('snd-btn');if(b)b.textContent=Snd.enabled?'🔊':'🔇';}
 
 function updateTabLabels(){
   var isRu=lang==="ru";
@@ -2730,6 +2819,7 @@ function closeInfo(){
 }
 
 initTheme();
+initSnd();
 init();
 </script>
 <div id="info-overlay" onclick="closeInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.18);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:998;transition:opacity .28s ease;opacity:0"></div>
