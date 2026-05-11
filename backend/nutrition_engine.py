@@ -30,22 +30,36 @@ def _load_usda():
 
 # Mahsulot nomlarini ingliz tiliga tarjima qilish (USDA so'rovi uchun)
 PARSE_PROMPT = """You are a nutrition input parser. Extract food ingredients from the user message.
-For each ingredient, output: original name (any language), English name (for USDA database), grams (number).
+For each ingredient output JSON with:
+  - name_orig: KEEP EXACTLY as user wrote (do NOT translate, preserve Uzbek/Russian)
+  - name_en: USDA-style English name. CRITICAL: pick the COOKED/PREPARED form if it's a food
+    that is typically eaten cooked (rice, pasta, meat, eggs cooked, etc).
+    Use "raw" only for fruits, vegetables, milk, yogurt, oil that are eaten as-is.
+  - grams: number. If not given, use typical single serving:
+    1 apple=180, 1 egg=50, 1 banana=120, 1 piece of bread=30, 1 cup rice cooked=200,
+    1 cup yogurt=240, 1 chicken breast=170, 1 portion plov=300.
 
-If grams not specified, estimate a typical single serving in grams (e.g., 1 apple = 180g, 1 egg = 50g).
-
-Return ONLY this JSON, nothing else:
+Return ONLY this JSON:
 {"items":[{"name_orig":"...","name_en":"...","grams":NUMBER}]}
 
-Examples:
-Input: "300g qatiq va 100g olma"
-Output: {"items":[{"name_orig":"qatiq","name_en":"yogurt, plain, whole milk","grams":300},{"name_orig":"olma","name_en":"apples, raw, with skin","grams":100}]}
+CRITICAL EXAMPLES (cooked vs raw matters!):
+"300g guruch"    → name_en: "rice, white, long-grain, regular, enriched, cooked"  (NOT raw — 130 kcal/100g)
+"200g go'sht"    → name_en: "beef, ground, 85% lean meat / 15% fat, cooked, broiled" (NOT raw)
+"100g tovuq"     → name_en: "chicken, breast, meat only, cooked, roasted"
+"150g makaron"   → name_en: "pasta, cooked, enriched, with added salt"
+"200g grechka"   → name_en: "buckwheat groats, cooked"
+"2 tuxum"        → name_en: "egg, whole, cooked, hard-boiled", grams: 100
+"300g qatiq"     → name_en: "yogurt, plain, whole milk" (raw — yogurt is eaten as is)
+"1 olma"         → name_en: "apples, raw, with skin", grams: 180
+"150g osh"       → name_en: "rice pilaf with chicken or lamb, cooked", grams: 150
+"100g non"       → name_en: "bread, white, commercially prepared"
+"50g yog' sariyog'" → name_en: "butter, salted"
+"30g qand"       → name_en: "sugars, granulated"
+"50g sabzi"      → name_en: "carrots, raw"  (yes, raw if user didn't say cooked)
+"200g osh sabzi" → name_en: "carrots, cooked, boiled, drained, without salt"
 
-Input: "2 tuxum"
-Output: {"items":[{"name_orig":"tuxum","name_en":"egg, whole, raw, fresh","grams":100}]}
-
-Input: "150g osh"
-Output: {"items":[{"name_orig":"osh","name_en":"rice pilaf with lamb","grams":150}]}"""
+DEFAULT RULE: If user is listing ingredients for a cooked dish (plov, lagman, sho'rva, kotlet, etc),
+ALL ingredients should be in their cooked form unless they're sauces/oils/salts."""
 
 
 FALLBACK_PROMPT = """You are a strict nutrition database. Given an English food name, return its nutrition per 100g.
@@ -86,25 +100,46 @@ def _similar(a, b):
 
 
 def _db_search(query):
-    """food_global jadvalida fuzzy qidiruv."""
+    """food_global jadvalida qidiruv. Manual /api/food/search bilan bir xil tartib."""
+    if not query or len(query) < 3:
+        return None
     c = conn(); cur = c.cursor()
-    q = f"%{query.lower()}%"
+    q_low = query.lower().strip()
+    q = f"%{q_low}%"
+    # Avval aniq moslik
     cur.execute(
-        "SELECT name,kcal,protein,fat,carb,COALESCE(source,'') as source,"
-        "COALESCE(store,'') as store "
-        "FROM food_global WHERE LOWER(name) LIKE %s OR LOWER(COALESCE(name_ru,'')) LIKE %s "
-        "ORDER BY length(name) LIMIT 5",
+        "SELECT name,kcal,protein,fat,carb FROM food_global "
+        "WHERE LOWER(name)=%s OR LOWER(COALESCE(name_ru,''))=%s LIMIT 1",
+        (q_low, q_low)
+    )
+    row = cur.fetchone()
+    if row:
+        release(c)
+        return dict(row)
+    # Substring (ILIKE)
+    cur.execute(
+        "SELECT name,kcal,protein,fat,carb FROM food_global "
+        "WHERE LOWER(name) LIKE %s OR LOWER(COALESCE(name_ru,'')) LIKE %s "
+        "ORDER BY length(name) LIMIT 10",
         (q, q)
     )
     rows = [dict(r) for r in cur.fetchall()]
     release(c)
     if not rows:
         return None
-    # Eng yaqin nomli (length farq + similarity)
-    best = max(rows, key=lambda r: _similar(query, r["name"]))
-    if _similar(query, best["name"]) < 0.4:
-        return None
-    return best
+    # Birinchi so'z mos kelganlarini afzal ko'ramiz
+    first_word = q_low.split()[0] if q_low else ""
+    def score(r):
+        name_low = r["name"].lower()
+        s = _similar(q_low, name_low)
+        # So'z chegarasida bo'lsa bonus
+        if name_low.startswith(q_low + " ") or name_low == q_low: s += 0.5
+        if first_word and (name_low.startswith(first_word + " ") or name_low == first_word):
+            s += 0.3
+        return s
+    best = max(rows, key=score)
+    # ILIKE matched bo'lsa, threshold past
+    return best if score(best) >= 0.2 else None
 
 
 def _usda_search(query_en):
