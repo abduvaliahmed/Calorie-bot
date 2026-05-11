@@ -130,6 +130,85 @@ def _load_usda():
     return _USDA
 
 
+# O'zbek/Rus → USDA inglizcha tarjima
+_UZ_TO_USDA = {
+    "yog":"vegetable oil", "yog'":"vegetable oil", "yogi":"vegetable oil",
+    "osimlik yogi":"vegetable oil", "osimlik yog'i":"vegetable oil",
+    "kungaboqar yog'i":"vegetable oil", "zaytun yog'i":"olive oil",
+    "масло":"vegetable oil", "растительное масло":"vegetable oil",
+    "sariyog":"butter, salted", "sariyog'":"butter, salted",
+    "maslo":"butter, salted", "сливочное масло":"butter, salted",
+    "guruch":"rice, white, long-grain, regular",
+    "guruch pishirilgan":"rice, white, long-grain, regular, enriched, cooked",
+    "рис":"rice, white",
+    "mol go'shti":"beef, ground, 85", "mol gosht":"beef, ground, 85",
+    "говядина":"beef, ground, 85",
+    "qo'y go'shti":"lamb, ground", "qoy goshti":"lamb, ground",
+    "tovuq":"chicken, breast, meat only, cooked, roasted",
+    "tovuq go'shti":"chicken, breast, meat only, cooked, roasted",
+    "курица":"chicken, breast",
+    "baliq":"fish, tuna, fresh, bluefin, raw",
+    "tuxum":"egg, whole, raw, fresh", "яйцо":"egg, whole, raw, fresh",
+    "sabzi":"carrots, raw", "морковь":"carrots, raw",
+    "piyoz":"onions, raw", "лук":"onions, raw",
+    "sarimsoq":"garlic, raw", "чеснок":"garlic, raw",
+    "pomidor":"tomatoes, red, ripe, raw", "tomat":"tomatoes, red, ripe, raw",
+    "помидор":"tomatoes, red, ripe, raw",
+    "bodring":"cucumber, with peel, raw", "огурец":"cucumber, with peel, raw",
+    "baqlajon":"eggplant, raw", "qalampir":"peppers, sweet, green, raw",
+    "kartoshka":"potatoes, white, flesh and skin, raw",
+    "картошка":"potatoes, white, flesh and skin, raw",
+    "olma":"apples, raw, with skin", "яблоко":"apples, raw, with skin",
+    "banan":"bananas, raw", "apelsin":"oranges, raw",
+    "limon":"lemons, raw, without peel", "uzum":"grapes, red or green",
+    "qulupnay":"strawberries, raw",
+    "non":"bread, white, commercially prepared",
+    "qatiq":"yogurt, plain, whole milk", "sut":"milk, whole, 3.25% milkfat",
+    "smetana":"sour cream", "сметана":"sour cream",
+    "qaymoq":"cream, fluid, heavy whipping", "pishloq":"cheese, cheddar",
+    "tvorog":"cheese, cottage, creamed", "kefir":"yogurt, plain, low fat",
+    "qand":"sugars, granulated", "сахар":"sugars, granulated",
+    "asal":"honey", "shokolad":"candies, milk chocolate",
+    "makaron":"pasta, cooked, enriched", "grechka":"buckwheat groats, roasted, cooked",
+    "no'xat":"chickpeas, mature seeds, cooked, boiled",
+    "loviya":"beans, snap, green, raw",
+}
+
+
+def _usda_search(query):
+    """USDA bazadan qidirish. O'zbek/Rus nomlarni tarjima qiladi."""
+    if not query:
+        return None
+    q_orig = query.lower().strip()
+    q_norm = re.sub(r"[ʻ`´']", "'", q_orig)
+    # Avval lug'atdan tarjima
+    translated = _UZ_TO_USDA.get(q_norm) or _UZ_TO_USDA.get(q_orig)
+    q = (translated or q_orig).lower()
+    db = _load_usda()
+    if not db: return None
+    # Aniq moslik
+    for name, item in db:
+        if q == name:
+            return {"name": item["name"], "kcal": item.get("kcal") or 0,
+                    "protein": item.get("protein") or 0, "fat": item.get("fat") or 0,
+                    "carb": item.get("carb") or 0}
+    # Prefiks
+    for name, item in db:
+        if name.startswith(q):
+            return {"name": item["name"], "kcal": item.get("kcal") or 0,
+                    "protein": item.get("protein") or 0, "fat": item.get("fat") or 0,
+                    "carb": item.get("carb") or 0}
+    # Birinchi so'z bo'yicha
+    first = q.split(",")[0].split()[0] if q else ""
+    if first and len(first) > 3:
+        for name, item in db:
+            if name.startswith(first):
+                return {"name": item["name"], "kcal": item.get("kcal") or 0,
+                        "protein": item.get("protein") or 0, "fat": item.get("fat") or 0,
+                        "carb": item.get("carb") or 0}
+    return None
+
+
 SYSTEM_PROMPT = """You are a precise nutrition calculator for Uzbek/Russian-speaking users.
 
 ═══ CONTEXT DETECTION (most important!) ═══
@@ -352,9 +431,60 @@ async def _groq_call(user_msg: str, api_key: str) -> dict:
         return json.loads(text)
 
 
+def _parse_locally(msg: str):
+    """Foydalanuvchi xabarini lokal parse qilish — AI'siz.
+    Pattern: 'Nom Xg' yoki 'Xg Nom' yoki 'Nom X ml' va h.k."""
+    msg_clean = re.sub(r"[.,;]", " ", msg)
+    # ml ni gramga aylantirish — yog' uchun 0.92, suv/sut 1.0
+    # Patternlar: "olma 100g", "100g olma", "100 g olma", "olma 100"
+    pattern = re.compile(
+        r"(?:([a-zA-Zа-яА-ЯёЁ'ʻ\s]{2,40}?)\s*(\d+(?:[.,]\d+)?)\s*(гр?|kg|ml|мл|л|l|кг|g|г|шт|штук|dona)?)|"
+        r"(?:(\d+(?:[.,]\d+)?)\s*(гр?|kg|ml|мл|л|l|кг|g|г|шт|штук|dona)?\s+([a-zA-Zа-яА-ЯёЁ'ʻ\s]{2,40}?)(?=$|\s\d|\s+va\s|\s+и\s|,))",
+        re.I
+    )
+    items = []
+    seen_names = set()
+    for m in pattern.finditer(msg_clean):
+        name1, num1, unit1, num2, unit2, name2 = m.groups()
+        if name1 and num1:
+            name = name1.strip(); num = num1; unit = unit1
+        elif name2 and num2:
+            name = name2.strip(); num = num2; unit = unit2
+        else:
+            continue
+        # Tozalash
+        name = re.sub(r"\s+", " ", name).strip()
+        name = re.sub(r"^(va|и|и т.?д.?|ham)\s+", "", name, flags=re.I).strip()
+        if len(name) < 2 or name.lower() in {"va","i","и","da","na"}: continue
+        if name.lower() in seen_names: continue
+        seen_names.add(name.lower())
+        try:
+            grams = float(num.replace(",", "."))
+        except:
+            continue
+        # Birlikni gramga aylantirish
+        u = (unit or "g").lower()
+        if u in ("kg", "кг"): grams *= 1000
+        elif u in ("l", "л"): grams *= 1000  # 1l ~ 1000g
+        elif u in ("ml", "мл"): grams *= 0.92 if "yog" in name.lower() or "масл" in name.lower() or "ёг" in name.lower() else 1.0
+        elif u in ("шт","штук","dona","sht"):
+            # Donalar uchun taxminiy gramm
+            n_low = name.lower()
+            if "olma" in n_low or "ябл" in n_low: grams *= 180
+            elif "tuxum" in n_low or "яйц" in n_low: grams *= 50
+            elif "banan" in n_low: grams *= 120
+            else: grams *= 100
+        if grams > 0 and grams < 10000:
+            items.append({"name": name, "grams": grams})
+    return items
+
+
 async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
-    """Asosiy entry-point: Gemini (bepul) → Claude → Groq fallback.
-    Hybrid: AI ajratadi, DB'dagi mahsulot bo'lsa uning aniq qiymati ishlatiladi."""
+    """Asosiy entry-point. Tartib:
+    1) In-memory cache
+    2) Lokal parse + DB qidiruv (AI'siz, eng tez)
+    3) AI fallback (Gemini → Claude → Groq)
+    """
     gemini_key    = os.environ.get("GEMINI_API_KEY", "")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     import logging
@@ -365,6 +495,60 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
     if cached:
         log.info(f"Cache hit: {user_message[:50]}")
         return cached
+
+    # Lokal parse — DB yoki USDA dan qidirish (AI chaqirmasdan)
+    local_items = _parse_locally(user_message)
+    if local_items:
+        resolved = []
+        for li in local_items:
+            db_food = _db_search(li["name"])
+            if db_food:
+                resolved.append((li, db_food, "DB"))
+                continue
+            usda = _usda_search(li["name"])
+            if usda:
+                resolved.append((li, usda, "USDA"))
+                continue
+            # Lokal lookup uzulgan
+            resolved = None
+            break
+        if resolved is not None and len(resolved) == len(local_items):
+            log.info(f"Local match for all items: {[i['name'] for i in local_items]}")
+            result_items = []
+            total = {"kcal":0,"protein":0,"fat":0,"carb":0}
+            for li, food, src in resolved:
+                g = li["grams"]
+                ratio = g / 100.0
+                k = round(float(food.get("kcal") or 0) * ratio, 1)
+                p = round(float(food.get("protein") or 0) * ratio, 1)
+                f = round(float(food.get("fat") or 0) * ratio, 1)
+                c = round(float(food.get("carb") or 0) * ratio, 1)
+                total["kcal"] += k; total["protein"] += p; total["fat"] += f; total["carb"] += c
+                result_items.append({
+                    "name_orig": li["name"], "matched": food.get("name", li["name"]),
+                    "grams": g, "source": src,
+                    "kcal": k, "protein": p, "fat": f, "carb": c
+                })
+            total_g = sum(r["grams"] for r in result_items) or 1
+            response = {
+                "ok": True,
+                "result": {
+                    "name": " + ".join(r["name_orig"] for r in result_items[:3]),
+                    "is_recipe": len(result_items) > 1,
+                    "total_g": round(total_g, 1),
+                    "kcal": round(total["kcal"], 1),
+                    "protein": round(total["protein"], 1),
+                    "fat": round(total["fat"], 1),
+                    "carb": round(total["carb"], 1),
+                    "per100_kcal": round(total["kcal"]/total_g*100, 1),
+                    "per100_p": round(total["protein"]/total_g*100, 1),
+                    "per100_f": round(total["fat"]/total_g*100, 1),
+                    "per100_c": round(total["carb"]/total_g*100, 1),
+                    "items": result_items,
+                }
+            }
+            _cache_set(user_message, response)
+            return response
 
     # AI ga DB dan FAQAT foydalanuvchining xabariga mos keluvchi mahsulot nomlarini hint sifatida beramiz (RAG)
     db_hint_names = []
@@ -530,31 +714,43 @@ async def recalc_from_items(items_list: list) -> dict:
     # AI ga so'rov: faqat zarur bo'lgan mahsulotlar uchun
     ai_lookup = {}
     if needs_ai:
-        try:
-            ai_msg = "Hisobla har bir mahsulot uchun 100g uchun KBJU (xom/asl holatda):\n" + \
-                     "\n".join(f"- {n}" for n in needs_ai)
-            gemini_key = os.environ.get("GEMINI_API_KEY", "")
-            anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
-            parsed = None
-            if gemini_key:
-                try:
-                    parsed = await _gemini_call(ai_msg, gemini_key)
-                except: pass
-            if parsed is None and anthropic_key:
-                try: parsed = await _claude_call(ai_msg, anthropic_key)
-                except: pass
-            if parsed and parsed.get("items"):
-                for it in parsed["items"]:
-                    nm = (it.get("name") or "").lower().strip()
-                    g = float(it.get("grams") or 100) or 1
-                    ai_lookup[nm] = {
-                        "kcal":    float(it.get("kcal") or 0) * 100 / g,
-                        "protein": float(it.get("protein") or 0) * 100 / g,
-                        "fat":     float(it.get("fat") or 0) * 100 / g,
-                        "carb":    float(it.get("carb") or 0) * 100 / g,
-                    }
-        except Exception:
-            pass
+        # Avval USDA dan qidirib ko'ramiz (lokal)
+        for n in needs_ai:
+            usda = _usda_search(n.lower())
+            if usda:
+                ai_lookup[n.lower()] = {
+                    "kcal": float(usda.get("kcal") or 0),
+                    "protein": float(usda.get("protein") or 0),
+                    "fat": float(usda.get("fat") or 0),
+                    "carb": float(usda.get("carb") or 0),
+                }
+        # Qolganlari uchun AI
+        still_need = [n for n in needs_ai if n.lower() not in ai_lookup]
+        if still_need:
+            try:
+                ai_msg = "Hisobla har bir mahsulot uchun 100g uchun KBJU (xom/asl holatda):\n" + \
+                         "\n".join(f"- {n}" for n in still_need)
+                gemini_key = os.environ.get("GEMINI_API_KEY", "")
+                anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+                parsed = None
+                if gemini_key:
+                    try: parsed = await _gemini_call(ai_msg, gemini_key)
+                    except: pass
+                if parsed is None and anthropic_key:
+                    try: parsed = await _claude_call(ai_msg, anthropic_key)
+                    except: pass
+                if parsed and parsed.get("items"):
+                    for it in parsed["items"]:
+                        nm = (it.get("name") or "").lower().strip()
+                        g = float(it.get("grams") or 100) or 1
+                        ai_lookup[nm] = {
+                            "kcal":    float(it.get("kcal") or 0) * 100 / g,
+                            "protein": float(it.get("protein") or 0) * 100 / g,
+                            "fat":     float(it.get("fat") or 0) * 100 / g,
+                            "carb":    float(it.get("carb") or 0) * 100 / g,
+                        }
+            except Exception:
+                pass
 
     result_items = []
     total = {"kcal":0,"protein":0,"fat":0,"carb":0}
