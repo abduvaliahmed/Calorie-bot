@@ -62,20 +62,27 @@ def init_db():
     cur.execute("ALTER TABLE food_global ADD COLUMN IF NOT EXISTS source TEXT DEFAULT ''")
     cur.execute("ALTER TABLE food_global ADD COLUMN IF NOT EXISTS store TEXT DEFAULT ''")
     cur.execute("ALTER TABLE food_global ADD COLUMN IF NOT EXISTS category TEXT DEFAULT ''")
-    # Korzinka × USDA seed (95 ta mahsulot) — bir martagina import qilinadi
-    cur.execute("SELECT COUNT(*) as cnt FROM food_global WHERE store='korzinka'")
-    if cur.fetchone()["cnt"] == 0:
-        import json as _json
-        seed_path = os.path.join(os.path.dirname(__file__), "seed_korzinka.json")
-        if os.path.exists(seed_path):
-            with open(seed_path, encoding="utf-8") as _f:
-                seed = _json.load(_f)
-            for s in seed:
-                cur.execute(
-                    "INSERT INTO food_global (name,name_ru,kcal,protein,fat,carb,per_grams,source,store,category) "
-                    "VALUES (%s,%s,%s,%s,%s,%s,100,'USDA','korzinka',%s)",
-                    (s["name"], s["name_ru"], s["kcal"], s["protein"], s["fat"], s["carb"], s.get("category",""))
-                )
+    # Korzinka × USDA seed — yangi mahsulotlarni qo'shamiz (mavjudini tegmaymiz)
+    import json as _json
+    seed_path = os.path.join(os.path.dirname(__file__), "seed_korzinka.json")
+    if os.path.exists(seed_path):
+        with open(seed_path, encoding="utf-8") as _f:
+            seed = _json.load(_f)
+        cur.execute("SELECT LOWER(name) FROM food_global WHERE store='korzinka'")
+        existing = {row[0] if isinstance(row, tuple) else row["lower"] for row in cur.fetchall()}
+        added = 0
+        for s in seed:
+            if s["name"].lower() in existing:
+                continue
+            cur.execute(
+                "INSERT INTO food_global (name,name_ru,kcal,protein,fat,carb,per_grams,source,store,category) "
+                "VALUES (%s,%s,%s,%s,%s,%s,100,'USDA','korzinka',%s)",
+                (s["name"], s["name_ru"], s["kcal"], s["protein"], s["fat"], s["carb"], s.get("category",""))
+            )
+            added += 1
+        if added:
+            import logging as _log
+            _log.getLogger(__name__).info(f"Korzinka seed: +{added} mahsulot")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_food_log_user_date ON food_log(user_id, log_date)")
     cur.execute("DELETE FROM food_personal WHERE id NOT IN (SELECT MIN(id) FROM food_personal GROUP BY user_id, name)")
     cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_food_personal_user_name ON food_personal(user_id, name)")
