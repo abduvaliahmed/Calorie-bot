@@ -7,7 +7,8 @@ Claude:
   - "Tovuq qovurdim 200g" → COOKED tovuq
   - Determinizm: temperature=0
 """
-import os, json, re
+import os, json, re, hashlib
+from collections import OrderedDict
 import httpx
 from pathlib import Path
 from difflib import SequenceMatcher
@@ -15,6 +16,28 @@ from database import conn, release
 
 _USDA_PATH = Path(__file__).parent / "usda_data.json"
 _USDA = None
+
+# LRU cache — bir xil so'rov uchun bir xil natija + tezroq javob
+_CACHE = OrderedDict()
+_CACHE_MAX = 500
+
+def _cache_key(msg: str) -> str:
+    norm = re.sub(r"\s+", " ", msg.lower().strip())
+    return hashlib.md5(norm.encode()).hexdigest()
+
+def _cache_get(msg):
+    k = _cache_key(msg)
+    if k in _CACHE:
+        _CACHE.move_to_end(k)
+        return _CACHE[k]
+    return None
+
+def _cache_set(msg, value):
+    k = _cache_key(msg)
+    _CACHE[k] = value
+    _CACHE.move_to_end(k)
+    if len(_CACHE) > _CACHE_MAX:
+        _CACHE.popitem(last=False)
 
 
 def _similar(a, b):
@@ -106,61 +129,133 @@ def _load_usda():
     return _USDA
 
 
-SYSTEM_PROMPT = """You are a precise nutrition calculator. The user describes food in Uzbek or Russian.
+SYSTEM_PROMPT = """You are a precise nutrition calculator for Uzbek/Russian-speaking users.
 
-KEY TASK: Read the user's message and determine:
-1. Are they LISTING RAW INGREDIENTS to cook a dish? (e.g., "Osh qildim. Guruch 1000g, sabzi 1200g, go'sht 400g, yog' 250ml")
-   → Use RAW nutrition values for each ingredient
-   → Total = sum of all (water doesn't add calories during cooking)
-2. Are they reporting cooked food they ATE? (e.g., "300g osh yedim", "200g tovuq kabob")
-   → Use COOKED/PREPARED nutrition values
-3. Default: if quantity is given for a raw-looking item (e.g., "Guruch 1000g"), it's typically RAW for cooking.
+═══ CONTEXT DETECTION (most important!) ═══
+1. RAW INGREDIENTS being LISTED to cook:
+   Triggers: "Osh qildim/qilaman", "Lagman pishirdim", "Pishirdim", "Qilaman", "Tayyorladim",
+             "Qovurdim", "Qaynatdim", "Yopdim", "Dimladim",
+             multiple ingredients with weights/volumes.
+   Action: Use RAW USDA values. Total kcal = sum (water doesn't add calories).
 
-NUTRITION SOURCE: USDA FoodData Central values per 100g. Be consistent — same input must give same numbers.
+2. COOKED FOOD eaten:
+   Triggers: "yedim/yeyman", "ichdim/ichaman", single dish name + portion.
+   Action: Use COOKED/PREPARED USDA values.
 
-REFERENCE VALUES (per 100g, USDA):
-  Raw rice (white):     360 kcal, 7g P, 0.6g F, 79g C
-  Cooked rice (white):  130 kcal, 2.7g P, 0.3g F, 28g C
-  Raw beef (lean):      185 kcal, 19g P, 12g F, 0g C
-  Cooked beef:          250 kcal, 26g P, 15g F, 0g C
-  Raw chicken breast:   120 kcal, 23g P, 2.6g F, 0g C
-  Cooked chicken breast: 165 kcal, 31g P, 3.6g F, 0g C
-  Raw carrots:          41 kcal, 0.9g P, 0.2g F, 9.6g C
-  Vegetable oil:        884 kcal, 0g P, 100g F, 0g C  (1ml ≈ 0.92g)
-  Butter:               717 kcal, 0.9g P, 81g F, 0.1g C
-  Wheat bread:          265 kcal, 9g P, 3.2g F, 49g C
-  Plain yogurt (whole): 61 kcal, 3.5g P, 3.3g F, 4.7g C
-  Apple:                52 kcal, 0.3g P, 0.2g F, 14g C
-  Banana:               89 kcal, 1.1g P, 0.3g F, 23g C
-  Egg (whole):          155 kcal, 13g P, 11g F, 1.1g C
-  Pasta cooked:         158 kcal, 5.8g P, 0.9g F, 31g C
-  Buckwheat cooked:     92 kcal, 3.4g P, 0.6g F, 20g C
-  Potato boiled:        87 kcal, 1.9g P, 0.1g F, 20g C
-  Onion raw:            40 kcal, 1.1g P, 0.1g F, 9.3g C
+3. Single product (e.g. "Sut Lactel 200ml", "1 olma"):
+   Action: Use product-as-is values.
 
-OUTPUT JSON FORMAT (no other text):
+═══ UZBEK FOOD VOCABULARY (translate & normalize) ═══
+Cyrillic ↔ Latin: гўшт=go'sht, гуруч=guruch, сабзи=sabzi, пиёз=piyoz, тухум=tuxum,
+сут=sut, қатиқ=qatiq, ёғ=yog', нон=non, мош=mosh, чой=choy.
+
+Dishes (cooked): osh/plov, lagman, manti, sho'rva, mastava, dimlama, qovurma,
+chuchvara, samsa, somsa, kabob/shashlik, dolma, norin, beshbarmoq,
+kotlet, pelmeni, vareniki, blinchik, syrniki, omlet, glazunya.
+
+Meats: mol go'shti=beef, qo'y go'shti=lamb, tovuq go'shti=chicken,
+ot go'shti=horse meat, baliq=fish, kazi=horse sausage, kolbasa=sausage,
+hot-dog, jambon=ham, salami, sosiska, farsh=mince.
+
+Dairy: sut=milk, qatiq=yogurt, qaymoq=cream, smetana=sour cream,
+suzma/tvorog=cottage cheese, ayron=ayran/kefir drink, kefir, ryajenka,
+brinza/feta, suluguni, pishloq=cheese, sariyog'/maslo=butter, qaymoqli yog'.
+
+Grains: guruch=rice (oq/jasmin/uzun donli), grechka=buckwheat, oviyolka=oats,
+arpa=barley, makaron/spagetti/lapsha/vermishel=pasta, lapsha=noodle,
+no'xat=chickpea, mosh=mung bean, loviya=bean, yasmiq=lentil,
+kraxmal=starch, manniy yorma=semolina, kus-kus=couscous.
+
+Vegetables: kartoshka=potato, sabzi=carrot, piyoz=onion, sarimsoq=garlic,
+pomidor/tomat=tomato, bodring=cucumber, baqlajon=eggplant,
+qalampir bulg'or=bell pepper, achchiq qalampir=chili, oshqovoq=pumpkin,
+lavlagi/свёкла=beet, sholg'om=turnip, turp=radish, redis=radish,
+karam/kapusta=cabbage, ismaloq/shpinat=spinach, kinza=cilantro,
+ukrop=dill, rayhon=basil, jambil=thyme, yalpiz=mint, jusay=chives.
+
+Bread: non=bread (patir, lochira, obi non, qatlama, gaza), lavash, batan.
+
+Fruits: olma=apple, nok=pear, banan, apelsin=orange, mandarin,
+limon=lemon, anor=pomegranate, uzum=grapes (ko'k sulton),
+shaftoli=peach, o'rik=apricot, gilos=cherry, olcha=sour cherry,
+qulupnay=strawberry, malina=raspberry, maymunjon=blackberry,
+smorodina=currant, anjir=fig, hurma=date, ananas, kivi, ajdarho meva=pitaya,
+mangustin, avokado, papayya, mango.
+
+Drinks: choy=tea, qahva=coffee, sok=juice, sharbat=juice,
+gazlangan suv=soda, mineral suv=mineral water, kompot, ayron.
+
+Sweets: shokolad=chocolate, pechenye=cookie, tort=cake, bulochka=bun,
+vafli=wafer, qand=sugar, asal=honey, varenye/jem=jam, halva,
+parvarda=traditional sweet, naboit=rock sugar, marmelad, marshmallow.
+
+Cooking verbs: qovur=fry, pishir=cook, qaynat=boil, dimla=stew,
+yop=bake, panjarada=grill, fritura=deep fry, bug'da=steam.
+
+Units: g/gr=grams, kg=kilograms, ml=milliliters, l=liters,
+dona/sht=piece, kosa=bowl (200g), stakan=glass (250ml), choy qoshiq=teaspoon (5g),
+osh qoshiq/lozhka=tablespoon (15g), kichik tarelka=small plate (200g), katta tarelka=300g,
+porsiya=portion.
+
+═══ REFERENCE VALUES (per 100g, USDA — be consistent!) ═══
+RAW rice white:    360 kcal, 7 P, 0.6 F, 79 C
+COOKED rice:       130 kcal, 2.7 P, 0.3 F, 28 C
+RAW beef (lean):   185 kcal, 19 P, 12 F, 0 C
+COOKED beef:       250 kcal, 26 P, 15 F, 0 C
+RAW chicken breast: 120 kcal, 23 P, 2.6 F, 0 C
+COOKED chicken:    165 kcal, 31 P, 3.6 F, 0 C
+RAW lamb (mol go'sht): 270 kcal, 17 P, 22 F, 0 C
+RAW carrots:       41 kcal, 0.9 P, 0.2 F, 9.6 C
+RAW onion:         40 kcal, 1.1 P, 0.1 F, 9.3 C
+RAW potato:        77 kcal, 2 P, 0.1 F, 17 C
+Vegetable oil:     884 kcal, 0 P, 100 F, 0 C  (1ml ≈ 0.92g)
+Butter:            717 kcal, 0.9 P, 81 F, 0.1 C
+White bread:       265 kcal, 9 P, 3.2 F, 49 C
+Yogurt plain:      61 kcal, 3.5 P, 3.3 F, 4.7 C
+Apple:             52 kcal, 0.3 P, 0.2 F, 14 C
+Banana:            89 kcal, 1.1 P, 0.3 F, 23 C
+Egg whole:         155 kcal, 13 P, 11 F, 1.1 C
+Pasta cooked:      158 kcal, 5.8 P, 0.9 F, 31 C
+Buckwheat cooked:  92 kcal, 3.4 P, 0.6 F, 20 C
+Potato boiled:     87 kcal, 1.9 P, 0.1 F, 20 C
+Sugar:             387 kcal, 0 P, 0 F, 100 C
+Honey:             304 kcal, 0.3 P, 0 F, 82 C
+Whole milk:        61 kcal, 3.2 P, 3.3 F, 4.8 C
+
+═══ OUTPUT JSON FORMAT (no other text, just JSON!) ═══
 {
-  "name": "short dish name (Uzbek)",
-  "is_recipe": true if user listed raw ingredients to cook,
-  "cooked_weight_factor": 1.0 for simple foods OR ~1.5-2.5 if user is cooking (rice absorbs water etc),
+  "name": "Short dish name in Uzbek (e.g., 'Osh', 'Sut Lactel')",
+  "is_recipe": true if user listed raw ingredients to cook a dish,
+  "cooked_weight_factor": 1.0 for simple foods OR 1.5-2.5 if cooking rice/pasta absorbs water,
   "items": [
-    {"name": "Mahsulot nomi", "grams": NUMBER, "form": "raw"|"cooked",
-     "kcal": NUMBER, "protein": NUMBER, "fat": NUMBER, "carb": NUMBER}
+    {
+      "name": "Original name as user wrote it (preserve language)",
+      "grams": NUMBER (convert ml to grams if needed: oil 1ml=0.92g, water 1ml=1g, milk 1ml=1.03g),
+      "form": "raw" or "cooked",
+      "kcal": NUMBER (total for this ingredient),
+      "protein": NUMBER (total grams),
+      "fat": NUMBER (total grams),
+      "carb": NUMBER (total grams)
+    }
   ],
-  "total_g_raw": SUM_OF_RAW_GRAMS,
-  "total_g_cooked": APPROXIMATE_COOKED_WEIGHT,
-  "kcal": TOTAL_KCAL,
-  "protein": TOTAL_PROTEIN_G,
-  "fat": TOTAL_FAT_G,
-  "carb": TOTAL_CARB_G,
-  "per100_kcal": kcal_per_100g_of_cooked_weight,
-  "per100_p": protein_per_100g_of_cooked_weight,
-  "per100_f": fat_per_100g_of_cooked_weight,
-  "per100_c": carb_per_100g_of_cooked_weight
+  "total_g_raw": sum of all item grams,
+  "total_g_cooked": approximate after-cooking weight,
+  "kcal": TOTAL_KCAL (sum of items),
+  "protein": TOTAL_PROTEIN (sum),
+  "fat": TOTAL_FAT (sum),
+  "carb": TOTAL_CARB (sum),
+  "per100_kcal": kcal per 100g of cooked weight,
+  "per100_p": protein per 100g cooked,
+  "per100_f": fat per 100g cooked,
+  "per100_c": carb per 100g cooked
 }
 
-CRITICAL: For each item, kcal/protein/fat/carb are the TOTAL for that ingredient (not per 100g).
-The grand total (kcal/protein/...) must equal the sum of items'."""
+═══ CRITICAL RULES ═══
+1. EACH ingredient in items[] must have TOTAL values (kcal/p/f/c for the given grams, NOT per 100g).
+2. Grand totals must EQUAL the sum of items[].
+3. If [DATABASE BRAND PRODUCTS] hint is provided, MATCH user mentions to EXACT names from the list.
+4. Numbers must be consistent — same input always gives same output.
+5. Round all numbers to 1 decimal place."""
 
 
 async def _gemini_call(user_msg: str, api_key: str) -> dict:
@@ -255,6 +350,12 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     import logging
     log = logging.getLogger(__name__)
+
+    # In-memory cache — bir xil so'rov, bir xil javob (0 ms)
+    cached = _cache_get(user_message)
+    if cached:
+        log.info(f"Cache hit: {user_message[:50]}")
+        return cached
 
     # AI ga DB dan FAQAT foydalanuvchining xabariga mos keluvchi mahsulot nomlarini hint sifatida beramiz (RAG)
     db_hint_names = []
@@ -374,7 +475,7 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
     total_g = float(parsed.get("total_g_cooked") or parsed.get("total_g_raw") or
                     sum(r["grams"] for r in result_items) or 1)
 
-    return {
+    response = {
         "ok": True,
         "result": {
             "name":         parsed.get("name", user_message[:40]),
@@ -389,6 +490,102 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
             "per100_p":     round(final_protein/total_g*100, 1) if total_g else 0,
             "per100_f":     round(final_fat/total_g*100, 1) if total_g else 0,
             "per100_c":     round(final_carb/total_g*100, 1) if total_g else 0,
+            "items":        result_items,
+        },
+    }
+    _cache_set(user_message, response)
+    return response
+
+
+async def recalc_from_items(items_list: list) -> dict:
+    """Foydalanuvchi tahrir qilgan ingredientlar bo'yicha qaytadan hisoblash.
+    AI chaqirmaydi — faqat DB + lokal matematika. Tezroq va aniqroq."""
+    if not items_list:
+        return {"ok": False, "error": "Mahsulot yo'q"}
+
+    result_items = []
+    total = {"kcal":0,"protein":0,"fat":0,"carb":0}
+    name_parts = []
+
+    for it in items_list:
+        name  = (it.get("name") or "").strip()
+        grams = float(it.get("grams") or 0)
+        if not name or grams <= 0:
+            continue
+
+        # Foydalanuvchi qiymatlarini birinchi olamiz (agar tahrir qilgan bo'lsa)
+        per100_kcal = it.get("per100_kcal")
+        per100_p    = it.get("per100_p")
+        per100_f    = it.get("per100_f")
+        per100_c    = it.get("per100_c")
+
+        source = it.get("source", "USER")
+
+        # Agar foydalanuvchi qiymatlarni bermagan bo'lsa, DBdan qidiramiz
+        if per100_kcal is None:
+            db_food = _db_search(name)
+            if db_food:
+                per100_kcal = float(db_food.get("kcal") or 0)
+                per100_p    = float(db_food.get("protein") or 0)
+                per100_f    = float(db_food.get("fat") or 0)
+                per100_c    = float(db_food.get("carb") or 0)
+                source      = "DB"
+            else:
+                # Agar AI qiymat berilgan bo'lsa item ichida (kcal, protein...)
+                kcal_total = float(it.get("kcal") or 0)
+                p_total    = float(it.get("protein") or 0)
+                f_total    = float(it.get("fat") or 0)
+                c_total    = float(it.get("carb") or 0)
+                if grams > 0 and (kcal_total > 0 or p_total > 0 or f_total > 0 or c_total > 0):
+                    per100_kcal = kcal_total * 100.0 / grams
+                    per100_p    = p_total    * 100.0 / grams
+                    per100_f    = f_total    * 100.0 / grams
+                    per100_c    = c_total    * 100.0 / grams
+                else:
+                    continue  # Hech narsa yo'q
+
+        ratio = grams / 100.0
+        item_kcal = round(float(per100_kcal) * ratio, 1)
+        item_p    = round(float(per100_p) * ratio, 1)
+        item_f    = round(float(per100_f) * ratio, 1)
+        item_c    = round(float(per100_c) * ratio, 1)
+
+        result_items.append({
+            "name_orig": name,
+            "matched":   name,
+            "grams":     grams,
+            "source":    source,
+            "kcal":      item_kcal,
+            "protein":   item_p,
+            "fat":       item_f,
+            "carb":      item_c,
+        })
+        total["kcal"]    += item_kcal
+        total["protein"] += item_p
+        total["fat"]     += item_f
+        total["carb"]    += item_c
+        name_parts.append(name)
+
+    total_g = sum(r["grams"] for r in result_items) or 1
+    final_kcal = round(total["kcal"], 1)
+    final_p    = round(total["protein"], 1)
+    final_f    = round(total["fat"], 1)
+    final_c    = round(total["carb"], 1)
+
+    return {
+        "ok": True,
+        "result": {
+            "name":         " + ".join(name_parts[:3]) + (" + ..." if len(name_parts) > 3 else ""),
+            "is_recipe":    len(result_items) > 1,
+            "total_g":      round(total_g, 1),
+            "kcal":         final_kcal,
+            "protein":      final_p,
+            "fat":          final_f,
+            "carb":         final_c,
+            "per100_kcal":  round(final_kcal/total_g*100, 1) if total_g else 0,
+            "per100_p":     round(final_p/total_g*100, 1) if total_g else 0,
+            "per100_f":     round(final_f/total_g*100, 1) if total_g else 0,
+            "per100_c":     round(final_c/total_g*100, 1) if total_g else 0,
             "items":        result_items,
         },
     }

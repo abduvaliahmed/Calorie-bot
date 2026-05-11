@@ -354,6 +354,24 @@ async def api_ai_calc(data: dict, x_init_data: str = Header(default="")):
         logger.error(f"AI calc error: {e}")
         raise HTTPException(500, f"Tahlil xatosi: {e}")
 
+
+@app.post("/api/ai/recalc")
+async def api_ai_recalc(data: dict, x_init_data: str = Header(default="")):
+    """Tahrir qilingan ingredient ro'yxati bo'yicha qaytadan hisoblash (AI chaqirmasdan)."""
+    uid = get_uid(x_init_data)
+    if not uid:
+        raise HTTPException(401, "Unauthorized")
+    items = data.get("items") or []
+    if not isinstance(items, list) or not items:
+        raise HTTPException(400, "Items kerak")
+    from nutrition_engine import recalc_from_items
+    try:
+        return await recalc_from_items(items)
+    except Exception as e:
+        logger.error(f"Recalc error: {e}")
+        raise HTTPException(500, str(e))
+
+
 @app.get("/api/streak")
 def api_streak(x_init_data: str = Header(default="")):
     uid = get_uid(x_init_data)
