@@ -688,7 +688,21 @@ body.dark .bl5{background:rgba(45,115,195,0.38)}
         <div class="hdr-row">
           <div class="back" id="ai-back" onclick="go('home')">&#8249; Orqaga</div>
           <div style="font-size:17px;font-weight:600">BARG AI</div>
-          <div style="width:60px"></div>
+          <button onclick="openAIHistory()" data-snd="open" id="ai-history-btn" style="width:36px;height:32px;border-radius:16px;background:var(--tl);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--td)" title="Tarix">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12a9 9 0 0 1 14-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- AI History Overlay & Sheet -->
+      <div id="ai-hist-overlay" onclick="closeAIHistory()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:998;transition:opacity .28s ease;opacity:0"></div>
+      <div id="ai-hist-sheet" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);border-top:.5px solid var(--gl-b);border-radius:28px 28px 0 0;padding:18px 16px calc(20px + var(--sb));z-index:999;max-height:75vh;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.05,.64,1);overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:17px;font-weight:700;color:var(--t1)" id="ai-hist-title">Suhbatlar tarixi</div>
+          <button onclick="closeAIHistory()" style="width:28px;height:28px;border-radius:14px;background:rgba(120,120,128,0.15);border:none;cursor:pointer;font-size:14px;color:var(--t2)">&#10005;</button>
+        </div>
+        <div id="ai-hist-list"></div>
+        <div id="ai-hist-actions" style="display:none;margin-top:14px">
+          <button onclick="clearAIHistory()" data-snd="del" style="width:100%;background:transparent;border:1px solid var(--sep);color:#C62828;border-radius:12px;padding:10px;font-size:13px;font-weight:600;cursor:pointer" id="ai-hist-clear">Hammasini tozalash</button>
         </div>
       </div>
       <div class="scroll" id="ai-scroll">
@@ -2638,6 +2652,170 @@ function initAI(){
 }
 function addAIMsg(role,html){var el=document.getElementById('ai-messages');var div=document.createElement('div');div.className=role==='user'?'ai-msg-user':'ai-msg-bot';div.innerHTML=html;el.appendChild(div);document.getElementById('ai-scroll').scrollTop=99999;}
 
+/* ─── AI Suhbatlar tarixi (localStorage) ─────────────────────────────── */
+var AI_HIST_MAX = 50;
+function _aiHistLoad(){
+  try{var s=localStorage.getItem('ai_history');return s?JSON.parse(s):[];}catch(e){return [];}
+}
+function _aiHistSave(list){
+  try{localStorage.setItem('ai_history', JSON.stringify(list.slice(0, AI_HIST_MAX)));}catch(e){}
+}
+function aiHistAdd(userMsg, result){
+  if(!userMsg||!result)return;
+  var list=_aiHistLoad();
+  list.unshift({
+    id: Date.now(),
+    date: new Date().toISOString(),
+    message: userMsg.slice(0, 500),
+    name: result.name || userMsg.slice(0, 40),
+    kcal: Math.round(result.kcal||0),
+    protein: result.protein,
+    fat: result.fat,
+    carb: result.carb,
+    total_g: result.total_g,
+    items: (result.items||[]).slice(0, 20),
+    is_recipe: !!result.is_recipe
+  });
+  _aiHistSave(list);
+}
+function openAIHistory(){
+  var list=_aiHistLoad();
+  var isRu=lang==="ru";
+  document.getElementById('ai-hist-title').textContent=isRu?"История бесед":"Suhbatlar tarixi";
+  var listEl=document.getElementById('ai-hist-list');
+  var actEl=document.getElementById('ai-hist-actions');
+  if(!list.length){
+    listEl.innerHTML='<div class="emp" style="padding:30px 0"><div class="emp-ic">💭</div><div class="emp-t">'+(isRu?"История пуста":"Tarix bo'sh")+'</div></div>';
+    actEl.style.display='none';
+  } else {
+    var clearBtn=document.getElementById('ai-hist-clear');
+    if(clearBtn)clearBtn.textContent=isRu?"Очистить всё":"Hammasini tozalash";
+    listEl.innerHTML=list.map(function(h){
+      var d=new Date(h.date);
+      var now=new Date();
+      var dateStr;
+      if(d.toDateString()===now.toDateString()){
+        dateStr=(isRu?"Сегодня":"Bugun")+' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+      } else if((now-d)<86400000*2){
+        dateStr=(isRu?"Вчера":"Kecha");
+      } else {
+        dateStr=d.toLocaleDateString(isRu?"ru-RU":"en-GB");
+      }
+      var preview=(h.message||'').replace(/</g,'&lt;').slice(0, 80);
+      return '<div onclick="openAIHistoryItem('+h.id+')" data-snd="open" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:14px;margin-bottom:8px;cursor:pointer">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:14px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(h.name||preview)+'</div>'+
+          '<div style="font-size:11px;color:var(--t2);margin-top:3px;display:flex;gap:8px">'+
+            '<span>'+dateStr+'</span>'+
+            (h.items&&h.items.length?'<span>· '+h.items.length+(isRu?" ингр.":" mahsulot")+'</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="text-align:right">'+
+          '<div style="font-size:16px;font-weight:800;color:var(--teal);line-height:1">'+h.kcal+'</div>'+
+          '<div style="font-size:9px;color:var(--t2);margin-top:1px">kkal</div>'+
+        '</div>'+
+        '<button onclick="event.stopPropagation();aiHistDel('+h.id+')" style="width:24px;height:24px;border-radius:12px;background:rgba(0,0,0,0.06);border:none;cursor:pointer;font-size:11px;color:var(--t2);flex-shrink:0">×</button>'+
+      '</div>';
+    }).join('');
+    actEl.style.display='block';
+  }
+  var ov=document.getElementById('ai-hist-overlay');
+  var sh=document.getElementById('ai-hist-sheet');
+  ov.style.display='block';sh.style.display='block';
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    ov.style.opacity='1';sh.style.transform='translateY(0)';
+  });});
+}
+function closeAIHistory(){
+  var ov=document.getElementById('ai-hist-overlay');
+  var sh=document.getElementById('ai-hist-sheet');
+  if(!ov||!sh)return;
+  ov.style.opacity='0';sh.style.transform='translateY(100%)';
+  setTimeout(function(){ov.style.display='none';sh.style.display='none';},320);
+}
+function openAIHistoryItem(id){
+  var list=_aiHistLoad();
+  var item=list.find(function(h){return h.id===id;});
+  if(!item)return;
+  closeAIHistory();
+  // Suhbatga qaytamiz, foydalanuvchi yozgan matnni ko'rsatamiz
+  go('ai');
+  setTimeout(function(){
+    document.getElementById('ai-welcome').style.display='none';
+    addAIMsg('user', item.message);
+    // Saqlangan natijani qayta render qilamiz
+    var rid='ai_'+item.id;
+    var r={
+      name: item.name, kcal: item.kcal, protein: item.protein, fat: item.fat, carb: item.carb,
+      total_g: item.total_g, items: item.items, is_recipe: item.is_recipe,
+      _isRecipe: item.is_recipe, _parts: 1, _eaten: 1
+    };
+    _aiResults[rid]=r;
+    renderAIHistoryResult(rid, r);
+  },200);
+}
+function renderAIHistoryResult(rid, r){
+  // Soddalashtirilgan render — original sendAI'dagi html ni yana yaratamiz
+  var isRu=lang==="ru";
+  var oqsil=isRu?"Белки":"Oqsil";var yog2=isRu?"Жиры":"Yog'";var uglev=isRu?"Углев.":"Uglevod";
+  var srcBadge=function(s){
+    if(s==='DB')return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#34C759"></span>';
+    if(s==='USDA')return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#FF9500"></span>';
+    return '<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:#5AC8FA"></span>';
+  };
+  var itemsHtml='';
+  if(r.items&&r.items.length){
+    itemsHtml='<div style="background:var(--bg);border-radius:16px;padding:8px;margin-bottom:12px">'+
+      '<div style="font-size:10px;color:var(--t2);letter-spacing:.8px;padding:6px 10px">'+(isRu?"ИНГРЕДИЕНТЫ":"INGREDIENTLAR")+' ('+r.items.length+')</div>'+
+      r.items.map(function(it,idx){
+        var nm=(it.name_orig||it.matched||'').replace(/"/g,'&quot;');
+        return '<div data-rid="'+rid+'" data-idx="'+idx+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--card);margin-bottom:4px">'+
+          srcBadge(it.source)+
+          '<input type="text" class="ai-cell-name" value="'+nm+'" style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;padding:4px 0"/>'+
+          '<input type="number" class="ai-cell-g" value="'+Math.round(it.grams)+'" min="0" style="width:60px;border:1px solid var(--sep);background:var(--card);border-radius:8px;padding:4px 6px;font-size:13px;font-weight:600;text-align:center;color:var(--t1);outline:none"/>'+
+          '<span style="font-size:10px;color:var(--t2);min-width:14px">g</span>'+
+          '<span class="ai-cell-kcal" style="font-size:13px;font-weight:700;color:var(--teal);min-width:50px;text-align:right">'+Math.round(it.kcal)+'<span style="font-size:9px;font-weight:400;color:var(--t2)"> kc</span></span>'+
+          '<button class="ai-cell-del" style="width:22px;height:22px;border-radius:11px;background:rgba(0,0,0,0.06);border:none;cursor:pointer;font-size:11px;color:var(--t2);flex-shrink:0">×</button>'+
+        '</div>';
+      }).join('')+
+      '<div style="display:flex;gap:6px;padding:4px 6px">'+
+        '<button id="ai-add-row-'+rid+'" style="flex:1;background:transparent;border:1px dashed var(--sep);border-radius:10px;padding:8px;font-size:12px;color:var(--t2);cursor:pointer">+ '+(isRu?"добавить":"qator")+'</button>'+
+        '<button id="ai-recalc-'+rid+'" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">'+(isRu?"Пересчитать":"Qayta hisobla")+'</button>'+
+      '</div>'+
+    '</div>';
+  }
+  var html=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
+      '<div style="font-size:17px;font-weight:700;color:var(--t1)">'+(r.name||'')+'</div>'+
+      '<div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 10px;border-radius:10px">'+(isRu?"из истории":"tarixdan")+'</div>'+
+    '</div>'+
+    '<div id="ai-total-'+rid+'" style="background:var(--teal);border-radius:16px;padding:16px;margin-bottom:12px">'+
+      '<div style="font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:1px;margin-bottom:6px">'+(isRu?"ИТОГО":"JAMI")+'</div>'+
+      '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+        '<div class="ai-tot-k" style="font-size:30px;font-weight:800;color:#fff;line-height:1">'+Math.round(r.kcal)+'<span style="font-size:14px;font-weight:400"> kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div class="ai-tot-p" style="font-size:14px;font-weight:700;color:#fff">'+r.protein+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div class="ai-tot-f" style="font-size:14px;font-weight:700;color:#fff">'+r.fat+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div class="ai-tot-c" style="font-size:14px;font-weight:700;color:#fff">'+r.carb+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+uglev+'</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    itemsHtml;
+  addAIMsg('bot', html);
+  setTimeout(function(){bindAICells(rid);},100);
+}
+function aiHistDel(id){
+  var list=_aiHistLoad();
+  _aiHistSave(list.filter(function(h){return h.id!==id;}));
+  openAIHistory(); // qaytadan ko'rsatish
+}
+function clearAIHistory(){
+  if(!confirm(lang==="ru"?"Очистить всю историю AI?":"Barcha AI tarixini tozalashga ishonchingiz komilmi?"))return;
+  _aiHistSave([]);
+  closeAIHistory();
+  toast(lang==="ru"?"Очищено":"Tozalandi");
+}
+
 async function sendAI(){
   var input=document.getElementById('ai-input').value.trim();if(!input)return;
   document.getElementById('ai-welcome').style.display='none';
@@ -2743,6 +2921,7 @@ async function sendAI(){
       '</div>';
     window._aiLastResult=r;
     addAIMsg('bot',html);document.getElementById('ai-scroll').scrollTop=99999;
+    try{aiHistAdd(input, r);}catch(e){}
     setTimeout(function(){
       var partsIn=document.getElementById('ai-parts-'+rid);
       var eatenIn=document.getElementById('ai-eaten-'+rid);
