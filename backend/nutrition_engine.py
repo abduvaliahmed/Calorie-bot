@@ -84,8 +84,38 @@ CRITICAL: For each item, kcal/protein/fat/carb are the TOTAL for that ingredient
 The grand total (kcal/protein/...) must equal the sum of items'."""
 
 
+async def _gemini_call(user_msg: str, api_key: str) -> dict:
+    """Google Gemini 2.0 Flash — bepul, kontekstli, deterministik."""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            url,
+            headers={"Content-Type": "application/json"},
+            json={
+                "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                "contents": [{"parts": [{"text": user_msg}], "role": "user"}],
+                "generationConfig": {
+                    "temperature": 0,
+                    "topP": 1,
+                    "topK": 1,
+                    "maxOutputTokens": 1024,
+                    "responseMimeType": "application/json",
+                },
+            },
+            timeout=30.0,
+        )
+        r.raise_for_status()
+        data = r.json()
+        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        text = re.sub(r"```(?:json)?\s*", "", text).replace("```", "").strip()
+        m = re.search(r"\{.*\}", text, re.S)
+        if m:
+            text = m.group(0)
+        return json.loads(text)
+
+
 async def _claude_call(user_msg: str, api_key: str) -> dict:
-    """Anthropic Claude Haiku — deterministik, kontekstli."""
+    """Anthropic Claude Haiku — deterministik, kontekstli (pullik)."""
     async with httpx.AsyncClient() as client:
         r = await client.post(
             "https://api.anthropic.com/v1/messages",
@@ -107,7 +137,6 @@ async def _claude_call(user_msg: str, api_key: str) -> dict:
         data = r.json()
         text = data["content"][0]["text"].strip()
         text = re.sub(r"```(?:json)?\s*", "", text).replace("```", "").strip()
-        # JSON ni topish (Claude ba'zan oldidan matn yozadi)
         m = re.search(r"\{.*\}", text, re.S)
         if m:
             text = m.group(0)
@@ -141,20 +170,31 @@ async def _groq_call(user_msg: str, api_key: str) -> dict:
 
 
 async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
-    """Asosiy entry-point: Claude → Groq fallback."""
+    """Asosiy entry-point: Gemini (bepul) → Claude → Groq fallback."""
+    gemini_key    = os.environ.get("GEMINI_API_KEY", "")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    import logging
+    log = logging.getLogger(__name__)
 
     parsed = None
-    if anthropic_key:
+    # 1) Gemini (bepul, asosiy)
+    if gemini_key:
+        try:
+            parsed = await _gemini_call(user_message, gemini_key)
+        except Exception as e:
+            log.warning(f"Gemini failed: {e}")
+
+    # 2) Claude (pullik, fallback)
+    if parsed is None and anthropic_key:
         try:
             parsed = await _claude_call(user_message, anthropic_key)
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"Claude failed, fallback to Groq: {e}")
+            log.warning(f"Claude failed: {e}")
 
+    # 3) Groq (eng oxirgi chora)
     if parsed is None:
         if not groq_key:
-            raise ValueError("ANTHROPIC_API_KEY yoki GROQ_API_KEY zarur")
+            raise ValueError("GEMINI_API_KEY, ANTHROPIC_API_KEY yoki GROQ_API_KEY zarur")
         parsed = await _groq_call(user_message, groq_key)
 
     # AI javobini standart format ga keltirish
