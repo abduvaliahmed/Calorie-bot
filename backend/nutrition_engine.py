@@ -45,78 +45,79 @@ def _similar(a, b):
 
 
 def _db_search(query: str):
-    """food_global jadvalida fuzzy qidiruv — brand mahsulotlari uchun aniq qiymat."""
+    """food_global jadvalida QAT'IY qidiruv.
+    - 1 so'zli: faqat aniq moslik
+    - 2+ so'zli (brand): prefix yoki so'z chegarasi bo'yicha
+    - 'cached' store dan kelganlar hisobga olinmaydi (eski xatolar)"""
     if not query or len(query.strip()) < 3:
         return None
-    c = conn(); cur = c.cursor()
     q_low = query.lower().strip()
-    q = f"%{q_low}%"
+    # Apostrof variantlarini normallashtirish
+    q_low = re.sub(r"[ʻ`´']", "'", q_low)
+    q_words = [w for w in q_low.split() if w]
+    if not q_words:
+        return None
+
+    c = conn(); cur = c.cursor()
     try:
-        # 1. Aniq moslik
+        # 1. Aniq moslik (cached'larsiz)
         cur.execute(
             "SELECT name,kcal,protein,fat,carb FROM food_global "
-            "WHERE LOWER(name)=%s OR LOWER(COALESCE(name_ru,''))=%s LIMIT 1",
+            "WHERE COALESCE(store,'')<>'cached' AND "
+            "(LOWER(name)=%s OR LOWER(COALESCE(name_ru,''))=%s) LIMIT 1",
             (q_low, q_low)
         )
         row = cur.fetchone()
         if row:
             return dict(row)
 
-        # 2. Substring (ILIKE)
+        # 2. Bir so'zli query — generic so'z, AI ga qoldiramiz
+        # Faqat aniq match qaytaradi (yuqorida tekshirildi), aks holda None
+        if len(q_words) < 2:
+            return None
+
+        # 3. 2+ so'zli — brand-kabi, prefix yoki so'z chegarasi bo'yicha
+        # Prefix match
         cur.execute(
             "SELECT name,kcal,protein,fat,carb FROM food_global "
-            "WHERE LOWER(name) LIKE %s OR LOWER(COALESCE(name_ru,'')) LIKE %s "
-            "ORDER BY length(name) LIMIT 10",
-            (q, q)
+            "WHERE COALESCE(store,'')<>'cached' AND LOWER(name) LIKE %s "
+            "ORDER BY length(name) LIMIT 5",
+            (q_low + "%",)
         )
-        rows = [dict(r) for r in cur.fetchall()]
-        if not rows:
-            # Brand bo'lakli qidiruv — har bir so'z bo'yicha
-            words = [w for w in re.split(r"\s+", q_low) if len(w) >= 3]
-            if not words:
-                return None
-            # Hech bo'lmaganda 2 so'z mos kelishi kerak (brand ehtimoli ko'p)
-            for word in words:
-                cur.execute(
-                    "SELECT name,kcal,protein,fat,carb FROM food_global "
-                    "WHERE LOWER(name) LIKE %s LIMIT 5",
-                    (f"%{word}%",)
-                )
-                more = [dict(r) for r in cur.fetchall()]
-                rows.extend(m for m in more if m not in rows)
-            if not rows:
-                return None
+        row = cur.fetchone()
+        if row:
+            return dict(row)
+
+        # Har bir so'z borligini tekshirish (brand ko'p so'zli)
+        first_word = q_words[0]
+        cur.execute(
+            "SELECT name,kcal,protein,fat,carb FROM food_global "
+            "WHERE COALESCE(store,'')<>'cached' AND LOWER(name) LIKE %s LIMIT 30",
+            (f"%{first_word}%",)
+        )
+        candidates = [dict(r) for r in cur.fetchall()]
     finally:
         release(c)
 
-    if not rows:
+    if not candidates:
         return None
 
-    # Eng yaxshi mosini topish
-    first_word = q_low.split()[0] if q_low else ""
-
+    # Ko'p so'z mos kelganlarni afzal ko'ramiz
     def score(r):
-        name_low = r["name"].lower()
-        s = _similar(q_low, name_low)
-        if name_low == q_low:
-            s += 1.0
-        elif name_low.startswith(q_low + " "):
-            s += 0.6
-        elif name_low.startswith(q_low):
-            s += 0.4
-        if first_word and (name_low.startswith(first_word + " ") or name_low == first_word):
-            s += 0.3
-        # Har bir so'z mos kelsa qo'shimcha bonus (brand uchun)
-        q_words = set(q_low.split())
-        n_words = set(name_low.split())
-        matched_words = q_words & n_words
-        if matched_words:
-            s += 0.15 * len(matched_words)
-        return s
+        n_low = r["name"].lower()
+        n_low_norm = re.sub(r"[ʻ`´']", "'", n_low)
+        matched = sum(1 for w in q_words if w in n_low_norm)
+        # Aniq prefix bonus
+        if n_low_norm.startswith(q_low + " ") or n_low_norm == q_low:
+            matched += 5
+        return matched
 
-    best = max(rows, key=score)
-    final_score = score(best)
-    return best if final_score >= 0.35 else None
+    best = max(candidates, key=score)
+    # 2+ so'zli query da kamida 2 ta so'z mos kelishi kerak
+    matched_count = sum(1 for w in q_words if w in re.sub(r"[ʻ`´']", "'", best["name"].lower()))
+    if matched_count >= max(2, len(q_words)):
+        return best
+    return None
 
 def _load_usda():
     global _USDA
@@ -506,10 +507,54 @@ async def calc_nutrition(user_message: str, groq_key: str = "") -> dict:
 
 
 async def recalc_from_items(items_list: list) -> dict:
-    """Foydalanuvchi tahrir qilgan ingredientlar bo'yicha qaytadan hisoblash.
-    AI chaqirmaydi — faqat DB + lokal matematika. Tezroq va aniqroq."""
+    """Foydalanuvchi tahrir qilgan/qo'shgan ingredientlar bo'yicha qaytadan hisoblash."""
     if not items_list:
         return {"ok": False, "error": "Mahsulot yo'q"}
+
+    # AI ga ehtiyoj bor mahsulotlar (DBda yo'q, per100 ham yo'q)
+    needs_ai = []
+    for it in items_list:
+        name = (it.get("name") or "").strip()
+        grams = float(it.get("grams") or 0)
+        if not name or grams <= 0:
+            continue
+        p100 = it.get("per100_kcal")
+        has_p100 = (p100 is not None) and (float(p100 or 0) > 0)
+        if not has_p100:
+            db_food = _db_search(name)
+            if not db_food:
+                kcal_total = float(it.get("kcal") or 0)
+                if kcal_total <= 0:
+                    needs_ai.append(name)
+
+    # AI ga so'rov: faqat zarur bo'lgan mahsulotlar uchun
+    ai_lookup = {}
+    if needs_ai:
+        try:
+            ai_msg = "Hisobla har bir mahsulot uchun 100g uchun KBJU (xom/asl holatda):\n" + \
+                     "\n".join(f"- {n}" for n in needs_ai)
+            gemini_key = os.environ.get("GEMINI_API_KEY", "")
+            anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+            parsed = None
+            if gemini_key:
+                try:
+                    parsed = await _gemini_call(ai_msg, gemini_key)
+                except: pass
+            if parsed is None and anthropic_key:
+                try: parsed = await _claude_call(ai_msg, anthropic_key)
+                except: pass
+            if parsed and parsed.get("items"):
+                for it in parsed["items"]:
+                    nm = (it.get("name") or "").lower().strip()
+                    g = float(it.get("grams") or 100) or 1
+                    ai_lookup[nm] = {
+                        "kcal":    float(it.get("kcal") or 0) * 100 / g,
+                        "protein": float(it.get("protein") or 0) * 100 / g,
+                        "fat":     float(it.get("fat") or 0) * 100 / g,
+                        "carb":    float(it.get("carb") or 0) * 100 / g,
+                    }
+        except Exception:
+            pass
 
     result_items = []
     total = {"kcal":0,"protein":0,"fat":0,"carb":0}
@@ -539,6 +584,13 @@ async def recalc_from_items(items_list: list) -> dict:
                 per100_f    = float(db_food.get("fat") or 0)
                 per100_c    = float(db_food.get("carb") or 0)
                 source      = "DB"
+            elif name.lower() in ai_lookup:
+                ai = ai_lookup[name.lower()]
+                per100_kcal = ai["kcal"]
+                per100_p    = ai["protein"]
+                per100_f    = ai["fat"]
+                per100_c    = ai["carb"]
+                source      = "AI"
             else:
                 # Agar AI qiymat berilgan bo'lsa item ichida (kcal, protein...)
                 kcal_total = float(it.get("kcal") or 0)

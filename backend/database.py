@@ -62,6 +62,8 @@ def init_db():
     cur.execute("ALTER TABLE food_global ADD COLUMN IF NOT EXISTS source TEXT DEFAULT ''")
     cur.execute("ALTER TABLE food_global ADD COLUMN IF NOT EXISTS store TEXT DEFAULT ''")
     cur.execute("ALTER TABLE food_global ADD COLUMN IF NOT EXISTS category TEXT DEFAULT ''")
+    # Eski xato 'cached' entry'larni o'chirish (AI tomonidan noto'g'ri keshlangan)
+    cur.execute("DELETE FROM food_global WHERE store='cached'")
     # Korzinka × USDA seed — yangi mahsulotlarni qo'shamiz (mavjudini tegmaymiz)
     import json as _json
     seed_path = os.path.join(os.path.dirname(__file__), "seed_korzinka.json")
