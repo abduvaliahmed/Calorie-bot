@@ -2651,7 +2651,13 @@ async function sendAI(){
     var data=await req('/api/ai/calc','POST',{message:input});var r=data.result;
     var th=document.getElementById('ai-thinking');if(th)th.remove();
     var rid='ai_'+Date.now();_aiResults[rid]=r;
-    var isRecipe=input.indexOf("g,")>=0||input.split(",").length>2||input.indexOf("pishirdim")>=0||input.indexOf("tayyorladim")>=0||input.indexOf("приготовил")>=0;
+    // Backend "is_recipe" qaytarsa o'shani ishlatamiz, aks holda matnda izlab topamiz
+    var isRecipe = (typeof r.is_recipe !== 'undefined')
+        ? !!r.is_recipe
+        : (input.indexOf("g,")>=0 || input.split(",").length>2 ||
+           input.indexOf("pishirdim")>=0 || input.indexOf("tayyorladim")>=0 ||
+           input.indexOf("приготовил")>=0 || input.indexOf("qildim")>=0 ||
+           (input.match(/\d+\s*(?:g|gr|ml|kg)\b/gi)||[]).length>=2);
     r._isRecipe=isRecipe;r._parts=1;r._eaten=1;
     var isRu=lang==="ru";
     var addLbl=isRu?"Добавить в дневник":"Logga qo'shish";
