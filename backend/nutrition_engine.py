@@ -132,10 +132,10 @@ def _load_usda():
 
 # O'zbek/Rus → USDA inglizcha tarjima
 _UZ_TO_USDA = {
-    "yog":"vegetable oil", "yog'":"vegetable oil", "yogi":"vegetable oil",
-    "osimlik yogi":"vegetable oil", "osimlik yog'i":"vegetable oil",
-    "kungaboqar yog'i":"vegetable oil", "zaytun yog'i":"olive oil",
-    "масло":"vegetable oil", "растительное масло":"vegetable oil",
+    "yog":"oil, vegetable, soybean, refined", "yog'":"oil, vegetable, soybean, refined", "yogi":"oil, vegetable, soybean, refined",
+    "osimlik yogi":"oil, vegetable, soybean, refined", "osimlik yog'i":"oil, vegetable, soybean, refined",
+    "kungaboqar yog'i":"oil, vegetable, soybean, refined", "zaytun yog'i":"oil, olive, salad or cooking",
+    "масло":"oil, vegetable, soybean, refined", "растительное масло":"oil, vegetable, soybean, refined",
     "sariyog":"butter, salted", "sariyog'":"butter, salted",
     "maslo":"butter, salted", "сливочное масло":"butter, salted",
     "guruch":"rice, white, long-grain, regular",
