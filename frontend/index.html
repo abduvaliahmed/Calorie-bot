@@ -3105,137 +3105,258 @@ function bindAICells(rid){
   // Endi global event delegation orqali ishlaydi — bu funksiya no-op (compatibility uchun saqlanadi)
 }
 
-/* ─── Voice input (Web Speech API) ────────────────────────────────── */
-var _voiceRec = null;
-var _voiceLastText = "";
-var _voiceAutoStopTimer = null;
-var _voiceLangs = ["uz-UZ", "ru-RU", "en-US"];
-var _voiceLangIdx = 0;
+/* ─── Voice input (MediaRecorder + Gemini multimodal) ─────────────── */
+var _mediaRec = null;
+var _audioChunks = [];
+var _audioStream = null;
+var _voiceTimerId = null;
+var _voiceStartTime = 0;
+var _voiceCancelled = false;
 
-function _voiceSupported(){
-  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+function _voiceMimeType(){
+  // Brauzer qo'llab-quvvatlaydigan format
+  if (typeof MediaRecorder === 'undefined') return null;
+  var types = [
+    'audio/webm;codecs=opus','audio/webm',
+    'audio/mp4','audio/aac','audio/ogg'
+  ];
+  for (var i=0; i<types.length; i++){
+    if (MediaRecorder.isTypeSupported(types[i])) return types[i];
+  }
+  return '';
 }
 
-function startVoice(){
-  if (!_voiceSupported()){
-    toast(lang==="ru"?"Браузер не поддерживает голос":"Brauzer ovozni qo'llab-quvvatlamaydi");
+async function startVoice(){
+  if (typeof MediaRecorder === 'undefined'){
+    toast(lang==="ru"?"Браузер не поддерживает запись":"Brauzer yozishni qo'llab-quvvatlamaydi");
     return;
   }
-  // Mikrofon ruxsatini birinchi marta so'rash
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-      // Streamni darhol yopamiz — biz SpeechRecognition ishlatamiz
-      stream.getTracks().forEach(function(t){t.stop();});
-      _doVoiceStart();
-    }).catch(function(){
-      toast(lang==="ru"?"Микрофон не доступен":"Mikrofon ruxsati yo'q");
-    });
-  } else {
-    _doVoiceStart();
+  try {
+    _audioStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  } catch(e){
+    toast(lang==="ru"?"Микрофон запрещён":"Mikrofon ruxsati yo'q");
+    return;
   }
-}
-
-function _doVoiceStart(){
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var rec = new SR();
-  rec.continuous = true;
-  rec.interimResults = true;
-  rec.maxAlternatives = 1;
-  // Foydalanuvchi tiliga qarab boshlanadi
-  _voiceLangIdx = (lang === "ru") ? 1 : 0;
-  rec.lang = _voiceLangs[_voiceLangIdx];
-
-  var finalText = "";
-  var inputEl = document.getElementById('ai-input');
+  var mime = _voiceMimeType();
+  try {
+    _mediaRec = mime ? new MediaRecorder(_audioStream, {mimeType: mime}) : new MediaRecorder(_audioStream);
+  } catch(e){
+    _mediaRec = new MediaRecorder(_audioStream);
+  }
+  _audioChunks = [];
+  _voiceCancelled = false;
+  _voiceStartTime = Date.now();
+  _mediaRec.ondataavailable = function(e){ if (e.data && e.data.size>0) _audioChunks.push(e.data); };
+  _mediaRec.onstop = async function(){
+    var actualMime = _mediaRec.mimeType || mime || 'audio/webm';
+    _audioStream.getTracks().forEach(function(t){t.stop();});
+    document.getElementById('ai-voice-bar').style.display='none';
+    if (_voiceTimerId){ clearInterval(_voiceTimerId); _voiceTimerId=null; }
+    if (_voiceCancelled || !_audioChunks.length){
+      _audioChunks = [];
+      return;
+    }
+    var blob = new Blob(_audioChunks, {type: actualMime});
+    // WAV ga aylantirish (Gemini WebM ni qabul qilmaydi)
+    var wavBlob;
+    try {
+      wavBlob = await _convertToWav(blob);
+    } catch(err){
+      console.log("WAV convert failed, sending original:", err);
+      wavBlob = blob;
+    }
+    await _sendVoiceToAI(wavBlob);
+  };
+  _mediaRec.start();
+  // UI ko'rsatish va timer
+  var bar = document.getElementById('ai-voice-bar');
+  bar.style.display = 'flex';
   var statusEl = document.getElementById('ai-voice-status');
   var textEl = document.getElementById('ai-voice-text');
-  if (statusEl) statusEl.textContent = lang==="ru"?"Слушаю... ("+rec.lang+")":"Eshityapman... ("+rec.lang+")";
-
-  rec.onresult = function(e){
-    var interim = "";
-    for (var i = e.resultIndex; i < e.results.length; i++){
-      var seg = e.results[i][0].transcript;
-      if (e.results[i].isFinal){
-        finalText += seg + " ";
-      } else {
-        interim += seg;
-      }
-    }
-    var combined = (finalText + interim).trim();
-    _voiceLastText = combined;
-    if (textEl) textEl.textContent = combined || (lang==="ru"?"Говорите...":"Gapiring...");
-    // Auto-stop 2 sek sukunatdan keyin
-    if (_voiceAutoStopTimer) clearTimeout(_voiceAutoStopTimer);
-    if (combined){
-      _voiceAutoStopTimer = setTimeout(function(){
-        if (_voiceRec) _voiceRec.stop();
-      }, 1800);
-    }
-  };
-
-  rec.onerror = function(e){
-    console.log("Voice error:", e.error);
-    if (e.error === 'language-not-supported' || e.error === 'no-speech'){
-      // Boshqa tilni sinab ko'rish
-      _voiceLangIdx = (_voiceLangIdx + 1) % _voiceLangs.length;
-      if (_voiceLangIdx !== ((lang === "ru") ? 1 : 0)){
-        // Yana boshlash
-        try { rec.lang = _voiceLangs[_voiceLangIdx]; rec.start(); return; } catch(_){}
-      }
-    }
-    if (e.error === 'not-allowed' || e.error === 'permission-denied'){
-      toast(lang==="ru"?"Микрофон запрещён":"Mikrofon ruxsati yo'q");
-    } else if (e.error === 'no-speech'){
-      toast(lang==="ru"?"Ничего не услышал":"Hech narsa eshitilmadi");
-    } else {
-      toast(lang==="ru"?"Ошибка распознавания":"Tanish xato");
-    }
-    cancelVoice();
-  };
-
-  rec.onend = function(){
-    document.getElementById('ai-voice-bar').style.display = 'none';
-    _voiceRec = null;
-    if (_voiceAutoStopTimer){ clearTimeout(_voiceAutoStopTimer); _voiceAutoStopTimer=null; }
-    if (_voiceLastText && _voiceLastText.trim()){
-      inputEl.value = _voiceLastText.trim();
-      inputEl.style.height='auto';
-      inputEl.style.height=inputEl.scrollHeight+'px';
-      // Avtomatik yuborish
-      setTimeout(function(){sendAI();}, 200);
-    }
-  };
-
-  _voiceLastText = "";
-  finalText = "";
-  try {
-    rec.start();
-    _voiceRec = rec;
-    document.getElementById('ai-voice-bar').style.display = 'flex';
-  } catch(e){
-    toast(lang==="ru"?"Не удалось запустить":"Ishga tushmadi");
-  }
+  if (statusEl) statusEl.textContent = lang==="ru"?"Запись...":"Yozyapman...";
+  if (textEl) textEl.textContent = "0:00";
+  _voiceTimerId = setInterval(function(){
+    if (!_mediaRec) return;
+    var sec = Math.floor((Date.now() - _voiceStartTime)/1000);
+    var mm = Math.floor(sec/60), ss = sec % 60;
+    if (textEl) textEl.textContent = mm + ":" + (ss < 10 ? "0" + ss : ss);
+    // 60 sek limit
+    if (sec >= 60) stopVoice();
+  }, 200);
 }
 
 function stopVoice(){
-  if (_voiceRec){
-    try { _voiceRec.stop(); } catch(_){}
+  if (_mediaRec && _mediaRec.state !== 'inactive'){
+    try { _mediaRec.stop(); } catch(_){}
   }
 }
 
 function cancelVoice(){
-  if (_voiceAutoStopTimer){ clearTimeout(_voiceAutoStopTimer); _voiceAutoStopTimer=null; }
-  if (_voiceRec){
-    try {
-      _voiceRec.onresult = null;
-      _voiceRec.onend = null;
-      _voiceRec.onerror = null;
-      _voiceRec.stop();
-    } catch(_){}
-    _voiceRec = null;
+  _voiceCancelled = true;
+  if (_mediaRec && _mediaRec.state !== 'inactive'){
+    try { _mediaRec.stop(); } catch(_){}
   }
-  _voiceLastText = "";
-  document.getElementById('ai-voice-bar').style.display = 'none';
+  if (_audioStream){
+    try { _audioStream.getTracks().forEach(function(t){t.stop();}); } catch(_){}
+  }
+  if (_voiceTimerId){ clearInterval(_voiceTimerId); _voiceTimerId=null; }
+  document.getElementById('ai-voice-bar').style.display='none';
+  _audioChunks = [];
+}
+
+// Blob ni WAV ga aylantirish (Gemini WAV/MP3/AAC/OGG/FLAC qabul qiladi)
+async function _convertToWav(blob){
+  var arrayBuf = await blob.arrayBuffer();
+  var Ctx = window.AudioContext || window.webkitAudioContext;
+  var ac = new Ctx();
+  var audioBuf = await new Promise(function(res, rej){
+    ac.decodeAudioData(arrayBuf, res, rej);
+  });
+  // Mono, 16kHz — kichik fayl, Gemini uchun yetarli
+  var targetSr = 16000;
+  var ch0 = audioBuf.getChannelData(0);
+  // Resample (linear)
+  var ratio = audioBuf.sampleRate / targetSr;
+  var newLen = Math.floor(ch0.length / ratio);
+  var pcm = new Float32Array(newLen);
+  for (var i = 0; i < newLen; i++){
+    pcm[i] = ch0[Math.floor(i * ratio)];
+  }
+  // WAV header + PCM 16-bit
+  var bufSize = 44 + pcm.length * 2;
+  var arr = new ArrayBuffer(bufSize);
+  var view = new DataView(arr);
+  function ws(o,s){ for (var k=0;k<s.length;k++) view.setUint8(o+k, s.charCodeAt(k)); }
+  ws(0, 'RIFF');
+  view.setUint32(4, 36 + pcm.length*2, true);
+  ws(8, 'WAVE');
+  ws(12,'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);   // PCM
+  view.setUint16(22, 1, true);   // mono
+  view.setUint32(24, targetSr, true);
+  view.setUint32(28, targetSr*2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  ws(36,'data');
+  view.setUint32(40, pcm.length*2, true);
+  var offset = 44;
+  for (var i = 0; i < pcm.length; i++){
+    var s = Math.max(-1, Math.min(1, pcm[i]));
+    view.setInt16(offset, s < 0 ? s*0x8000 : s*0x7FFF, true);
+    offset += 2;
+  }
+  try { ac.close(); } catch(_){}
+  return new Blob([arr], {type: 'audio/wav'});
+}
+
+async function _sendVoiceToAI(blob){
+  var thinking = document.createElement('div');
+  thinking.className = 'ai-msg-user';
+  thinking.style.opacity = '0.7';
+  thinking.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><rect x="9" y="4" width="6" height="10" rx="3" fill="white"/><path d="M5 11a7 7 0 0 0 14 0" stroke="white" stroke-width="2" stroke-linecap="round"/></svg> '+(lang==="ru"?"Голосовое":"Ovozli xabar");
+  document.getElementById('ai-messages').appendChild(thinking);
+  document.getElementById('ai-welcome').style.display='none';
+  var dot = document.createElement('div');
+  dot.className = 'ai-msg-bot';
+  dot.id = 'ai-thinking';
+  dot.innerHTML = '<span style="opacity:0.5;animation:textPulse 1s infinite">'+(lang==="ru"?"Слушаю и анализирую...":"Eshitib tahlil qilyapman...")+'</span>';
+  document.getElementById('ai-messages').appendChild(dot);
+  document.getElementById('ai-scroll').scrollTop = 99999;
+
+  // Base64 ga aylantirish
+  var b64 = await new Promise(function(res){
+    var fr = new FileReader();
+    fr.onloadend = function(){ res(fr.result.split(',')[1]); };
+    fr.readAsDataURL(blob);
+  });
+  try {
+    var data = await req('/api/ai/voice','POST',{audio:b64, mime_type: blob.type || 'audio/wav'});
+    var th = document.getElementById('ai-thinking'); if (th) th.remove();
+    if (!data.result){
+      addAIMsg('bot','<span style="color:#C62828">'+(lang==="ru"?"Не получилось понять":"Tushuna olmadim")+'</span>');
+      return;
+    }
+    // Foydalanuvchi transcripti ko'rsatish
+    thinking.innerHTML = (data.transcript || (lang==="ru"?"(Голосовое)":"(Ovozli)"));
+    thinking.style.opacity = '1';
+    // Natijani sendAI() kabi ko'rsatamiz
+    _renderAIResult(data.result, data.transcript || "");
+  } catch(e){
+    var th = document.getElementById('ai-thinking'); if (th) th.remove();
+    addAIMsg('bot','<span style="color:#C62828">'+(lang==="ru"?"Ошибка":"Xato")+': '+(e.message||'')+'</span>');
+  }
+}
+
+// sendAI ichidan ko'chirilgan rendering qismi — qayta foydalanish uchun
+function _renderAIResult(r, input){
+  var rid='ai_'+Date.now();_aiResults[rid]=r;
+  var isRecipe = (typeof r.is_recipe !== 'undefined') ? !!r.is_recipe : false;
+  r._isRecipe=isRecipe;r._parts=1;r._eaten=1;
+  var isRu=lang==="ru";
+  var addLbl=isRu?"Добавить в дневник":"Logga qo'shish";
+  var saveLbl=isRu?"В мои продукты":"Mahsulotlarimga";
+  var oqsil=isRu?"Белки":"Oqsil";var yog2=isRu?"Жиры":"Yog'";var uglev=isRu?"Углев.":"Uglevod";
+  var itemsHtml = _renderAIItemsHtml(rid, r, isRu);
+  var portionHtml = isRecipe ?
+    '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+      '<div style="display:flex;gap:12px;margin-bottom:10px">'+
+        '<div style="flex:1"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Разделить на":"Qismlarga bo\'l")+'</div>'+
+        '<input id="ai-parts-'+rid+'" type="number" value="1" min="1" max="100" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/></div>'+
+        '<div style="flex:1"><div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Я съел":"Men yedim")+'</div>'+
+        '<input id="ai-eaten-'+rid+'" type="number" value="1" min="1" max="100" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:20px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/></div>'+
+      '</div>'+
+      '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#4CD964">'+r.protein+'g</div><div style="font-size:9px;color:var(--t2)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#FF9500">'+r.fat+'g</div><div style="font-size:9px;color:var(--t2)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div style="font-size:13px;font-weight:700;color:#5AC8FA">'+r.carb+'g</div><div style="font-size:9px;color:var(--t2)">'+uglev+'</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>' :
+    '<div style="background:var(--bg);border-radius:16px;padding:14px;margin-bottom:12px">'+
+      '<div style="font-size:11px;color:var(--t2);margin-bottom:6px">'+(isRu?"Количество (г)":"Miqdor (g)")+'</div>'+
+      '<input id="ai-parts-'+rid+'" type="number" value="'+(r.total_g||100)+'" min="1" style="width:100%;border:1.5px solid var(--sep);border-radius:10px;padding:10px;font-size:22px;font-weight:800;text-align:center;color:var(--t1);background:var(--card);outline:none;box-sizing:border-box"/>'+
+      '<input id="ai-eaten-'+rid+'" type="hidden" value="1"/>'+
+      '<div id="ai-portion-res-'+rid+'" style="background:rgba(29,158,117,0.08);border-radius:12px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="font-size:20px;font-weight:800;color:var(--teal)">'+Math.round(r.kcal)+' <span style="font-size:12px;font-weight:400">kkal</span></div>'+
+      '</div>'+
+    '</div>';
+  var html =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
+      '<div style="font-size:17px;font-weight:700;color:var(--t1)">'+(r.name||'')+'</div>'+
+      '<div style="font-size:11px;color:var(--t2);background:var(--tl);padding:3px 10px;border-radius:10px">'+(isRu?"голос":"ovoz")+'</div>'+
+    '</div>'+
+    '<div id="ai-total-'+rid+'" style="background:var(--teal);border-radius:16px;padding:16px;margin-bottom:12px">'+
+      '<div style="font-size:10px;color:rgba(255,255,255,0.7);letter-spacing:1px;margin-bottom:6px">'+(isRu?"ИТОГО":"JAMI")+'</div>'+
+      '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+        '<div class="ai-tot-k" style="font-size:30px;font-weight:800;color:#fff;line-height:1">'+Math.round(r.kcal)+'<span style="font-size:14px;font-weight:400"> kkal</span></div>'+
+        '<div style="display:flex;gap:14px">'+
+          '<div style="text-align:center"><div class="ai-tot-p" style="font-size:14px;font-weight:700;color:#fff">'+r.protein+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+oqsil+'</div></div>'+
+          '<div style="text-align:center"><div class="ai-tot-f" style="font-size:14px;font-weight:700;color:#fff">'+r.fat+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+yog2+'</div></div>'+
+          '<div style="text-align:center"><div class="ai-tot-c" style="font-size:14px;font-weight:700;color:#fff">'+r.carb+'g</div><div style="font-size:9px;color:rgba(255,255,255,0.7)">'+uglev+'</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    itemsHtml+
+    portionHtml+
+    '<div style="display:flex;gap:8px">'+
+      '<button id="ai-add-'+rid+'" class="ai-log-btn" style="flex:2;font-size:15px;font-weight:700">'+addLbl+'</button>'+
+      '<button id="ai-save-'+rid+'" class="ai-log-btn" style="flex:1;background:var(--tl);color:var(--td)">'+saveLbl+'</button>'+
+    '</div>';
+  addAIMsg('bot',html);
+  try { aiHistAdd(input||"(voice)", r); } catch(_){}
+  setTimeout(function(){
+    var partsIn=document.getElementById('ai-parts-'+rid);
+    var eatenIn=document.getElementById('ai-eaten-'+rid);
+    var addBtn=document.getElementById('ai-add-'+rid);
+    var saveBtn=document.getElementById('ai-save-'+rid);
+    if(partsIn)partsIn.oninput=function(){updateAIPortionResult(rid);};
+    if(eatenIn)eatenIn.oninput=function(){updateAIPortionResult(rid);};
+    if(addBtn)addBtn.onclick=function(){addAIPortionToLog(rid,addBtn);};
+    if(saveBtn)saveBtn.onclick=function(){saveAIToMyFoods(rid,saveBtn);};
+  },100);
 }
 
 function openAIQuickAdd(){
@@ -3439,8 +3560,8 @@ function closeInfo(){
 
 initTheme();
 initSnd();
-// Voice qo'llab-quvvatlamasa, mic tugmasini yashirish
-if(!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)){
+// MediaRecorder qo'llab-quvvatlamasa, mic tugmasini yashirish
+if(typeof MediaRecorder === 'undefined' || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
   var mb=document.getElementById('ai-mic-btn'); if(mb)mb.style.display='none';
 }
 init();

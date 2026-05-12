@@ -355,6 +355,24 @@ async def api_ai_calc(data: dict, x_init_data: str = Header(default="")):
         raise HTTPException(500, f"Tahlil xatosi: {e}")
 
 
+@app.post("/api/ai/voice")
+async def api_ai_voice(data: dict, x_init_data: str = Header(default="")):
+    """Ovozli xabarni Gemini multimodal orqali tahlil qiladi."""
+    uid = get_uid(x_init_data)
+    if not uid:
+        raise HTTPException(401, "Unauthorized")
+    audio_b64 = data.get("audio") or ""
+    mime = data.get("mime_type") or "audio/wav"
+    if not audio_b64:
+        raise HTTPException(400, "Audio kerak")
+    from nutrition_engine import calc_from_voice
+    try:
+        return await calc_from_voice(audio_b64, mime)
+    except Exception as e:
+        logger.error(f"Voice calc error: {e}")
+        raise HTTPException(500, f"Ovoz tahlil xatosi: {e}")
+
+
 @app.post("/api/ai/recalc")
 async def api_ai_recalc(data: dict, x_init_data: str = Header(default="")):
     """Tahrir qilingan ingredient ro'yxati bo'yicha qaytadan hisoblash (AI chaqirmasdan)."""

@@ -346,6 +346,140 @@ Whole milk:        61 kcal, 3.2 P, 3.3 F, 4.8 C
 5. Round all numbers to 1 decimal place."""
 
 
+async def _gemini_call_audio(audio_b64: str, mime: str, api_key: str) -> dict:
+    """Gemini multimodal — ovoz faylni eshitib tahlil qiladi."""
+    # Gemini qo'llab-quvvatlaydigan formatga moslashtirish
+    mime_clean = mime.lower().split(";")[0].strip()
+    gemini_mime = "audio/wav"
+    if mime_clean in ("audio/wav","audio/wave","audio/x-wav"): gemini_mime = "audio/wav"
+    elif "mp3" in mime_clean or "mpeg" in mime_clean: gemini_mime = "audio/mp3"
+    elif "ogg" in mime_clean: gemini_mime = "audio/ogg"
+    elif "aac" in mime_clean or "mp4" in mime_clean or "m4a" in mime_clean: gemini_mime = "audio/aac"
+    elif "flac" in mime_clean: gemini_mime = "audio/flac"
+    # webm fallback — WAV ga keladi (frontend convert qiladi)
+
+    voice_prompt = (
+        "Listen to this audio carefully. The user is speaking in Uzbek, Russian, or English about food they ate or cooked. "
+        "Extract every ingredient mentioned with quantities (grams, ml, pieces, etc). "
+        "Then calculate KBJU exactly like in the system prompt. "
+        "Also include in the response: 'transcript' field with the user's spoken text (in the original language).\n\n"
+        "Return the EXACT JSON format from system instructions PLUS one extra field: 'transcript' (string)."
+    )
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            url,
+            headers={"Content-Type": "application/json"},
+            json={
+                "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                "contents": [{
+                    "parts": [
+                        {"text": voice_prompt},
+                        {"inline_data": {"mime_type": gemini_mime, "data": audio_b64}}
+                    ],
+                    "role": "user"
+                }],
+                "generationConfig": {
+                    "temperature": 0,
+                    "topP": 1,
+                    "topK": 1,
+                    "maxOutputTokens": 1024,
+                    "responseMimeType": "application/json",
+                },
+            },
+            timeout=60.0,
+        )
+        r.raise_for_status()
+        data = r.json()
+        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        text = re.sub(r"```(?:json)?\s*", "", text).replace("```", "").strip()
+        m = re.search(r"\{.*\}", text, re.S)
+        if m: text = m.group(0)
+        return json.loads(text)
+
+
+async def calc_from_voice(audio_b64: str, mime: str) -> dict:
+    """Ovoz xabar → Gemini multimodal → standart format."""
+    gemini_key = os.environ.get("GEMINI_API_KEY", "")
+    if not gemini_key:
+        return {"ok": False, "error": "Gemini API key kerak"}
+    try:
+        parsed = await _gemini_call_audio(audio_b64, mime, gemini_key)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Voice Gemini failed: {e}")
+        return {"ok": False, "error": f"AI ovozni eshita olmadi: {e}"}
+
+    transcript = parsed.get("transcript", "")
+
+    items = parsed.get("items", [])
+    if not items:
+        return {"ok": False, "error": "Mahsulot aniqlanmadi", "transcript": transcript}
+
+    # Hybrid: DB lookup
+    result_items = []
+    total = {"kcal":0,"protein":0,"fat":0,"carb":0}
+    for it in items:
+        name_orig = (it.get("name") or "").strip()
+        grams = float(it.get("grams") or 0)
+        if not name_orig or grams <= 0: continue
+        ai_kcal = float(it.get("kcal") or 0)
+        ai_p    = float(it.get("protein") or 0)
+        ai_f    = float(it.get("fat") or 0)
+        ai_c    = float(it.get("carb") or 0)
+        source = "AI"
+        matched = name_orig
+        db_food = _db_search(name_orig)
+        if db_food:
+            ratio = grams / 100.0
+            ai_kcal = round(float(db_food.get("kcal") or 0) * ratio, 1)
+            ai_p    = round(float(db_food.get("protein") or 0) * ratio, 1)
+            ai_f    = round(float(db_food.get("fat") or 0) * ratio, 1)
+            ai_c    = round(float(db_food.get("carb") or 0) * ratio, 1)
+            source = "DB"
+            matched = db_food.get("name", name_orig)
+        result_items.append({
+            "name_orig": name_orig, "matched": matched, "grams": grams,
+            "source": source,
+            "kcal": round(ai_kcal,1), "protein": round(ai_p,1),
+            "fat": round(ai_f,1), "carb": round(ai_c,1)
+        })
+        total["kcal"] += ai_kcal; total["protein"] += ai_p
+        total["fat"] += ai_f; total["carb"] += ai_c
+
+    has_db = any(r["source"]=="DB" for r in result_items)
+    if has_db:
+        final_kcal = round(total["kcal"],1)
+        final_p    = round(total["protein"],1)
+        final_f    = round(total["fat"],1)
+        final_c    = round(total["carb"],1)
+    else:
+        final_kcal = round(float(parsed.get("kcal") or 0),1)
+        final_p    = round(float(parsed.get("protein") or 0),1)
+        final_f    = round(float(parsed.get("fat") or 0),1)
+        final_c    = round(float(parsed.get("carb") or 0),1)
+
+    total_g = float(parsed.get("total_g_cooked") or parsed.get("total_g_raw") or sum(r["grams"] for r in result_items) or 1)
+
+    return {
+        "ok": True,
+        "transcript": transcript,
+        "result": {
+            "name": parsed.get("name") or transcript[:40] or "Ovozli",
+            "is_recipe": bool(parsed.get("is_recipe", False)),
+            "total_g": round(total_g, 1),
+            "kcal": final_kcal, "protein": final_p,
+            "fat": final_f, "carb": final_c,
+            "per100_kcal": round(final_kcal/total_g*100,1) if total_g else 0,
+            "per100_p": round(final_p/total_g*100,1) if total_g else 0,
+            "per100_f": round(final_f/total_g*100,1) if total_g else 0,
+            "per100_c": round(final_c/total_g*100,1) if total_g else 0,
+            "items": result_items,
+        }
+    }
+
+
 async def _gemini_call(user_msg: str, api_key: str) -> dict:
     """Google Gemini 2.0 Flash — bepul, kontekstli, deterministik."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
